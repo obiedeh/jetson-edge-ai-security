@@ -14,6 +14,13 @@ The project is edge-native because the runtime is built around streaming sources
 - Pipeline runner that tracks events, windows, detections, and emitted alerts.
 - Typer CLI for config validation, CSV replay, and a built-in demo.
 
+## Execution Targets
+
+- Linux is the primary runtime target.
+- Jetson Orin-class Linux is the intended edge deployment target for this project.
+- The current MVP should run as a lightweight Python runtime for CSV replay and baseline detection on Jetson-class devices.
+- Jetson hardware benchmark artifacts are still pending and should be added before claiming measured edge performance.
+
 ## Telemetry Source Strategy
 
 The runtime normalizes every source into `TelemetryEvent` before feature extraction. That keeps ML, detection, alerting, and reporting independent from the source adapter.
@@ -45,7 +52,10 @@ Existing notebooks and reports should remain reference material. Reusable academ
 ## Install
 
 ```bash
-cd projects/jetson-edge-ai-security
+git clone https://github.com/obiedeh/jetson-edge-ai-security.git
+cd jetson-edge-ai-security
+python -m venv .venv
+source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
@@ -58,7 +68,6 @@ python -m pip install -e ".[ml]"
 ## Run Tests
 
 ```bash
-cd projects/jetson-edge-ai-security
 python -m pytest
 ```
 
