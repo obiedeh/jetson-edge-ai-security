@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -104,7 +104,7 @@ def _window_vector(window: FeatureWindow) -> list[float]:
     ]
 
 
-def _severity(score: float, attack_count: int) -> str:
+def _severity(score: float, attack_count: int) -> Literal["low", "medium", "high", "critical"]:
     if score >= 4 or attack_count >= 10:
         return "critical"
     if score >= 3 or attack_count >= 3:

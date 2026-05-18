@@ -1,0 +1,15 @@
+{
+  "alert_severity_counts": {
+    "high": 2,
+    "medium": 2
+  },
+  "alerts_emitted": 4,
+  "detections_seen": 4,
+  "events_seen": 12,
+  "finished_at": "2026-01-01T00:00:04Z",
+  "rows_skipped": 0,
+  "safety_boundary": "defensive replay evidence only; no offensive tooling or autonomous response",
+  "source": "built-in-defensive-demo",
+  "started_at": "2026-01-01T00:00:00Z",
+  "windows_seen": 8
+}

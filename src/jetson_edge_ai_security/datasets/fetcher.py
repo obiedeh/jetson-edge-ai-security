@@ -88,16 +88,16 @@ def _download(url: str, destination: Path) -> None:
 def _extract_archive(archive_path: Path, extract_dir: Path, archive_type: str | None) -> None:
     if archive_type == "zip" or archive_path.suffix.lower() == ".zip":
         with zipfile.ZipFile(archive_path) as archive:
-            for member in archive.infolist():
-                _safe_extract_path(extract_dir, member.filename)
-                archive.extract(member, extract_dir)
+            for zip_member in archive.infolist():
+                _safe_extract_path(extract_dir, zip_member.filename)
+                archive.extract(zip_member, extract_dir)
         return
 
     if archive_type in {"tar", "tgz", "tar.gz"} or archive_path.suffix.lower() in {".tar", ".gz", ".tgz"}:
         with tarfile.open(archive_path) as archive:
-            for member in archive.getmembers():
-                _safe_extract_path(extract_dir, member.name)
-                archive.extract(member, extract_dir, set_attrs=False)
+            for tar_member in archive.getmembers():
+                _safe_extract_path(extract_dir, tar_member.name)
+                archive.extract(tar_member, extract_dir, set_attrs=False)
         return
 
     if archive_path.suffix.lower() == ".csv":

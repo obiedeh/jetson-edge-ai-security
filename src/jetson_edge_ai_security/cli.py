@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Annotated
@@ -12,14 +13,15 @@ from rich.console import Console
 from rich.table import Table
 
 from jetson_edge_ai_security.alerts import AlertBuilder
-from jetson_edge_ai_security.config import load_config
+from jetson_edge_ai_security.config import AppConfig, load_config
 from jetson_edge_ai_security.datasets import (
     DatasetDownloadError,
     list_datasets,
     prepare_dataset,
 )
 from jetson_edge_ai_security.detection import BaselineDetector, BaselineThresholds
-from jetson_edge_ai_security.runtime import PipelineRunner
+from jetson_edge_ai_security.runtime import PipelineRunner, write_replay_artifacts
+from jetson_edge_ai_security.schemas import Alert
 from jetson_edge_ai_security.sources import CsvReplaySource
 from jetson_edge_ai_security.utils import configure_logging
 
@@ -86,6 +88,7 @@ def replay_csv(
     config: Annotated[Path, typer.Option(help="Path to YAML config file.")] = Path("configs/default.yaml"),
     strict: Annotated[bool | None, typer.Option(help="Fail on malformed rows.")] = None,
     json_output: Annotated[bool, typer.Option(help="Print alerts as JSON lines.")] = False,
+    output_dir: Annotated[Path | None, typer.Option(help="Optional directory for replay evidence artifacts.")] = None,
 ) -> None:
     """Replay a CSV telemetry file through the detection pipeline."""
 
@@ -100,14 +103,24 @@ def replay_csv(
     if json_output:
         for alert in alerts:
             console.print(json.dumps(alert.model_dump(mode="json"), sort_keys=True))
-        return
+    else:
+        _print_alert_table(alerts)
+        console.print(
+            f"events={runner.metrics.events_seen} windows={runner.metrics.windows_seen} "
+            f"alerts={runner.metrics.alerts_emitted} skipped_rows={source.rows_skipped}",
+            markup=False,
+        )
 
-    _print_alert_table(alerts)
-    console.print(
-        f"events={runner.metrics.events_seen} windows={runner.metrics.windows_seen} "
-        f"alerts={runner.metrics.alerts_emitted} skipped_rows={source.rows_skipped}",
-        markup=False,
-    )
+    if output_dir is not None:
+        paths = write_replay_artifacts(
+            output_dir=output_dir,
+            alerts=alerts,
+            metrics=runner.metrics,
+            source_name=str(path),
+            rows_skipped=source.rows_skipped,
+        )
+        for artifact in paths:
+            console.print(f"Wrote artifact: {artifact}", markup=False)
 
 
 @app.command("replay-dataset")
@@ -120,6 +133,7 @@ def replay_dataset(
     force: Annotated[bool, typer.Option(help="Re-download and re-extract the dataset.")] = False,
     csv_glob: Annotated[str | None, typer.Option(help="Optional CSV glob to select a specific file.")] = None,
     json_output: Annotated[bool, typer.Option(help="Print alerts as JSON lines.")] = False,
+    output_dir: Annotated[Path | None, typer.Option(help="Optional directory for replay evidence artifacts.")] = None,
 ) -> None:
     """Download a known dataset, find a CSV, and replay it through the pipeline."""
 
@@ -140,15 +154,25 @@ def replay_dataset(
     if json_output:
         for alert in alerts:
             console.print(json.dumps(alert.model_dump(mode="json"), sort_keys=True))
-        return
+    else:
+        _print_alert_table(alerts)
+        console.print(
+            f"dataset={prepared.spec.key} events={runner.metrics.events_seen} "
+            f"windows={runner.metrics.windows_seen} alerts={runner.metrics.alerts_emitted} "
+            f"skipped_rows={source.rows_skipped}",
+            markup=False,
+        )
 
-    _print_alert_table(alerts)
-    console.print(
-        f"dataset={prepared.spec.key} events={runner.metrics.events_seen} "
-        f"windows={runner.metrics.windows_seen} alerts={runner.metrics.alerts_emitted} "
-        f"skipped_rows={source.rows_skipped}",
-        markup=False,
-    )
+    if output_dir is not None:
+        paths = write_replay_artifacts(
+            output_dir=output_dir,
+            alerts=alerts,
+            metrics=runner.metrics,
+            source_name=prepared.spec.key,
+            rows_skipped=source.rows_skipped,
+        )
+        for artifact in paths:
+            console.print(f"Wrote artifact: {artifact}", markup=False)
 
 
 def _run_csv_pipeline(
@@ -157,7 +181,7 @@ def _run_csv_pipeline(
     limit: int | None,
     config: Path,
     strict: bool | None,
-) -> tuple[list[object], PipelineRunner, CsvReplaySource]:
+) -> tuple[list[Alert], PipelineRunner, CsvReplaySource]:
     loaded = load_config(config)
     detector = _detector_from_config(loaded)
     alert_builder = AlertBuilder(
@@ -214,7 +238,51 @@ def run_demo() -> None:
         demo_path.unlink(missing_ok=True)
 
 
-def _detector_from_config(config: object) -> BaselineDetector:
+@app.command("generate-demo-report")
+def generate_demo_report(
+    output_dir: Annotated[Path, typer.Option(help="Directory for generated demo artifacts.")] = Path("reports/demo"),
+) -> None:
+    """Generate committed proof artifacts from a tiny built-in defensive replay sample."""
+
+    with NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8", newline="") as handle:
+        handle.write(
+            "timestamp,ip.src_host,ip.dst_host,tcp.srcport,tcp.dstport,_ws.col.Protocol,"
+            "frame.len,tcp.flags,Attack_label,Attack_type\n"
+        )
+        for index in range(12):
+            label = 1 if index >= 8 else 0
+            attack_type = "lab-replay" if label else "normal"
+            handle.write(
+                f"2026-01-01 00:00:{index:02d},10.0.0.{index + 1},10.0.1.10,"
+                f"{5000 + index},443,TCP,{100 + index},S,{label},{attack_type}\n"
+            )
+        demo_path = Path(handle.name)
+
+    try:
+        source = CsvReplaySource(demo_path, limit=12)
+        detector = BaselineDetector(BaselineThresholds(packet_count_threshold=100, attack_count_threshold=1))
+        with source:
+            runner = PipelineRunner(source, window_size=5, step=1, detector=detector)
+            alerts = runner.run()
+        fixed_start = datetime(2026, 1, 1, tzinfo=UTC)
+        fixed_finished = datetime(2026, 1, 1, 0, 0, 4, tzinfo=UTC)
+        runner.metrics.started_at = fixed_start
+        runner.metrics.finished_at = fixed_finished
+        alerts = [alert.model_copy(update={"timestamp": fixed_finished}) for alert in alerts]
+        paths = write_replay_artifacts(
+            output_dir=output_dir,
+            alerts=alerts,
+            metrics=runner.metrics,
+            source_name="built-in-defensive-demo",
+            rows_skipped=source.rows_skipped,
+        )
+        for artifact in paths:
+            console.print(f"Wrote artifact: {artifact}", markup=False)
+    finally:
+        demo_path.unlink(missing_ok=True)
+
+
+def _detector_from_config(config: AppConfig) -> BaselineDetector:
     detector_config = config.detector
     thresholds = BaselineThresholds(
         packet_count_threshold=detector_config.packet_count_threshold,
@@ -228,7 +296,7 @@ def _detector_from_config(config: object) -> BaselineDetector:
     )
 
 
-def _print_alert_table(alerts: list[object]) -> None:
+def _print_alert_table(alerts: list[Alert]) -> None:
     table = Table(title="Edge Security Alerts")
     table.add_column("Severity")
     table.add_column("Title")

@@ -112,6 +112,20 @@ The first auto-download target is `wustl-iiot-2021`, because its official projec
 edge-security run-demo
 ```
 
+## Generate Evidence Artifacts
+
+```bash
+edge-security generate-demo-report --output-dir reports/demo
+```
+
+The demo report writes:
+
+- `reports/demo/runtime_metrics.json`
+- `reports/demo/alerts.jsonl`
+- `reports/demo/replay_report.md`
+
+For the reviewer-facing deliverables checklist, see [PORTFOLIO_DELIVERABLES.md](PORTFOLIO_DELIVERABLES.md).
+
 ## Future Jetson Deployment Path
 
 The runtime is designed so Jetson deployment can add hardware-specific packaging without changing the detection pipeline:
