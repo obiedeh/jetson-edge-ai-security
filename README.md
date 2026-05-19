@@ -4,6 +4,22 @@ Jetson Edge AI Security is a production-oriented defensive telemetry runtime for
 
 The project is edge-native because the runtime is built around streaming sources, small memory windows, conservative baseline detection, and simple dependencies that can run on Jetson-class devices before heavier model runners are introduced.
 
+## Core Stack
+
+**Implemented:** Python · Typer · Pydantic · CSV replay · sliding-window features · baseline anomaly detection · Pytest
+
+**Planned / integration path:** Jetson runtime metrics · PCAP/Zeek/Suricata adapters · public dataset replay artifacts
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.x-blue" alt="Python" />
+  <img src="https://img.shields.io/badge/Typer-CLI-2F855A" alt="Typer" />
+  <img src="https://img.shields.io/badge/Pydantic-schemas-E92063" alt="Pydantic" />
+  <img src="https://img.shields.io/badge/scikit--learn-optional-F7931E" alt="scikit-learn optional" />
+  <img src="https://img.shields.io/badge/Pytest-tested-brightgreen" alt="Pytest" />
+  <img src="https://img.shields.io/badge/Jetson-integration%20path-76B900" alt="NVIDIA Jetson integration path" />
+  <img src="https://img.shields.io/badge/Defensive%20Security-telemetry-555555" alt="Defensive Security" />
+</p>
+
 ## Current MVP
 
 - Pluggable `TrafficSource` API with context-manager lifecycle.
