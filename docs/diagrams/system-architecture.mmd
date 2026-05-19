@@ -1,0 +1,31 @@
+flowchart TB
+    subgraph Inputs["Defensive telemetry inputs"]
+        csv["CSV replay\nimplemented"]
+        demo["Built-in defensive demo\nimplemented"]
+        pcap["PCAP / Zeek / Suricata\nplanned adapters"]
+    end
+
+    subgraph Runtime["Edge security runtime"]
+        source["TrafficSource API"]
+        schema["TelemetryEvent schema"]
+        window["Sliding-window features"]
+        detector["Baseline detector\noptional IsolationForest"]
+        alerts["Alert builder"]
+    end
+
+    subgraph Evidence["Observability and evidence"]
+        metrics["Runtime metrics"]
+        jsonl["alerts.jsonl"]
+        report["replay_report.md"]
+        artifacts["artifacts/ placeholders"]
+    end
+
+    csv --> source
+    demo --> source
+    pcap -. planned .-> source
+    source --> schema --> window --> detector --> alerts
+    detector --> metrics
+    alerts --> jsonl
+    metrics --> report
+    jsonl --> report
+    report --> artifacts

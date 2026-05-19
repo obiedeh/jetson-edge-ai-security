@@ -1,0 +1,13 @@
+flowchart LR
+    rows["CSV rows or demo samples"]
+    events["TelemetryEvent records"]
+    features["Window features\ncounts, bytes, rates"]
+    scores["Anomaly results"]
+    alerts["Alert JSONL"]
+    metrics["Processing metrics"]
+    reports["Evidence reports"]
+    review["Reviewer / operator"]
+
+    rows --> events --> features --> scores --> alerts --> reports
+    scores --> metrics --> reports
+    reports --> review

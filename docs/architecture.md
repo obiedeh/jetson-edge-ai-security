@@ -1,71 +1,54 @@
 # Architecture
 
-```text
-Traffic Source -> Event Normalization -> Feature Windows -> Detection -> Alerts
-```
+## System Purpose
 
-## Traffic Source
+This repository provides the edge runtime security layer for the portfolio. It normalizes defensive telemetry into events, creates sliding-window features, emits baseline anomaly signals, and writes evidence reports without adding offensive tooling.
 
-`TrafficSource` adapters isolate source-specific details. A source owns connection, file, or replay state and yields normalized `TelemetryEvent` records.
+## Current Implementation Status
 
-Current source:
+- **Implemented:** Typer CLI, Pydantic schemas, CSV replay source, sliding-window features, baseline detector, alert builder, runtime reporting, tests, and dataset catalog.
+- **Runnable scaffold:** built-in defensive demo and demo report generation.
+- **Planned Jetson deployment:** runtime metrics, memory profile, alert-throughput evidence, and hardware profile.
+- **Future adapters:** PCAP, Zeek, Suricata, MQTT, and live defensive capture paths.
 
-- `CsvReplaySource`
+## Main Components
 
-Future sources:
+- `src/jetson_edge_ai_security/sources/`: telemetry source interfaces and CSV replay.
+- `schemas.py`: normalized `TelemetryEvent`, window, detection, and alert models.
+- `features/`: sliding-window aggregation.
+- `detection/`: rule baseline and optional IsolationForest path.
+- `alerts/`: alert construction from anomaly results.
+- `runtime/`: pipeline orchestration, metrics, and evidence reporting.
+- `datasets/`: allowlisted defensive dataset catalog and fetch helpers.
+- `cli.py`: reproducible reviewer commands.
 
-- `PcapReplaySource`
-- `LiveCaptureSource`
-- `MqttTelemetrySource`
-- `ZeekLogSource`
-- `SuricataEveSource`
+## Runtime Flow
 
-## Event Normalization
+The current runnable path uses `edge-security replay-csv`, `edge-security run-demo`, or `edge-security generate-demo-report`. Events are normalized, grouped into windows, scored by the detector, converted into alerts when needed, and summarized into JSONL/Markdown artifacts.
 
-All sources emit the same Pydantic `TelemetryEvent` shape:
+## Data / Telemetry Flow
 
-- timestamp
-- source and destination IPs
-- source and destination ports
-- protocol
-- packet size
-- TCP flags
-- ICMP type
-- flow ID
-- source type
-- optional attack label and attack type
-- metadata
+CSV rows or built-in samples become `TelemetryEvent` records. Event windows become features. Features become anomaly results and alerts. Runtime metrics and reports are written as evidence artifacts.
 
-Labels are optional because production traffic normally does not arrive with ground-truth attack labels.
+## Deployment Modes
 
-## Feature Windows
+- **Local development:** CLI replay, tests, built-in demo, and generated reports.
+- **Dataset replay:** allowlisted public defensive datasets or local CSV exports.
+- **Planned Jetson deployment:** lightweight defensive runtime with metrics and sustained-run artifacts.
+- **Future source adapters:** PCAP, Zeek, Suricata, MQTT, and live defensive interface monitoring.
 
-`SlidingWindowExtractor` aggregates a stream of events into count-based windows. Features include packet counts, packet size statistics, protocol counts, TCP flag counts, attack counts when labels exist, event rate, and unique endpoint counts.
+## Evidence Artifacts
 
-## Detection
+- Demo reports are generated under `reports/demo/` when the command is run.
+- Reviewer placeholders live in `artifacts/sample-inputs/`, `artifacts/sample-outputs/`, `artifacts/logs/`, and `artifacts/reports/`.
+- Diagram sources live in `docs/diagrams/`.
 
-The default detector is conservative and production-safe:
+## Known Limitations
 
-- threshold rules for clear operational signals
-- optional IsolationForest if `scikit-learn` is installed and explicitly enabled
-- graceful fallback when optional ML dependencies are missing
+- Current proof is defensive replay evidence, not offensive security automation.
+- Jetson runtime performance is not claimed until hardware artifacts are committed.
+- Optional ML support does not replace the baseline detector evidence path.
 
-Deep learning is not the default runtime path.
+## Next Validation Step
 
-## Alerts
-
-`AlertBuilder` converts anomalous detection results into structured `Alert` records with severity, title, description, feature context, recommended action, and metadata.
-
-## Runtime
-
-`PipelineRunner` ties the stages together:
-
-```text
-TrafficSource.events()
-  -> SlidingWindowExtractor.windows()
-  -> detector.detect()
-  -> AlertBuilder.from_detection()
-```
-
-The runner also tracks runtime metrics for events, windows, detections, alerts, and duration.
-
+Commit one documented public defensive dataset replay with runtime metrics, alert JSONL, limitations, and a Jetson validation plan.

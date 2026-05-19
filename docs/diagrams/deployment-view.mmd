@@ -1,0 +1,30 @@
+flowchart TB
+    subgraph Local["Implemented local mode"]
+        cli["Typer CLI"]
+        csv["CSV replay"]
+        tests["pytest"]
+        report["Demo report generation"]
+    end
+
+    subgraph Dataset["Defensive dataset replay"]
+        catalog["Dataset catalog"]
+        localcsv["Local CSV export"]
+        evidence["Replay evidence artifacts"]
+    end
+
+    subgraph Jetson["Planned Jetson edge runtime"]
+        device["Jetson Orin-class Linux"]
+        monitor["Runtime monitoring"]
+        profile["Latency, memory, alert throughput"]
+    end
+
+    subgraph Future["Future defensive source adapters"]
+        zeek["Zeek logs"]
+        suricata["Suricata EVE JSON"]
+        pcap["PCAP replay"]
+        mqtt["MQTT telemetry"]
+    end
+
+    Local --> Dataset
+    Dataset --> Jetson
+    Future -. planned .-> Jetson

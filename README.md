@@ -20,6 +20,17 @@ The project is edge-native because the runtime is built around streaming sources
   <img src="https://img.shields.io/badge/Defensive%20Security-telemetry-555555" alt="Defensive Security" />
 </p>
 
+## Architecture and Evidence
+
+- [Architecture overview](docs/architecture.md)
+- [System architecture diagram](docs/diagrams/system-architecture.mmd)
+- [Runtime flow diagram](docs/diagrams/runtime-flow.mmd)
+- [Data flow diagram](docs/diagrams/data-flow.mmd)
+- [Deployment view diagram](docs/diagrams/deployment-view.mmd)
+- [Sample outputs](artifacts/sample-outputs/)
+- [Logs](artifacts/logs/)
+- [Reports](artifacts/reports/)
+
 ## Current MVP
 
 - Pluggable `TrafficSource` API with context-manager lifecycle.

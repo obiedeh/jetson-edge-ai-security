@@ -1,0 +1,12 @@
+flowchart LR
+    command["edge-security command\nreplay-csv / run-demo / generate-demo-report"]
+    source["Open defensive telemetry source"]
+    normalize["Normalize rows to TelemetryEvent"]
+    window["Build sliding windows"]
+    detect["Run baseline anomaly detector"]
+    alert["Emit alerts if anomaly found"]
+    metrics["Collect runtime metrics"]
+    output["Write JSONL and Markdown evidence"]
+
+    command --> source --> normalize --> window --> detect --> alert --> output
+    detect --> metrics --> output
