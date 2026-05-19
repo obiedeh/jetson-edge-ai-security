@@ -31,6 +31,12 @@ The project is edge-native because the runtime is built around streaming sources
 - [Logs](artifacts/logs/)
 - [Reports](artifacts/reports/)
 
+## Recommended GitHub About
+
+- **Suggested short description:** Edge AI runtime security system for Jetson-class devices with telemetry parsing, anomaly detection, alerting, and deployment reports.
+- **Suggested topics/tags:** `jetson`, `edge-ai`, `security`, `anomaly-detection`, `telemetry`, `runtime-monitoring`, `ai-infrastructure`
+- **Positioning category:** Core
+
 ## Current MVP
 
 - Pluggable `TrafficSource` API with context-manager lifecycle.
