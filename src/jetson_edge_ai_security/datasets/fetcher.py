@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import sys
 import tarfile
 import urllib.request
 import zipfile
@@ -97,7 +98,10 @@ def _extract_archive(archive_path: Path, extract_dir: Path, archive_type: str | 
         with tarfile.open(archive_path) as archive:
             for tar_member in archive.getmembers():
                 _safe_extract_path(extract_dir, tar_member.name)
-                archive.extract(tar_member, extract_dir, set_attrs=False)
+                if sys.version_info >= (3, 11, 4):
+                    archive.extract(tar_member, extract_dir, set_attrs=False, filter="data")
+                else:
+                    archive.extract(tar_member, extract_dir, set_attrs=False)
         return
 
     if archive_path.suffix.lower() == ".csv":

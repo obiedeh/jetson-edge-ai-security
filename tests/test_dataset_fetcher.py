@@ -55,3 +55,41 @@ def test_prepare_dataset_rejects_manual_dataset(monkeypatch: pytest.MonkeyPatch,
     with pytest.raises(DatasetDownloadError):
         prepare_dataset("manual", cache_dir=tmp_path / "cache")
 
+
+def test_dataset_by_key_unknown_raises() -> None:
+    from jetson_edge_ai_security.datasets.catalog import dataset_by_key
+
+    with pytest.raises(KeyError, match="Unknown dataset"):
+        dataset_by_key("nonexistent-dataset-xyz")
+
+
+def test_prepare_dataset_force_re_extracts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    archive_path = tmp_path / "fixture.zip"
+    with ZipFile(archive_path, "w") as archive:
+        archive.writestr("events.csv", "timestamp,source_ip\n2026-01-01,10.0.0.1\n")
+
+    spec = DatasetSpec(
+        key="fixture2",
+        name="Fixture2",
+        homepage_url="https://example.test/fixture2",
+        direct_download_url=archive_path.as_uri(),
+        archive_type="zip",
+        default_csv_glob="*.csv",
+        description="Test fixture",
+        citation_hint="Test",
+    )
+    monkeypatch.setattr(fetcher, "dataset_by_key", lambda key: spec)
+
+    cache = tmp_path / "cache"
+    # First run
+    p1 = prepare_dataset("fixture2", cache_dir=cache)
+    assert p1.csv_path.exists()
+
+    # Force re-run — must succeed and produce the same CSV
+    p2 = prepare_dataset("fixture2", cache_dir=cache, force=True)
+    assert p2.csv_path.exists()
+    assert p2.csv_path.name == "events.csv"
+

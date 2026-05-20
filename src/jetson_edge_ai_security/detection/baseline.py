@@ -36,6 +36,7 @@ class BaselineDetector:
         self.use_isolation_forest = use_isolation_forest
         self.isolation_forest_available = False
         self._model: Any | None = None
+        self._model_fitted: bool = False
         self._isolation_forest_kwargs = isolation_forest_kwargs or {"random_state": 42, "contamination": "auto"}
         if use_isolation_forest:
             self._init_isolation_forest()
@@ -46,6 +47,7 @@ class BaselineDetector:
         matrix = [_window_vector(window) for window in windows]
         if matrix:
             self._model.fit(matrix)
+            self._model_fitted = True
 
     def detect(self, window: FeatureWindow) -> DetectionResult:
         reasons: list[str] = []
@@ -60,7 +62,7 @@ class BaselineDetector:
 
         score = float(len(reasons))
         metadata: dict[str, Any] = {"detector": "baseline-threshold"}
-        if self._model is not None:
+        if self._model is not None and self._model_fitted:
             prediction = int(self._model.predict([_window_vector(window)])[0])
             anomaly_score = float(-self._model.score_samples([_window_vector(window)])[0])
             metadata["isolation_forest_score"] = anomaly_score
