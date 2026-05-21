@@ -139,7 +139,7 @@ edge-security replay-dataset wustl-iiot-2021 --limit 1000
 
 The first auto-download target is `wustl-iiot-2021`, because its official project page exposes a direct ZIP archive. Other noteworthy datasets, such as CICIoT2023, ToN_IoT, BoT-IoT, and Edge-IIoTset, are listed for awareness but may require manual download through forms or SharePoint. For those, download the dataset yourself and use `replay-csv --path <local.csv>`.
 
-## Run Demo
+## Run This Demo
 
 ```bash
 edge-security run-demo
