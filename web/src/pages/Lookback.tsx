@@ -9,6 +9,7 @@ import {
   AreaChart,
   CartesianGrid,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -36,7 +37,16 @@ interface ChartPoint {
   [key: string]: string | number
 }
 
-function buildChartData(buckets: LookbackBucket[]): { data: ChartPoint[]; types: string[] } {
+const TIME_FMT: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' }
+
+function fmtTime(d: Date) {
+  return d.toLocaleTimeString([], TIME_FMT)
+}
+
+function buildChartData(
+  buckets: LookbackBucket[],
+  nowLabel: string,
+): { data: ChartPoint[]; types: string[] } {
   const byTime: Record<string, Record<string, number>> = {}
   const typesSet = new Set<string>()
 
@@ -49,9 +59,15 @@ function buildChartData(buckets: LookbackBucket[]): { data: ChartPoint[]; types:
   const data: ChartPoint[] = Object.entries(byTime)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([bucket, counts]) => ({
-      time: new Date(bucket).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: fmtTime(new Date(bucket)),
       ...counts,
     }))
+
+  // Append a zero-count sentinel for "now" so the ReferenceLine has
+  // a categorical anchor at the right edge of the chart.
+  if (data.length > 0 && data[data.length - 1].time !== nowLabel) {
+    data.push({ time: nowLabel })
+  }
 
   return { data, types: [...typesSet].filter(t => t !== 'Normal') }
 }
@@ -70,7 +86,10 @@ export default function LookbackPage() {
       .catch(e => { setError(e.message); setLoading(false) })
   }, [minutes])
 
-  const { data: chartData, types } = data?.buckets ? buildChartData(data.buckets) : { data: [], types: [] }
+  const nowLabel = fmtTime(new Date())
+  const { data: chartData, types } = data?.buckets
+    ? buildChartData(data.buckets, nowLabel)
+    : { data: [], types: [] }
 
   const totalEvents = data?.buckets?.reduce((s, b) => s + b.count, 0) ?? 0
   const topType = data?.buckets
@@ -157,6 +176,19 @@ export default function LookbackPage() {
                   strokeWidth={2}
                 />
               ))}
+              <ReferenceLine
+                x={nowLabel}
+                stroke="#facc15"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                label={{
+                  value: `Now  ${nowLabel}`,
+                  position: 'insideTopRight',
+                  fill: '#facc15',
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
