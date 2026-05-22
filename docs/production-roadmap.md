@@ -1,5 +1,13 @@
 # Production Roadmap
 
+> **Active spec:** [`docs/edge-ids-implementation-brief.md`](edge-ids-implementation-brief.md).
+> **Implementation handoff:** [`docs/claude-code-kickoff.md`](claude-code-kickoff.md).
+>
+> The roadmap below is preserved for historical context. The next four
+> commits are governed by the brief, not by the phases listed here.
+> Items below that overlap with the brief are absorbed; items below
+> that the brief explicitly defers stay future work.
+
 ## MVP
 
 - Pydantic schemas for telemetry, features, detection results, and alerts.
