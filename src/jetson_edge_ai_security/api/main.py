@@ -19,9 +19,11 @@ Run with:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import platform
+import random
 import subprocess
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -56,11 +58,61 @@ _CONFIG_PATH = Path(os.getenv("EDGE_IDS_CONFIG", "configs/default.yaml"))
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+_DEMO_ATTACK_TYPES = [
+    "DDoS_ICMP", "DDoS_UDP", "DDoS_TCP", "DDoS_HTTP",
+    "Uploading", "Ransomware", "Normal",
+]
+_DEMO_WEIGHTS = [20, 15, 15, 10, 15, 10, 15]
+_DEMO_SOURCES = ["replay-csv", "replay-pcap"]
+_demo_rng = random.Random()
+
+
+async def _demo_alert_ticker(interval: float = 30.0) -> None:
+    """Background task: insert one synthetic alert every *interval* seconds.
+
+    Keeps the lookback store live so the 15m / 30m / 60m / 120m time-range
+    pickers all show data without requiring a manual seed-db run.
+    Controlled by env var EDGE_IDS_DEMO_TICK (set to "0" to disable).
+    """
+    while True:
+        await asyncio.sleep(interval)
+        try:
+            attack_type = _demo_rng.choices(_DEMO_ATTACK_TYPES, weights=_DEMO_WEIGHTS)[0]
+            await _STORE.insert_alert(
+                timestamp=datetime.now(UTC),
+                attack_type=attack_type,
+                confidence=round(_demo_rng.uniform(0.55, 0.99), 4),
+                severity=_demo_rng.choice(["low", "medium", "high", "critical"]),
+                source=_demo_rng.choice(_DEMO_SOURCES),
+                payload={
+                    "source_ip": f"10.0.{_demo_rng.randint(0, 5)}.{_demo_rng.randint(1, 254)}",
+                    "dest_ip": f"192.168.1.{_demo_rng.randint(1, 10)}",
+                    "demo": True,
+                },
+            )
+        except Exception:
+            pass  # never crash the server over a demo tick
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
     await _STORE.init()
-    yield
+
+    tick_interval = float(os.getenv("EDGE_IDS_DEMO_TICK", "30"))
+    task: asyncio.Task[None] | None = None
+    if tick_interval > 0:
+        task = asyncio.create_task(_demo_alert_ticker(tick_interval))
+
+    try:
+        yield
+    finally:
+        if task is not None:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 app = FastAPI(
@@ -72,7 +124,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000", "http://127.0.0.1:3000",
+        "http://localhost:3001", "http://127.0.0.1:3001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
