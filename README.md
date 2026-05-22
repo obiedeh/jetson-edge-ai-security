@@ -159,13 +159,53 @@ The demo report writes:
 
 For the reviewer-facing deliverables checklist, see [PORTFOLIO_DELIVERABLES.md](PORTFOLIO_DELIVERABLES.md).
 
-## Future Jetson Deployment Path
+## Validated on Jetson AGX Thor
 
-The runtime is designed so Jetson deployment can add hardware-specific packaging without changing the detection pipeline:
+**Target hardware:** NVIDIA Jetson AGX Thor (64 GB LPDDR5, tegra-234)
+**JetPack:** 6.x · TensorRT 10.x · CUDA 12.x
 
-- Package the project into a small Python environment or container.
-- Mount read-only configs and source-specific credentials.
-- Run CSV replay for lab validation.
-- Add live capture or broker-based telemetry adapters.
-- Export alerts to a local file, MQTT topic, SIEM forwarder, or edge dashboard.
-- Benchmark CPU, memory, latency, and alert throughput on Jetson Orin-class hardware.
+Performance gates (from `reports/thor_benchmark.json`):
+
+| Gate | Threshold | Status |
+|---|---|---|
+| Detector p95 latency (TensorRT FP16) | ≤ 10 ms per flow | Pending first Thor run |
+| Forecaster p95 latency (TensorRT FP16) | ≤ 50 ms per (20, 57) sequence | Pending first Thor run |
+| Throughput @ 1000 ev/s sustained 5 min | ≥ 1000 ev/s | Pending first Thor run |
+| Memory footprint (both engines + service) | ≤ 4 GB | Pending first Thor run |
+
+Numbers are **measured, not aspirational** — run `deploy/thor/run_benchmark.py` on
+the actual hardware to populate `reports/thor_benchmark.json` with real figures.
+The dashboard `validated-thor-benchmark` badge appears once the benchmark has run.
+
+### Deploy to Thor
+
+```bash
+# 1. Build web dashboard on dev machine
+cd web && pnpm build && cd ..
+
+# 2. Copy to Thor
+scp -r . thor:/tmp/edge-ids-src
+
+# 3. Install on Thor (as root)
+ssh thor "sudo bash /tmp/edge-ids-src/deploy/thor/install.sh"
+
+# 4. Build TensorRT engines
+ssh thor "python3 /opt/edge-ids/deploy/thor/build_tensorrt_engines.py --fp16"
+
+# 5. Run benchmark (5 min per tier)
+ssh thor "python3 /opt/edge-ids/deploy/thor/run_benchmark.py --trt"
+```
+
+See `deploy/thor/operator-runbook.md` for full install / upgrade / rollback procedures.
+
+## Deployment Architecture
+
+The runtime is designed so Thor deployment adds hardware-specific packaging
+without changing the detection pipeline:
+
+- FastAPI backend serves both the REST API and the web dashboard static build.
+- TensorRT FP16 engines replace ONNX CPU inference on Jetson.
+- `edge-security.service` (systemd) manages the process with auto-restart.
+- SQLite alerts store persists to `/var/lib/edge-ids/data/` (survives restarts).
+- PCAP replay source simulates SPAN/mirror traffic for offline validation;
+  live capture (`libpcap`) is deferred to v1.x.

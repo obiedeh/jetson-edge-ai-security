@@ -1,0 +1,47 @@
+{
+  "note": "Placeholder — real numbers pending first Thor run. Run deploy/thor/run_benchmark.py on Jetson AGX Thor to replace this file.",
+  "run_id": "pending-thor-run",
+  "hardware": {
+    "machine": "aarch64",
+    "soc": "tegra-234",
+    "device": "Jetson AGX Thor",
+    "jetpack": "JetPack 6.x (TBD)",
+    "tensorrt": "10.x (TBD)",
+    "cuda": "12.x (TBD)",
+    "lpddr5_gb": 64,
+    "benchmark_started_at": null
+  },
+  "benchmark_finished_at": null,
+  "duration_per_tier_s": 300,
+  "models": [
+    {
+      "model": "detector",
+      "onnx": "gbm_detector.onnx",
+      "trt_ep": true,
+      "single_inference_p50_ms": null,
+      "tiers": [
+        {"target_rps": 10, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
+        {"target_rps": 100, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
+        {"target_rps": 1000, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null}
+      ]
+    },
+    {
+      "model": "forecaster",
+      "onnx": "ar_forecaster.onnx",
+      "trt_ep": true,
+      "single_inference_p50_ms": null,
+      "tiers": [
+        {"target_rps": 10, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
+        {"target_rps": 100, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
+        {"target_rps": 1000, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null}
+      ]
+    }
+  ],
+  "source_badge": "pending-thor-run",
+  "gates": {
+    "detector_p95_latency_ms": {"threshold": 10, "measured": null, "status": "pending"},
+    "forecaster_p95_latency_ms": {"threshold": 50, "measured": null, "status": "pending"},
+    "throughput_at_1000_rps": {"threshold": 1000, "measured": null, "status": "pending"},
+    "memory_footprint_gb": {"threshold": 4, "measured": null, "status": "pending"}
+  }
+}

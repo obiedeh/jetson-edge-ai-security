@@ -1,0 +1,52 @@
+[Unit]
+Description=Edge IDS — Defensive Security Telemetry Runtime
+Documentation=https://github.com/obiedeh/jetson-edge-ai-security
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=edge-ids
+Group=edge-ids
+WorkingDirectory=/opt/edge-ids
+
+# Environment
+Environment=EDGE_IDS_DATA_DIR=/var/lib/edge-ids/data
+Environment=EDGE_IDS_REPORTS_DIR=/var/lib/edge-ids/reports
+Environment=EDGE_IDS_ARTIFACTS_DIR=/var/lib/edge-ids/artifacts
+Environment=EDGE_IDS_MODELS_DIR=/opt/edge-ids/models/exports
+Environment=EDGE_IDS_CONFIG=/opt/edge-ids/configs/default.yaml
+Environment=PYTHONPATH=/opt/edge-ids/src
+Environment=JETSON_SOC=tegra-234
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/edge-ids
+
+# GPU access (required for TensorRT)
+SupplementaryGroups=video render
+
+ExecStartPre=/bin/mkdir -p /var/lib/edge-ids/data /var/lib/edge-ids/reports /var/lib/edge-ids/artifacts
+ExecStart=/opt/edge-ids/.venv/bin/uvicorn \
+    jetson_edge_ai_security.api.main:app \
+    --host 0.0.0.0 \
+    --port 8080 \
+    --workers 1 \
+    --log-level info
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+
+# Output
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=edge-ids
+
+[Install]
+WantedBy=multi-user.target
