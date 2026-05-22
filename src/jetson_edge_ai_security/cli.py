@@ -20,12 +20,16 @@ from jetson_edge_ai_security.datasets import (
     prepare_dataset,
 )
 from jetson_edge_ai_security.detection import BaselineDetector, BaselineThresholds
+from jetson_edge_ai_security.models.train import bench_app, export_app, train_app
 from jetson_edge_ai_security.runtime import PipelineRunner, write_replay_artifacts
 from jetson_edge_ai_security.schemas import Alert
 from jetson_edge_ai_security.sources import CsvReplaySource
 from jetson_edge_ai_security.utils import configure_logging
 
 app = typer.Typer(help="Defensive edge security telemetry runtime")
+app.add_typer(train_app, name="train")
+app.add_typer(export_app, name="export")
+app.add_typer(bench_app, name="bench")
 console = Console()
 
 
