@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { DataSourceBadge } from '../components/DataSourceBadge'
-import { api, type ModelsResponse, type BenchmarkRun } from '../lib/api'
+import { api, type ModelsResponse, type BenchmarkRun, type BenchmarkHardware } from '../lib/api'
 import { cn } from '../lib/utils'
 
 const SOURCE_OPTS = [
@@ -189,20 +189,76 @@ export default function SettingsPage() {
           <div className="mt-4">
             <div className="text-xs text-gray-400 mb-2">Previous Runs</div>
             <div className="flex flex-col gap-2">
-              {benchRuns.map((r, i) => (
-                <div key={i} className="bg-gray-800 rounded p-3 text-xs font-mono text-gray-300">
-                  <div className="flex items-center gap-2 mb-1">
-                    {r.run_id && <span className="text-gray-400">{r.run_id}</span>}
-                    <DataSourceBadge source="validated-thor-benchmark" />
+              {benchRuns.map((r, i) => {
+                const hw: BenchmarkHardware | null =
+                  r.hardware && typeof r.hardware === 'object' ? r.hardware as BenchmarkHardware
+                  : null
+                const badge = r.source_badge ?? 'pending-thor-run'
+                const isPending = badge === 'pending-thor-run'
+
+                // Pull p95 from nested models[].tiers[]
+                const detModel = r.models?.find(m => m.model === 'detector')
+                const fcastModel = r.models?.find(m => m.model === 'forecaster')
+                const detP95 = detModel?.tiers?.find(t => t.target_rps === 1000)?.p95_ms ?? null
+                const fcastP95 = fcastModel?.tiers?.find(t => t.target_rps === 1000)?.p95_ms ?? null
+                const throughput = detModel?.tiers?.find(t => t.target_rps === 1000)?.actual_rps ?? null
+
+                return (
+                  <div key={i} className="bg-gray-800 rounded p-3 text-xs font-mono text-gray-300">
+                    <div className="flex items-center gap-2 mb-2">
+                      {r.run_id && (
+                        <span className="text-gray-400 truncate max-w-[180px]">{r.run_id}</span>
+                      )}
+                      <DataSourceBadge source={badge} />
+                    </div>
+                    {isPending ? (
+                      <div className="text-gray-500 italic">
+                        {r.note ?? 'No benchmark data yet — run on Jetson AGX Thor to populate.'}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-gray-400">
+                        {hw?.device && (
+                          <div>Device: <span className="text-gray-200">{hw.device}</span></div>
+                        )}
+                        {hw?.soc && (
+                          <div>SoC: <span className="text-gray-200">{hw.soc}</span></div>
+                        )}
+                        {hw?.jetpack && (
+                          <div>JetPack: <span className="text-gray-200">{hw.jetpack}</span></div>
+                        )}
+                        {detP95 != null && (
+                          <div>Det p95: <span className="text-gray-200">{detP95} ms</span></div>
+                        )}
+                        {fcastP95 != null && (
+                          <div>Fcast p95: <span className="text-gray-200">{fcastP95} ms</span></div>
+                        )}
+                        {throughput != null && (
+                          <div>Throughput: <span className="text-gray-200">{throughput} ev/s</span></div>
+                        )}
+                      </div>
+                    )}
+                    {r.gates && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {Object.entries(r.gates).map(([key, gate]) => (
+                          <span
+                            key={key}
+                            className={cn(
+                              'px-1.5 py-0.5 rounded text-[10px] font-sans',
+                              gate.status === 'pass'
+                                ? 'bg-green-900/40 text-green-400 border border-green-800'
+                                : gate.status === 'fail'
+                                ? 'bg-red-900/40 text-red-400 border border-red-800'
+                                : 'bg-gray-700 text-gray-400 border border-gray-600',
+                            )}
+                          >
+                            {key.replace(/_/g, ' ')}: {gate.status}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-gray-400">
-                    {r.hardware && <div>Hardware: <span className="text-gray-200">{r.hardware}</span></div>}
-                    {r.detector_p50_ms != null && <div>Det p50: <span className="text-gray-200">{r.detector_p50_ms}ms</span></div>}
-                    {r.detector_p95_ms != null && <div>Det p95: <span className="text-gray-200">{r.detector_p95_ms}ms</span></div>}
-                    {r.throughput_events_per_sec != null && <div>Throughput: <span className="text-gray-200">{r.throughput_events_per_sec} ev/s</span></div>}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
