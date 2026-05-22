@@ -15,9 +15,10 @@ from rich.console import Console
 
 console = Console()
 
-train_app = typer.Typer(help="Model training commands (real impl ships in Commit 2)")
+train_app = typer.Typer(help="Model training commands")
 export_app = typer.Typer(help="ONNX export commands")
 bench_app = typer.Typer(help="Inference benchmark commands")
+models_app = typer.Typer(help="Model registry commands")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -26,47 +27,67 @@ bench_app = typer.Typer(help="Inference benchmark commands")
 
 
 @train_app.command("detector")
-def train_detector(
+def train_detector_cmd(
     dataset: Annotated[Path, typer.Option(help="Path to Edge-IIoTset CSV.")] = Path(
-        "data/edge-iiotset.csv"
+        "tests/fixtures/edge_iiotset_sample_5k.csv"
     ),
     output_dir: Annotated[Path, typer.Option(help="Directory to write trained model.")] = Path(
         "models/exports"
     ),
-    epochs: Annotated[int, typer.Option(help="Training epochs.")] = 10,
     seed: Annotated[int, typer.Option(help="Random seed.")] = 42,
+    n_estimators: Annotated[int, typer.Option(help="GBM n_estimators.")] = 100,
+    max_depth: Annotated[int, typer.Option(help="GBM max_depth.")] = 4,
 ) -> None:
-    """[Stub] Train a reference Detector on Edge-IIoTset data.
+    """Train the GBM reference Detector on Edge-IIoTset data."""
+    import json
 
-    Real implementation ships in Commit 2.
-    """
-    console.print(
-        "[yellow]train detector: not yet implemented (Commit 2). "
-        f"Would train on {dataset}, epochs={epochs}, seed={seed}, output={output_dir}[/yellow]"
+    from jetson_edge_ai_security.models.training.train_detector import train_detector
+
+    metrics = train_detector(
+        dataset=dataset,
+        output_dir=output_dir,
+        seed=seed,
+        n_estimators=n_estimators,
+        max_depth=max_depth,
     )
-    raise typer.Exit(code=0)
+    console.print(json.dumps(metrics, indent=2))
+    gate = metrics["gate"]["result"]
+    if gate != "PASS":
+        console.print(f"[red]Gate {gate}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"[green]Gate PASS — delta_auc={metrics['metrics']['delta_auc']}[/green]")
 
 
 @train_app.command("forecaster")
-def train_forecaster(
+def train_forecaster_cmd(
     dataset: Annotated[Path, typer.Option(help="Path to Edge-IIoTset CSV.")] = Path(
-        "data/edge-iiotset.csv"
+        "tests/fixtures/edge_iiotset_sample_5k.csv"
     ),
     output_dir: Annotated[Path, typer.Option(help="Directory to write trained model.")] = Path(
         "models/exports"
     ),
-    epochs: Annotated[int, typer.Option(help="Training epochs.")] = 10,
     seed: Annotated[int, typer.Option(help="Random seed.")] = 42,
+    lookback_bins: Annotated[int, typer.Option(help="Lookback bins.")] = 20,
+    forecast_bins: Annotated[int, typer.Option(help="Forecast bins.")] = 6,
 ) -> None:
-    """[Stub] Train a reference Forecaster on Edge-IIoTset data.
+    """Train the AR reference Forecaster on Edge-IIoTset data."""
+    import json
 
-    Real implementation ships in Commit 2.
-    """
-    console.print(
-        "[yellow]train forecaster: not yet implemented (Commit 2). "
-        f"Would train on {dataset}, epochs={epochs}, seed={seed}, output={output_dir}[/yellow]"
+    from jetson_edge_ai_security.models.training.train_forecaster import train_forecaster
+
+    metrics = train_forecaster(
+        dataset=dataset,
+        output_dir=output_dir,
+        seed=seed,
+        lookback_bins=lookback_bins,
+        forecast_bins=forecast_bins,
     )
-    raise typer.Exit(code=0)
+    console.print(json.dumps(metrics, indent=2))
+    gate = metrics["gate"]["result"]
+    if gate != "PASS":
+        console.print(f"[red]Gate {gate}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"[green]Gate PASS — mae_reduction={metrics['metrics']['mae_reduction_pct']}%[/green]")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -201,3 +222,105 @@ def bench_cuda(
         f"Would bench {model_type} on CUDA, {n_runs} runs.[/yellow]"
     )
     raise typer.Exit(code=0)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# models subcommands
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+@models_app.command("list")
+def models_list(
+    model_dir: Annotated[Path, typer.Option(help="Directory containing trained models.")] = Path(
+        "models/exports"
+    ),
+    reports_dir: Annotated[Path, typer.Option(help="Directory containing training_run.json.")] = Path(
+        "reports"
+    ),
+) -> None:
+    """List available Detector and Forecaster models with their metrics."""
+    import json
+
+    from rich.table import Table
+
+    table = Table(title="Available Models")
+    table.add_column("Type")
+    table.add_column("Name")
+    table.add_column("Architecture")
+    table.add_column("File")
+    table.add_column("AUC / MAE-red%")
+
+    # Load training_run.json if present
+    metrics_path = reports_dir / "training_run.json"
+    run_info: dict = {}
+    if metrics_path.exists():
+        with metrics_path.open() as fh:
+            run_info = json.load(fh)
+
+    det_info = run_info.get("detector", {})
+    fcast_info = run_info.get("forecaster", {})
+
+    # Detector
+    det_pkl = model_dir / "gbm_detector.pkl"
+    if det_pkl.exists():
+        auc = det_info.get("evaluation", {}).get("gbc_auc", "—")
+        table.add_row(
+            "Detector",
+            det_info.get("model", "gbm-detector"),
+            det_info.get("architecture", "GradientBoostingClassifier"),
+            str(det_pkl.name),
+            f"AUC={auc}",
+        )
+
+    # Mock detector (always available)
+    table.add_row("Detector", "mock-detector", "mock", "(in-memory)", "—")
+
+    # Forecaster
+    fcast_pkl = model_dir / "ar_forecaster.pkl"
+    if fcast_pkl.exists():
+        red = fcast_info.get("evaluation", {}).get("mae_reduction_pct", "—")
+        table.add_row(
+            "Forecaster",
+            fcast_info.get("model", "ar-forecaster"),
+            fcast_info.get("architecture", "Pipeline(StandardScaler, Ridge)"),
+            str(fcast_pkl.name),
+            f"MAE-red={red}%",
+        )
+
+    # Mock forecaster
+    table.add_row("Forecaster", "mock-forecaster", "mock", "(in-memory)", "—")
+
+    console.print(table)
+
+
+@models_app.command("set-active")
+def models_set_active(
+    model_type: Annotated[str, typer.Argument(help="'detector' or 'forecaster'")],
+    model_name: Annotated[str, typer.Argument(help="Model name (e.g. 'gbm-detector', 'mock-detector')")],
+    config_path: Annotated[Path, typer.Option(help="Path to YAML config.")] = Path(
+        "configs/default.yaml"
+    ),
+) -> None:
+    """Set the active Detector or Forecaster in the runtime config."""
+    import yaml
+
+    if model_type not in ("detector", "forecaster"):
+        console.print(f"[red]model_type must be 'detector' or 'forecaster', got: {model_type}[/red]")
+        raise typer.Exit(code=1)
+
+    if not config_path.exists():
+        console.print(f"[red]Config not found: {config_path}[/red]")
+        raise typer.Exit(code=1)
+
+    with config_path.open() as fh:
+        cfg = yaml.safe_load(fh) or {}
+
+    cfg.setdefault("models", {})
+    key = "detector_active" if model_type == "detector" else "forecaster_active"
+    cfg["models"][key] = model_name
+
+    with config_path.open("w") as fh:
+        yaml.safe_dump(cfg, fh, default_flow_style=False, sort_keys=False)
+
+    console.print(f"[green]Set {model_type} active model → {model_name}[/green]")
+    console.print(f"Updated: {config_path}")
