@@ -250,13 +250,14 @@ async def list_models() -> dict[str, Any]:
     det_onnx = _MODELS_DIR / "gbm_detector.onnx"
     if det_pkl.exists():
         det_info = training_run.get("detector", {})
+        det_eval = det_info.get("evaluation") or det_info.get("metrics") or {}
         detectors.append({
             "name": "gbm-detector",
             "architecture": "GradientBoostingClassifier",
             "available": True,
             "active": active_detector == "gbm-detector",
             "onnx_path": str(det_onnx) if det_onnx.exists() else None,
-            "metrics": det_info.get("metrics", {}),
+            "metrics": det_eval,
             "gate": det_info.get("gate", {}),
             "latency": det_info.get("latency_cpu", {}),
         })
@@ -277,13 +278,14 @@ async def list_models() -> dict[str, Any]:
     fcast_onnx = _MODELS_DIR / "ar_forecaster.onnx"
     if fcast_pkl.exists():
         fcast_info = training_run.get("forecaster", {})
+        fcast_eval = fcast_info.get("evaluation") or fcast_info.get("metrics") or {}
         forecasters.append({
             "name": "ar-forecaster",
             "architecture": "Pipeline(StandardScaler, Ridge)",
             "available": True,
             "active": active_forecaster == "ar-forecaster",
             "onnx_path": str(fcast_onnx) if fcast_onnx.exists() else None,
-            "metrics": fcast_info.get("metrics", {}),
+            "metrics": fcast_eval,
             "gate": fcast_info.get("gate", {}),
             "latency": fcast_info.get("latency_cpu", {}),
         })
@@ -340,17 +342,21 @@ async def model_health() -> dict[str, Any]:
     moving_avg_auc = sum(auc_history) / len(auc_history) if auc_history else None
 
     det_info = training_run.get("detector", {})
-    train_auc: float | None = det_info.get("metrics", {}).get("gbc_auc")
+    det_eval = det_info.get("evaluation") or det_info.get("metrics") or {}
+    train_auc: float | None = det_eval.get("gbc_auc")
     retrain_recommended = (
         (moving_avg_auc is not None and moving_avg_auc < _RETRAIN_AUC_FLOOR)
         or (train_auc is not None and train_auc < _RETRAIN_AUC_FLOOR)
     )
 
+    fcast_info = training_run.get("forecaster", {})
+    fcast_eval = fcast_info.get("evaluation") or fcast_info.get("metrics") or {}
+
     return {
         "detector": {
             "name": "gbm-detector",
             "train_auc": train_auc,
-            "train_f1": det_info.get("metrics", {}).get("f1"),
+            "train_f1": det_eval.get("f1"),
             "auc_history": auc_history,
             "moving_avg_auc": moving_avg_auc,
             "retrain_auc_floor": _RETRAIN_AUC_FLOOR,
@@ -360,10 +366,10 @@ async def model_health() -> dict[str, Any]:
         },
         "forecaster": {
             "name": "ar-forecaster",
-            "train_mae": training_run.get("forecaster", {}).get("metrics", {}).get("ridge_mae"),
-            "mae_reduction_pct": training_run.get("forecaster", {}).get("metrics", {}).get("mae_reduction_pct"),
-            "latency": training_run.get("forecaster", {}).get("latency_cpu", {}),
-            "gate": training_run.get("forecaster", {}).get("gate", {}),
+            "train_mae": fcast_eval.get("ridge_mae"),
+            "mae_reduction_pct": fcast_eval.get("mae_reduction_pct"),
+            "latency": fcast_info.get("latency_cpu", {}),
+            "gate": fcast_info.get("gate", {}),
         },
         "recent_model_runs": model_runs,
         "source_badge": "replay-csv",
