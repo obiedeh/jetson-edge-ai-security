@@ -23,6 +23,7 @@ dependencies = [
 [project.optional-dependencies]
 ml = [
   "scikit-learn>=1.4",
+  "skl2onnx>=1.17",
   "torch>=2.0; extra == 'ml'",
 ]
 dev = ["pytest>=8.0", "ruff>=0.5", "mypy>=1.10", "types-PyYAML>=6.0"]
