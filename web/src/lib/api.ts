@@ -127,15 +127,48 @@ export interface ArtifactsResponse {
   source_badge: string
 }
 
+export interface BenchmarkHardware {
+  machine?: string
+  soc?: string
+  device?: string
+  jetpack?: string
+  tensorrt?: string
+  cuda?: string
+  lpddr5_gb?: number
+  benchmark_started_at?: string | null
+}
+
+export interface BenchmarkTier {
+  target_rps: number
+  actual_rps: number | null
+  p50_ms: number | null
+  p95_ms: number | null
+  p99_ms: number | null
+}
+
+export interface BenchmarkModel {
+  model: string
+  onnx?: string
+  trt_ep?: boolean
+  single_inference_p50_ms?: number | null
+  tiers: BenchmarkTier[]
+}
+
+export interface BenchmarkGate {
+  threshold: number
+  measured: number | null
+  status: 'pending' | 'pass' | 'fail'
+}
+
 export interface BenchmarkRun {
   run_id?: string
-  hardware?: string
-  soc?: string
-  detector_p50_ms?: number
-  detector_p95_ms?: number
-  forecaster_p50_ms?: number
-  forecaster_p95_ms?: number
-  throughput_events_per_sec?: number
+  hardware?: BenchmarkHardware | string
+  benchmark_finished_at?: string | null
+  duration_per_tier_s?: number
+  models?: BenchmarkModel[]
+  source_badge?: string
+  gates?: Record<string, BenchmarkGate>
+  note?: string
   [key: string]: unknown
 }
 
