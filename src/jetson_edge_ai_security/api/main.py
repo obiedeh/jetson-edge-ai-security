@@ -63,27 +63,36 @@ _DEMO_ATTACK_TYPES = [
     "Uploading", "Ransomware", "Normal",
 ]
 _DEMO_WEIGHTS = [20, 15, 15, 10, 15, 10, 15]
-_DEMO_SOURCES = ["replay-csv", "replay-pcap"]
 _demo_rng = random.Random()
+
+# Mutable background-task registry so /runtime/restart can cancel+recreate.
+_bg_tasks: list[asyncio.Task[None]] = []
+_tick_interval: float = float(os.getenv("EDGE_IDS_DEMO_TICK", "30"))
+_forecast_interval: float = float(os.getenv("EDGE_IDS_FORECAST_TICK", "300"))
+
+
+def _active_source() -> str:
+    """Return the currently configured input source (reads config each call)."""
+    return _load_config().get("runtime", {}).get("source", "replay-csv")
 
 
 async def _demo_alert_ticker(interval: float = 30.0) -> None:
-    """Background task: insert one synthetic alert every *interval* seconds.
+    """Insert one synthetic alert every *interval* seconds using the active source.
 
-    Keeps the lookback store live so the 15m / 30m / 60m / 120m time-range
-    pickers all show data without requiring a manual seed-db run.
-    Controlled by env var EDGE_IDS_DEMO_TICK (set to "0" to disable).
+    Reads the runtime source from config on each tick so a /runtime/restart
+    takes effect immediately on the next alert without restarting the process.
     """
     while True:
         await asyncio.sleep(interval)
         try:
+            source = _active_source()
             attack_type = _demo_rng.choices(_DEMO_ATTACK_TYPES, weights=_DEMO_WEIGHTS)[0]
             await _STORE.insert_alert(
                 timestamp=datetime.now(UTC),
                 attack_type=attack_type,
                 confidence=round(_demo_rng.uniform(0.55, 0.99), 4),
                 severity=_demo_rng.choice(["low", "medium", "high", "critical"]),
-                source=_demo_rng.choice(_DEMO_SOURCES),
+                source=source,
                 payload={
                     "source_ip": f"10.0.{_demo_rng.randint(0, 5)}.{_demo_rng.randint(1, 254)}",
                     "dest_ip": f"192.168.1.{_demo_rng.randint(1, 10)}",
@@ -200,29 +209,36 @@ async def _forecast_ticker(interval: float = 300.0) -> None:
             pass
 
 
+def _start_bg_tasks() -> None:
+    """Spawn (or re-spawn) the demo-ticker and forecast-ticker tasks."""
+    global _bg_tasks
+    if _tick_interval > 0:
+        _bg_tasks.append(asyncio.create_task(_demo_alert_ticker(_tick_interval)))
+    if _forecast_interval > 0:
+        _bg_tasks.append(asyncio.create_task(_forecast_ticker(_forecast_interval)))
+
+
+async def _stop_bg_tasks() -> None:
+    """Cancel all running background tasks and drain them."""
+    global _bg_tasks
+    for t in _bg_tasks:
+        t.cancel()
+        try:
+            await t
+        except asyncio.CancelledError:
+            pass
+    _bg_tasks.clear()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
     await _STORE.init()
-
-    tick_interval = float(os.getenv("EDGE_IDS_DEMO_TICK", "30"))
-    forecast_interval = float(os.getenv("EDGE_IDS_FORECAST_TICK", "300"))
-
-    tasks: list[asyncio.Task[None]] = []
-    if tick_interval > 0:
-        tasks.append(asyncio.create_task(_demo_alert_ticker(tick_interval)))
-    if forecast_interval > 0:
-        tasks.append(asyncio.create_task(_forecast_ticker(forecast_interval)))
-
+    _start_bg_tasks()
     try:
         yield
     finally:
-        for t in tasks:
-            t.cancel()
-            try:
-                await t
-            except asyncio.CancelledError:
-                pass
+        await _stop_bg_tasks()
 
 
 app = FastAPI(
@@ -655,6 +671,76 @@ async def benchmark_runs() -> dict[str, Any]:
     return {
         "runs": _load_benchmark_runs(),
         "source_badge": "validated-thor-benchmark" if _load_benchmark_runs() else "replay-csv",
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# POST /runtime/restart
+# ──────────────────────────────────────────────────────────────────────────────
+
+_VALID_SOURCES = {"replay-csv", "replay-pcap", "live-mirror"}
+
+
+class RestartRuntimeRequest(BaseModel):
+    source: str
+
+
+@app.post("/runtime/restart")
+async def restart_runtime(req: RestartRuntimeRequest) -> dict[str, Any]:
+    """Persist the new input source to config then hot-restart the background tasks.
+
+    Steps:
+      1. Validate the requested source.
+      2. Write runtime.source to configs/default.yaml.
+      3. Cancel the demo-ticker and forecast-ticker.
+      4. Re-spawn both tasks (they will pick up the new source immediately).
+      5. Trigger one forecast snapshot so the Lookback chart reflects the
+         new source right away.
+    """
+    if req.source not in _VALID_SOURCES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid source '{req.source}'. Must be one of: {sorted(_VALID_SOURCES)}",
+        )
+
+    # 1. Persist to config
+    cfg = _load_config()
+    cfg.setdefault("runtime", {})["source"] = req.source
+    _save_config(cfg)
+
+    # 2. Hot-restart background tasks
+    await _stop_bg_tasks()
+    _start_bg_tasks()
+
+    # 3. Immediate forecast snapshot so the UI updates without waiting 5 min
+    try:
+        await _run_forecast_once()
+    except Exception:
+        pass
+
+    return {
+        "ok": True,
+        "source": req.source,
+        "message": f"Runtime restarted with source '{req.source}'. "
+                   "Demo ticker and forecaster are now using the new source.",
+        "restarted_at": datetime.now(UTC).isoformat(),
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# GET /runtime/status
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+@app.get("/runtime/status")
+async def runtime_status() -> dict[str, Any]:
+    """Return current runtime config (active source, bg-task count, uptime)."""
+    return {
+        "source": _active_source(),
+        "bg_tasks_running": len([t for t in _bg_tasks if not t.done()]),
+        "demo_tick_interval_s": _tick_interval,
+        "forecast_tick_interval_s": _forecast_interval,
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
