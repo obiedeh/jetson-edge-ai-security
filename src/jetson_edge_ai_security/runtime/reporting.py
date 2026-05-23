@@ -58,7 +58,7 @@ def write_static_report_pages(
     *,
     reports_dir: Path = Path("reports"),
 ) -> list[Path]:
-    """Write portfolio-style static HTML landing and dashboard pages."""
+    """Write portfolio-style static landing, dashboard, tech brief, and business case pages."""
 
     reports_dir.mkdir(parents=True, exist_ok=True)
     demo_metrics = _read_json(reports_dir / "demo" / "runtime_metrics.json")
@@ -67,6 +67,9 @@ def write_static_report_pages(
 
     index_path = reports_dir / "index.html"
     dashboard_path = reports_dir / "dashboard.html"
+    tech_brief_path = reports_dir / "tech-brief.html"
+    business_case_path = reports_dir / "business-case.html"
+
     index_path.write_text(
         _render_index_page(
             demo_metrics=demo_metrics,
@@ -83,7 +86,23 @@ def write_static_report_pages(
         ),
         encoding="utf-8",
     )
-    return [index_path, dashboard_path]
+    tech_brief_path.write_text(
+        _render_tech_brief_page(
+            demo_metrics=demo_metrics,
+            training_run=training_run,
+            thor_benchmark=thor_benchmark,
+        ),
+        encoding="utf-8",
+    )
+    business_case_path.write_text(
+        _render_business_case_page(
+            demo_metrics=demo_metrics,
+            training_run=training_run,
+            thor_benchmark=thor_benchmark,
+        ),
+        encoding="utf-8",
+    )
+    return [index_path, dashboard_path, tech_brief_path, business_case_path]
 
 
 def _severity_counts(alerts: list[Alert]) -> dict[str, int]:
@@ -198,8 +217,10 @@ def _page_shell(title: str, subtitle: str, body: str) -> str:
     <h1>{escape(title)}</h1>
     <p>{escape(subtitle)}</p>
     <p>
-      <a href="dashboard.html">Open dashboard</a> |
-      <a href="../README.md">README</a> |
+      <a href="index.html">Landing</a> |
+      <a href="dashboard.html">Dashboard</a> |
+      <a href="tech-brief.html">Technical brief</a> |
+      <a href="business-case.html">Business case</a> |
       <a href="../docs/architecture.md">Architecture</a> |
       <a href="../deploy/thor/operator-runbook.md">Thor runbook</a>
     </p>
@@ -222,7 +243,7 @@ def _render_index_page(
         [
             _card("Demo events replayed", _metric(demo_metrics, "events_seen"), "Built-in defensive replay", "good"),
             _card("Alerts emitted", _metric(demo_metrics, "alerts_emitted"), "Operator-review evidence", "warn"),
-            _card("Detector AUC", _metric(training_run, "detector", "evaluation", "gbc_auc"), "GBM detector on 5k fixture", "good"),
+            _card("Detector AUC", _metric(training_run, "detector", "evaluation", "gbc_auc"), "GBM detector on fixture data", "good"),
             _card("Thor validation", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "Hardware benchmark pending until measured", "warn"),
         ]
     )
@@ -239,7 +260,7 @@ def _render_index_page(
 
 <section>
   <h2>What I Built</h2>
-  <p>I built a pluggable edge-security telemetry runtime that normalizes defensive events, extracts sliding-window features, runs conservative detection, emits alerts, stores evidence artifacts, and provides a Jetson deployment path.</p>
+  <p>A pluggable edge-security telemetry runtime that normalizes defensive events, extracts sliding-window features, runs conservative detection, emits alerts, stores evidence artifacts, and provides a Jetson deployment path.</p>
   <div>
     <span class="pill">TrafficSource API</span>
     <span class="pill">TelemetryEvent schema</span>
@@ -252,12 +273,12 @@ def _render_index_page(
 </section>
 
 <section>
-  <h2>Visual Evidence Links</h2>
+  <h2>Reviewer Path</h2>
   <div class="grid">
-    {_link_card("Operator dashboard", "dashboard.html", "Static evidence dashboard with runtime, model, and Thor-readiness summaries.")}
+    {_link_card("Operator dashboard", "dashboard.html", "Runtime, model, alert, and Thor-readiness evidence in one reviewer-facing dashboard.")}
+    {_link_card("Technical brief", "tech-brief.html", "Architecture, runtime pipeline, data contracts, model path, and deployment boundary.")}
+    {_link_card("Business case", "business-case.html", "Why the project matters for edge AI operations, security review, and Jetson-class deployments.")}
     {_link_card("Replay report", "demo/replay_report.md", "Defensive replay summary with events, windows, alerts, and safety boundary.")}
-    {_link_card("Training metrics", "training_run.json", "Committed detector and forecaster metrics, ONNX paths, gates, and CPU latency.")}
-    {_link_card("Thor benchmark", "thor_benchmark.json", "Pending hardware benchmark template; values remain pending until measured on device.")}
   </div>
 </section>
 
@@ -304,8 +325,8 @@ def _render_dashboard_page(
     decision_cards = "".join(
         [
             _card("Primary runtime", "defensive telemetry replay", "CSV now; PCAP/IDS adapters remain integration paths", "neutral"),
-            _card("Detector gate", _metric(training_run, "detector", "gate", "result"), "delta AUC threshold reported in training_run.json", "good"),
-            _card("Forecaster gate", _metric(training_run, "forecaster", "gate", "result"), "MAE reduction threshold reported in training_run.json", "good"),
+            _card("Detector gate", _metric(training_run, "detector", "gate", "result"), "Threshold reported in training_run.json", "good"),
+            _card("Forecaster gate", _metric(training_run, "forecaster", "gate", "result"), "MAE threshold reported in training_run.json", "good"),
             _card("Thor benchmark", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "No fabricated hardware latency", "warn"),
         ]
     )
@@ -324,7 +345,7 @@ def _render_dashboard_page(
 </section>
 
 <section>
-  <h2>Problem -> What I Built -> What I Found -> What I Would Validate Next</h2>
+  <h2>Problem → Build → Evidence → Next Validation</h2>
   <div class="two">
     <div><h3>Problem</h3><p>Edge IDS telemetry arrives from heterogeneous defensive sources, but operator workflows need one normalized evidence path.</p></div>
     <div><h3>What I Built</h3><p>A source-agnostic runtime that converts telemetry into events, windows, detections, alerts, metrics, and reviewer artifacts.</p></div>
@@ -404,6 +425,120 @@ def _render_dashboard_page(
     return _page_shell(
         "Jetson Edge AI Security Dashboard",
         "Operator-facing defensive telemetry runtime evidence for replay, detection, alerts, and Jetson readiness.",
+        body,
+    )
+
+
+def _render_tech_brief_page(
+    *,
+    demo_metrics: dict[str, object],
+    training_run: dict[str, object],
+    thor_benchmark: dict[str, object],
+) -> str:
+    body = f"""
+<section>
+  <h2>Technical Brief</h2>
+  <p>This project implements a defensive edge-security telemetry runtime for Jetson-class deployment paths. The system is intentionally source-agnostic: every source adapter normalizes telemetry into a shared event contract before feature extraction, detection, alerting, storage, and reporting.</p>
+</section>
+
+<section>
+  <h2>Architecture</h2>
+  <table>
+    <tr><th>Layer</th><th>Role</th><th>Current state</th></tr>
+    <tr><td>Source adapters</td><td>Convert CSV, PCAP, or future IDS logs into defensive telemetry streams.</td><td>CSV replay implemented; PCAP path tested; Zeek/Suricata/MQTT planned.</td></tr>
+    <tr><td>Schema layer</td><td>Normalize raw fields into TelemetryEvent and Alert contracts.</td><td>Pydantic schemas implemented and tested.</td></tr>
+    <tr><td>Feature pipeline</td><td>Build sliding-window features for baseline detection and future ML models.</td><td>Window extraction implemented and tested.</td></tr>
+    <tr><td>Detection layer</td><td>Emit conservative alerts from baseline rules and optional model paths.</td><td>Baseline detector implemented; reference model evidence committed.</td></tr>
+    <tr><td>Reporting layer</td><td>Write metrics, alerts JSONL, Markdown reports, and static dashboards.</td><td>Generated through CLI and Makefile targets.</td></tr>
+    <tr><td>Jetson deployment layer</td><td>Package service, dashboard, TensorRT engines, and benchmark path for Thor.</td><td>Runbook and benchmark template present; measured hardware run pending.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Evidence Snapshot</h2>
+  <div class="grid">
+    {_card("Events replayed", _metric(demo_metrics, "events_seen"), "reports/demo/runtime_metrics.json", "good")}
+    {_card("Alerts emitted", _metric(demo_metrics, "alerts_emitted"), "alerts.jsonl evidence", "warn")}
+    {_card("Detector gate", _metric(training_run, "detector", "gate", "result"), "training_run.json", "good")}
+    {_card("Thor benchmark", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "hardware values pending", "warn")}
+  </div>
+</section>
+
+<section>
+  <h2>Reproducibility</h2>
+  <table>
+    <tr><th>Task</th><th>Command</th></tr>
+    <tr><td>Install development environment</td><td><code>make install-dev</code></td></tr>
+    <tr><td>Run tests</td><td><code>make test</code></td></tr>
+    <tr><td>Generate demo report</td><td><code>make demo-report</code></td></tr>
+    <tr><td>Build static reports</td><td><code>make static-reports</code></td></tr>
+    <tr><td>Verify full artifact path</td><td><code>make verify</code></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Scope Boundary</h2>
+  <p class="callout">This is defensive replay and edge-runtime evidence. It does not generate malware, execute exploitation, perform autonomous response, or claim measured Jetson AGX Thor latency until hardware benchmark artifacts are committed.</p>
+</section>
+"""
+    return _page_shell(
+        "Technical Brief",
+        "Architecture, runtime flow, evidence path, reproducibility, and Jetson deployment boundary.",
+        body,
+    )
+
+
+def _render_business_case_page(
+    *,
+    demo_metrics: dict[str, object],
+    training_run: dict[str, object],
+    thor_benchmark: dict[str, object],
+) -> str:
+    body = f"""
+<section>
+  <h2>Business Case</h2>
+  <p>Industrial edge systems, robotics cells, and private-network sites increasingly generate security telemetry close to the physical environment. Sending every signal to a central platform can add latency, bandwidth cost, and operational blind spots. This project shows how defensive telemetry can be normalized and reviewed at the edge before heavier model runners or central security systems are introduced.</p>
+</section>
+
+<section>
+  <h2>Who This Helps</h2>
+  <div class="grid">
+    {_card("Edge AI teams", "runtime proof", "Reproducible CLI, reports, and dashboard artifacts", "good")}
+    {_card("Security operators", "reviewable alerts", "Alert JSONL, replay reports, and safety boundary", "warn")}
+    {_card("Robotics / OT teams", "local telemetry", "Designed for constrained edge nodes and human review", "neutral")}
+    {_card("AI infrastructure teams", "deployment path", "FastAPI, systemd, SQLite, TensorRT plan, Thor runbook", "neutral")}
+  </div>
+</section>
+
+<section>
+  <h2>Operational Value</h2>
+  <table>
+    <tr><th>Operational problem</th><th>Project response</th><th>Evidence</th></tr>
+    <tr><td>Telemetry formats vary across sources.</td><td>Normalize every source into a shared event schema.</td><td>TrafficSource API and Pydantic schemas.</td></tr>
+    <tr><td>Operators need evidence, not black-box claims.</td><td>Generate runtime metrics, alert JSONL, reports, and dashboards.</td><td>{_metric(demo_metrics, "events_seen")} events and {_metric(demo_metrics, "alerts_emitted")} alerts in committed demo evidence.</td></tr>
+    <tr><td>Edge deployments need small, inspectable runtimes.</td><td>Use conservative baseline detection first, with model paths introduced behind evidence gates.</td><td>Detector gate: {_metric(training_run, "detector", "gate", "result")}.</td></tr>
+    <tr><td>Hardware claims must be measured.</td><td>Keep Thor latency pending until real benchmark output exists.</td><td>{_metric(thor_benchmark, "source_badge", default="pending-thor-run")}.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Why It Matters for the Portfolio</h2>
+  <p>This repo supports the Physical AI and Edge AI portfolio by showing runtime security, telemetry normalization, operational evidence, and Jetson deployment thinking. It is not a malware project and not an offensive security toolkit. It is a defensive edge observability and evidence-generation system.</p>
+</section>
+
+<section>
+  <h2>Next Validation Milestones</h2>
+  <ul>
+    <li>Run the Thor benchmark on actual Jetson AGX Thor hardware.</li>
+    <li>Replay a documented public defensive dataset and commit the artifact bundle.</li>
+    <li>Add dashboard screenshot or short GIF for recruiter-fast comprehension.</li>
+    <li>Connect measured IDS logs while keeping response actions human-reviewed.</li>
+  </ul>
+</section>
+"""
+    return _page_shell(
+        "Business Case",
+        "Why defensive edge telemetry, alert evidence, and Jetson readiness matter for operational AI systems.",
         body,
     )
 
