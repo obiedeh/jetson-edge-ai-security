@@ -7,7 +7,10 @@ import { useEffect, useState } from 'react'
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   ReferenceLine,
   ResponsiveContainer,
@@ -17,7 +20,7 @@ import {
 } from 'recharts'
 import { AttackTypeChip } from '../components/AttackTypeChip'
 import { DataSourceBadge } from '../components/DataSourceBadge'
-import { api, type LookbackBucket, type LookbackResponse } from '../lib/api'
+import { api, type ForecastResponse, type LookbackBucket, type LookbackResponse } from '../lib/api'
 
 const ATTACK_COLORS: Record<string, string> = {
   DDoS_ICMP: '#ef4444',
@@ -74,6 +77,7 @@ function buildChartData(
 
 export default function LookbackPage() {
   const [data, setData] = useState<LookbackResponse | null>(null)
+  const [forecast, setForecast] = useState<ForecastResponse | null>(null)
   const [minutes, setMinutes] = useState(60)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -85,6 +89,14 @@ export default function LookbackPage() {
       .then(r => { setData(r); setLoading(false) })
       .catch(e => { setError(e.message); setLoading(false) })
   }, [minutes])
+
+  useEffect(() => {
+    api.getForecast().then(setForecast).catch(() => null)
+    const id = setInterval(() => {
+      api.getForecast().then(setForecast).catch(() => null)
+    }, 60_000) // refresh every minute
+    return () => clearInterval(id)
+  }, [])
 
   const nowLabel = fmtTime(new Date())
   const { data: chartData, types } = data?.buckets
@@ -194,13 +206,94 @@ export default function LookbackPage() {
         </div>
       )}
 
-      {/* Forecast placeholder */}
+      {/* Forecast panel */}
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h2 className="text-sm font-medium text-gray-300 mb-2">30-minute forecast</h2>
-        <p className="text-sm text-gray-500">
-          Forecast data appears here once the AR Forecaster is active and the pipeline has processed at
-          least 20 temporal bins. Activate via <span className="font-mono text-gray-400">Settings → Active Forecaster → ar-forecaster</span>.
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium text-gray-300">30-minute forecast</h2>
+          {forecast?.forecast && (
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <span className="font-mono">{forecast.forecast.payload.active_forecaster}</span>
+              <span>generated {new Date(forecast.forecast.generated_at).toLocaleTimeString([], TIME_FMT)}</span>
+            </div>
+          )}
+        </div>
+
+        {!forecast?.forecast ? (
+          <p className="text-sm text-gray-500">
+            No forecast available yet — the backend generates one every 5 minutes.
+            Switch to <span className="font-mono text-gray-400">ar-forecaster</span> in{' '}
+            <span className="font-mono text-gray-400">Settings → Active Models</span> for ML-based predictions.
+          </p>
+        ) : (() => {
+          const p = forecast.forecast.payload
+          const genAt = new Date(p.generated_at)
+          const bins = p.predicted_attack_intensity.map((intensity, i) => {
+            const binStart = new Date(genAt.getTime() + (i + 1) * p.bin_seconds * 1000)
+            return {
+              time: fmtTime(binStart),
+              intensity: parseFloat(intensity.toFixed(4)),
+              attack_type: p.predicted_attack_type_per_bin[i],
+            }
+          })
+
+          return (
+            <>
+              {/* Summary row */}
+              <div className="flex flex-wrap gap-4 mb-4">
+                <div className="bg-gray-800 rounded px-3 py-2">
+                  <div className="text-xs text-gray-500">Overall probability</div>
+                  <div className="text-lg font-bold text-white">
+                    {(p.probability * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <div className="bg-gray-800 rounded px-3 py-2">
+                  <div className="text-xs text-gray-500">Dominant type</div>
+                  <div className="mt-1">
+                    <AttackTypeChip type={p.attack_type} />
+                  </div>
+                </div>
+                <div className="bg-gray-800 rounded px-3 py-2">
+                  <div className="text-xs text-gray-500">Horizon</div>
+                  <div className="text-sm font-medium text-gray-200">
+                    {fmtTime(genAt)} → {fmtTime(new Date(p.horizon_end))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Per-bin bar chart */}
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={bins} margin={{ top: 4, right: 10, left: -20, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                  <XAxis dataKey="time" tick={{ fill: '#6b7280', fontSize: 11 }} />
+                  <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} domain={[0, 'auto']} />
+                  <Tooltip
+                    contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 6 }}
+                    labelStyle={{ color: '#e5e7eb' }}
+                    formatter={(v: number, _n: string, entry) => [
+                      `${v.toFixed(4)} (${(entry.payload as {attack_type: string}).attack_type})`,
+                      'intensity',
+                    ]}
+                  />
+                  <Bar dataKey="intensity" radius={[3, 3, 0, 0]}>
+                    {bins.map((b, i) => (
+                      <Cell key={i} fill={colorFor(b.attack_type)} fillOpacity={0.85} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Per-bin type row */}
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {bins.map((b, i) => (
+                  <div key={i} className="flex flex-col items-center gap-0.5">
+                    <span className="text-[9px] text-gray-500 font-mono">{b.time}</span>
+                    <AttackTypeChip type={b.attack_type} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )
+        })()}
       </div>
     </div>
   )

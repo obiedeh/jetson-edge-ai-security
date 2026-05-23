@@ -94,23 +94,133 @@ async def _demo_alert_ticker(interval: float = 30.0) -> None:
             pass  # never crash the server over a demo tick
 
 
+_FEATURE_DIM = 57
+_LOOKBACK_BINS = 20
+_BIN_SECONDS = 300  # 5 minutes per bin
+
+_ATTACK_TYPES_ORDERED = [
+    "Normal", "DDoS_ICMP", "DDoS_UDP", "DDoS_TCP", "DDoS_HTTP",
+    "Uploading", "Downloading", "SQL_Injection", "Password",
+    "Vulnerability_scanner", "Backdoor", "Port_Scanning",
+    "XSS", "Ransomware", "MITM",
+]
+
+
+async def _run_forecast_once() -> None:
+    """Build a feature history from recent alert buckets, run the active
+    forecaster, and write a snapshot to the store."""
+    import numpy as np
+
+    # Pull enough history to fill 20 bins (each 5 min = 100 min total)
+    lookback_minutes = _LOOKBACK_BINS * (_BIN_SECONDS // 60)
+    buckets = await _STORE.get_lookback_buckets(
+        minutes=lookback_minutes, bucket_seconds=_BIN_SECONDS
+    )
+    if not buckets:
+        return
+
+    # Group counts by bucket timestamp
+    from collections import defaultdict
+    by_bucket: dict[str, dict[str, float]] = defaultdict(dict)
+    for b in buckets:
+        by_bucket[b["bucket"]][b["attack_type"]] = float(b["count"])
+
+    sorted_keys = sorted(by_bucket)[-_LOOKBACK_BINS:]
+
+    # Build (lookback_bins, feature_dim) float32 matrix
+    history = np.zeros((_LOOKBACK_BINS, _FEATURE_DIM), dtype=np.float32)
+    offset = _LOOKBACK_BINS - len(sorted_keys)
+    for i, key in enumerate(sorted_keys):
+        counts = by_bucket[key]
+        total = max(sum(counts.values()), 1.0)
+        for j, atype in enumerate(_ATTACK_TYPES_ORDERED):
+            history[offset + i, j] = counts.get(atype, 0.0) / total
+        history[offset + i, len(_ATTACK_TYPES_ORDERED)] = min(total / 50.0, 1.0)
+
+    # Load the active forecaster
+    cfg = _load_config()
+    active_name = cfg.get("models", {}).get("forecaster_active", "mock-forecaster")
+
+    try:
+        if active_name == "mock-forecaster":
+            from jetson_edge_ai_security.models.mock_forecaster import MockForecaster
+            forecaster = MockForecaster(
+                lookback_bins=_LOOKBACK_BINS, bin_seconds=_BIN_SECONDS
+            )
+        else:
+            import pickle
+            pkl = _MODELS_DIR / "ar_forecaster.pkl"
+            if not pkl.exists():
+                return
+            with pkl.open("rb") as fh:
+                forecaster = pickle.load(fh)
+
+        result = forecaster.forecast(history)
+    except Exception:
+        return
+
+    now = datetime.now(UTC)
+    horizon_seconds = result.forecast_horizon_bins * _BIN_SECONDS
+    await _STORE.insert_forecast_snapshot(
+        generated_at=now,
+        model_run_id=f"live-{now.isoformat()}",
+        lookback_window_seconds=lookback_minutes * 60,
+        forecast_horizon_seconds=horizon_seconds,
+        payload={
+            "probability": result.probability,
+            "attack_type": result.attack_type,
+            "per_class_probabilities": result.per_class_probabilities,
+            "forecast_horizon_bins": result.forecast_horizon_bins,
+            "predicted_attack_intensity": result.predicted_attack_intensity.tolist(),
+            "predicted_attack_type_per_bin": result.predicted_attack_type_per_bin,
+            "generated_at": now.isoformat(),
+            "horizon_end": (now + __import__("datetime").timedelta(seconds=horizon_seconds)).isoformat(),
+            "active_forecaster": active_name,
+            "bin_seconds": _BIN_SECONDS,
+        },
+    )
+
+
+async def _forecast_ticker(interval: float = 300.0) -> None:
+    """Generate and persist a forecast snapshot every *interval* seconds.
+    Runs once immediately on startup, then repeats.
+    Controlled by EDGE_IDS_FORECAST_TICK (set to '0' to disable).
+    """
+    # First run right away so there's data before the first 5-min wait
+    await asyncio.sleep(2)  # let the demo ticker seed a few alerts first
+    try:
+        await _run_forecast_once()
+    except Exception:
+        pass
+    while True:
+        await asyncio.sleep(interval)
+        try:
+            await _run_forecast_once()
+        except Exception:
+            pass
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
     await _STORE.init()
 
     tick_interval = float(os.getenv("EDGE_IDS_DEMO_TICK", "30"))
-    task: asyncio.Task[None] | None = None
+    forecast_interval = float(os.getenv("EDGE_IDS_FORECAST_TICK", "300"))
+
+    tasks: list[asyncio.Task[None]] = []
     if tick_interval > 0:
-        task = asyncio.create_task(_demo_alert_ticker(tick_interval))
+        tasks.append(asyncio.create_task(_demo_alert_ticker(tick_interval)))
+    if forecast_interval > 0:
+        tasks.append(asyncio.create_task(_forecast_ticker(forecast_interval)))
 
     try:
         yield
     finally:
-        if task is not None:
-            task.cancel()
+        for t in tasks:
+            t.cancel()
             try:
-                await task
+                await t
             except asyncio.CancelledError:
                 pass
 
