@@ -86,12 +86,19 @@ export default function LookbackPage() {
   const [playing, setPlaying] = useState(false)
   const [playIndex, setPlayIndex] = useState<number | null>(null)
 
+  // Fetch lookback on mount, on window change, and every 30 s so new
+  // alerts from the demo ticker appear without any user interaction.
   useEffect(() => {
-    setLoading(true)
-    setError(null)
-    api.getLookback({ minutes, bucket_seconds: 300 })
-      .then(r => { setData(r); setLoading(false) })
-      .catch(e => { setError(e.message); setLoading(false) })
+    const fetch = () => {
+      setLoading(true)
+      setError(null)
+      api.getLookback({ minutes, bucket_seconds: 300 })
+        .then(r => { setData(r); setLoading(false) })
+        .catch(e => { setError(e.message); setLoading(false) })
+    }
+    fetch()
+    const id = setInterval(fetch, 30_000)
+    return () => clearInterval(id)
   }, [minutes])
 
   // Reset playback whenever the window changes
@@ -100,6 +107,7 @@ export default function LookbackPage() {
     setPlayIndex(null)
   }, [minutes])
 
+  // Forecast: poll every 60 s (backend regenerates every 5 min)
   useEffect(() => {
     api.getForecast().then(setForecast).catch(() => null)
     const id = setInterval(() => {
@@ -108,7 +116,12 @@ export default function LookbackPage() {
     return () => clearInterval(id)
   }, [])
 
-  const nowLabel = fmtTime(new Date())
+  // nowLabel ticks every 30 s so the Now reference line stays current
+  const [nowLabel, setNowLabel] = useState(() => fmtTime(new Date()))
+  useEffect(() => {
+    const id = setInterval(() => setNowLabel(fmtTime(new Date())), 30_000)
+    return () => clearInterval(id)
+  }, [])
   const { data: chartData, types } = data?.buckets
     ? buildChartData(data.buckets, nowLabel)
     : { data: [], types: [] }
