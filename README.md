@@ -4,7 +4,7 @@ Jetson Edge AI Security is a production-oriented defensive telemetry runtime for
 
 The project is edge-native because the runtime is built around streaming sources, small memory windows, conservative baseline detection, and simple dependencies that can run on Jetson-class devices before heavier model runners are introduced.
 
-> [Open the evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Open the static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md)
+> [Evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Technical brief](https://obiedeh.github.io/jetson-edge-ai-security/reports/tech-brief.html) | [Business case](https://obiedeh.github.io/jetson-edge-ai-security/reports/business-case.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md)
 
 ## Core Stack
 
@@ -24,6 +24,10 @@ The project is edge-native because the runtime is built around streaming sources
 
 ## Architecture and Evidence
 
+- [Evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html)
+- [Static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html)
+- [Technical brief](https://obiedeh.github.io/jetson-edge-ai-security/reports/tech-brief.html)
+- [Business case](https://obiedeh.github.io/jetson-edge-ai-security/reports/business-case.html)
 - [Architecture overview](docs/architecture.md)
 - [System architecture diagram](docs/diagrams/system-architecture.mmd)
 - [Runtime flow diagram](docs/diagrams/runtime-flow.mmd)
@@ -173,6 +177,8 @@ The demo report writes:
 - `reports/demo/replay_report.md`
 - `reports/index.html`
 - `reports/dashboard.html`
+- `reports/tech-brief.html`
+- `reports/business-case.html`
 
 For the reviewer-facing deliverables checklist, see [PORTFOLIO_DELIVERABLES.md](PORTFOLIO_DELIVERABLES.md).
 
@@ -190,7 +196,7 @@ Performance gates (from `reports/thor_benchmark.json`):
 | Throughput @ 1000 ev/s sustained 5 min | ≥ 1000 ev/s | Pending first Thor run |
 | Memory footprint (both engines + service) | ≤ 4 GB | Pending first Thor run |
 
-Numbers are **measured, not aspirational** — run `deploy/thor/run_benchmark.py` on
+Numbers are **measured, not aspirational**. Run `deploy/thor/run_benchmark.py` on
 the actual hardware to populate `reports/thor_benchmark.json` with real figures.
 The dashboard `validated-thor-benchmark` badge appears once the benchmark has run.
 
