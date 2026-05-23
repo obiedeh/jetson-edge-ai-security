@@ -1,0 +1,90 @@
+{
+  "run_id": "commit2-feff67b33bc04971",
+  "generated_at": "2026-05-22",
+  "dataset": {
+    "path": "tests/fixtures/edge_iiotset_sample_5k.csv",
+    "rows": 5000,
+    "feature_dim": 56,
+    "binned_feature_dim": 57,
+    "attack_rate": 0.322,
+    "hash": "feff67b33bc04971",
+    "note": "Synthetic 5k fixture with class-conditional attack signatures (seed=42)"
+  },
+  "detector": {
+    "model": "gbm-detector",
+    "architecture": "GradientBoostingClassifier",
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": 4,
+      "learning_rate": 0.1,
+      "subsample": 0.8,
+      "seed": 42
+    },
+    "evaluation": {
+      "method": "5-fold stratified CV on raw 5k rows (57 features: 56 numeric + event_count=1)",
+      "if_auc": 0.6433,
+      "gbc_auc": 0.9796,
+      "delta_auc": 0.3363,
+      "f1": 0.8997
+    },
+    "gate": {
+      "criterion": "delta_auc >= 0.05",
+      "result": "PASS"
+    },
+    "onnx_export": {
+      "path": "models/exports/gbm_detector.onnx",
+      "opset": 17,
+      "input": "X: (batch, 57)",
+      "outputs": [
+        "probability: (batch,)",
+        "logits: (batch, 15)"
+      ]
+    },
+    "latency_cpu": {
+      "hardware": "RTX 5090 dev box (CPU-only)",
+      "badge": "measured-cpu",
+      "n_runs": 200,
+      "p50_ms": 0.014,
+      "p95_ms": 0.015,
+      "p99_ms": 0.016
+    }
+  },
+  "forecaster": {
+    "model": "ar-forecaster",
+    "architecture": "Pipeline(StandardScaler, Ridge)",
+    "hyperparameters": {
+      "lookback_bins": 20,
+      "forecast_bins": 6,
+      "ridge_alpha": 0.1,
+      "feature_dim": 64,
+      "seed": 42
+    },
+    "evaluation": {
+      "method": "Leave-one-out CV on 25 lag samples (lookback=20, forecast=6)",
+      "lag1_mae": 10.24,
+      "ridge_mae": 7.492028,
+      "mae_reduction_pct": 26.84
+    },
+    "gate": {
+      "criterion": "mae_reduction_pct >= 20.0",
+      "result": "PASS"
+    },
+    "onnx_export": {
+      "path": "models/exports/ar_forecaster.onnx",
+      "opset": 17,
+      "input": "H: (batch, 20, 57)",
+      "outputs": [
+        "intensity: (batch, 6)",
+        "type_logits: (batch, 6, 15)"
+      ]
+    },
+    "latency_cpu": {
+      "hardware": "RTX 5090 dev box (CPU-only)",
+      "badge": "measured-cpu",
+      "n_runs": 200,
+      "p50_ms": 0.007,
+      "p95_ms": 0.007,
+      "p99_ms": 0.008
+    }
+  }
+}
