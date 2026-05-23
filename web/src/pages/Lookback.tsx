@@ -82,6 +82,10 @@ export default function LookbackPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Playback state — null playIndex means "show all"
+  const [playing, setPlaying] = useState(false)
+  const [playIndex, setPlayIndex] = useState<number | null>(null)
+
   useEffect(() => {
     setLoading(true)
     setError(null)
@@ -90,11 +94,17 @@ export default function LookbackPage() {
       .catch(e => { setError(e.message); setLoading(false) })
   }, [minutes])
 
+  // Reset playback whenever the window changes
+  useEffect(() => {
+    setPlaying(false)
+    setPlayIndex(null)
+  }, [minutes])
+
   useEffect(() => {
     api.getForecast().then(setForecast).catch(() => null)
     const id = setInterval(() => {
       api.getForecast().then(setForecast).catch(() => null)
-    }, 60_000) // refresh every minute
+    }, 60_000)
     return () => clearInterval(id)
   }, [])
 
@@ -102,6 +112,36 @@ export default function LookbackPage() {
   const { data: chartData, types } = data?.buckets
     ? buildChartData(data.buckets, nowLabel)
     : { data: [], types: [] }
+
+  // Advance one bucket every 5 seconds while playing
+  useEffect(() => {
+    if (!playing || chartData.length === 0) return
+    const id = setInterval(() => {
+      setPlayIndex(prev => {
+        const next = (prev ?? -1) + 1
+        if (next >= chartData.length - 1) {
+          setPlaying(false)
+          return chartData.length - 1
+        }
+        return next
+      })
+    }, 5_000)
+    return () => clearInterval(id)
+  }, [playing, chartData.length])
+
+  const handlePlayPause = () => {
+    if (playing) {
+      setPlaying(false)
+    } else {
+      // Restart from beginning if at the end or not started
+      const atEnd = playIndex !== null && playIndex >= chartData.length - 1
+      if (playIndex === null || atEnd) setPlayIndex(0)
+      setPlaying(true)
+    }
+  }
+
+  const atEnd = playIndex !== null && playIndex >= chartData.length - 1
+  const displayData = playIndex !== null ? chartData.slice(0, playIndex + 1) : chartData
 
   const totalEvents = data?.buckets?.reduce((s, b) => s + b.count, 0) ?? 0
   const topType = data?.buckets
@@ -166,9 +206,52 @@ export default function LookbackPage() {
         </div>
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h2 className="text-sm font-medium text-gray-300 mb-4">Attack counts per 5-minute bucket</h2>
+          {/* Chart heading + play controls */}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-gray-300">Attack counts per 5-minute bucket</h2>
+            <div className="flex items-center gap-2">
+              {playIndex !== null && (
+                <span className="text-xs font-mono text-gray-400">
+                  {displayData[displayData.length - 1]?.time ?? ''} &nbsp;
+                  <span className="text-gray-600">{playIndex + 1}/{chartData.length}</span>
+                </span>
+              )}
+              <button
+                onClick={handlePlayPause}
+                disabled={chartData.length === 0}
+                title={playing ? 'Pause' : atEnd ? 'Replay' : 'Play (5 min → 5 sec)'}
+                className="flex items-center gap-1.5 px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium transition-colors disabled:opacity-40"
+              >
+                {playing
+                  ? <><span>⏸</span> Pause</>
+                  : atEnd
+                  ? <><span>↺</span> Replay</>
+                  : <><span>▶</span> Play</>}
+              </button>
+              {playIndex !== null && !playing && (
+                <button
+                  onClick={() => { setPlaying(false); setPlayIndex(null) }}
+                  title="Exit playback"
+                  className="px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-500 text-xs transition-colors"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          {playIndex !== null && (
+            <div className="w-full h-0.5 bg-gray-800 rounded mb-3 overflow-hidden">
+              <div
+                className="h-full bg-blue-500 transition-all duration-500"
+                style={{ width: `${((playIndex + 1) / chartData.length) * 100}%` }}
+              />
+            </div>
+          )}
+
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <AreaChart data={displayData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
               <XAxis dataKey="time" tick={{ fill: '#6b7280', fontSize: 11 }} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
