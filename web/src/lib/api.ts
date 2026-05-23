@@ -64,8 +64,30 @@ export interface LookbackResponse {
   generated_at: string
 }
 
+export interface ForecastPayload {
+  probability: number
+  attack_type: string
+  per_class_probabilities: Record<string, number>
+  forecast_horizon_bins: number
+  predicted_attack_intensity: number[]
+  predicted_attack_type_per_bin: string[]
+  generated_at: string
+  horizon_end: string
+  active_forecaster: string
+  bin_seconds: number
+}
+
+export interface ForecastSnapshot {
+  id: number
+  generated_at: string
+  model_run_id: string
+  lookback_window_seconds: number
+  forecast_horizon_seconds: number
+  payload: ForecastPayload
+}
+
 export interface ForecastResponse {
-  forecast: Record<string, unknown> | null
+  forecast: ForecastSnapshot | null
   source_badge: string
   message?: string
 }
