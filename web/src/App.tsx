@@ -24,7 +24,7 @@ export default function App() {
         <nav className="sidebar">
           <div className="sidebar-logo">
             <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff', letterSpacing: '0.05em' }}>Edge IDS</div>
-            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>Defensive Security Runtime</div>
+            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>Intrusion Detection System</div>
           </div>
           <div className="sidebar-nav">
             {NAV_ITEMS.map(({ to, label, icon }) => (
