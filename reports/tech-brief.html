@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jetson Edge AI Security Technical Brief</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2c; --panel2:#17223a; --line:#293653; --text:#eef4ff; --muted:#9fb0ca; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; }
+    * { box-sizing: border-box; } body { margin:0; background:radial-gradient(circle at top left,#13223d 0,var(--bg) 34rem); color:var(--text); font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 64px; } header { padding:28px 0 18px; } .eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }
+    h1 { margin:8px 0 10px; font-size:clamp(2.1rem,5vw,4.5rem); line-height:1.02; } h2 { margin:0 0 14px; font-size:1.45rem; } h3 { margin:0 0 8px; } p, li, td { color:var(--muted); } a { color:#7dd3fc; text-decoration:none; } a:hover { text-decoration:underline; }
+    section { margin-top:28px; padding:24px; background:rgba(18,26,44,.9); border:1px solid var(--line); border-radius:8px; } .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); } .two { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+    .card { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:16px; min-height:120px; } .card span { display:block; color:var(--muted); font-size:.9rem; } .card strong { display:block; margin-top:6px; font-size:1.55rem; line-height:1.15; } .good { border-color:rgba(34,197,94,.55); } .warn { border-color:rgba(245,158,11,.65); }
+    table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; } th { color:var(--text); background:#0f1729; } code { color:#e0f2fe; } .callout { border-left:4px solid var(--warn); padding-left:14px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Jetson Edge AI Security</div>
+    <h1>Technical Brief</h1>
+    <p>Architecture, runtime flow, evidence path, reproducibility, and Jetson deployment boundary.</p>
+    <p><a href="index.html">Landing</a> | <a href="dashboard.html">Dashboard</a> | <a href="business-case.html">Business case</a> | <a href="../docs/architecture.md">Architecture docs</a> | <a href="../deploy/thor/operator-runbook.md">Thor runbook</a></p>
+  </header>
+
+  <section>
+    <h2>System Purpose</h2>
+    <p>This project implements a defensive edge-security telemetry runtime for Jetson-class deployment paths. The system is source-agnostic: every adapter normalizes telemetry into a shared event contract before feature extraction, detection, alerting, storage, and reporting.</p>
+  </section>
+
+  <section>
+    <h2>Architecture</h2>
+    <table>
+      <tr><th>Layer</th><th>Role</th><th>Current state</th></tr>
+      <tr><td>Source adapters</td><td>Convert CSV, PCAP, or future IDS logs into defensive telemetry streams.</td><td>CSV replay implemented; PCAP path tested; Zeek, Suricata, and MQTT planned.</td></tr>
+      <tr><td>Schema layer</td><td>Normalize raw fields into TelemetryEvent and Alert contracts.</td><td>Pydantic schemas implemented and tested.</td></tr>
+      <tr><td>Feature pipeline</td><td>Build sliding-window features for baseline detection and future ML paths.</td><td>Window extraction implemented and tested.</td></tr>
+      <tr><td>Detection layer</td><td>Emit conservative alerts from baseline rules and optional model paths.</td><td>Baseline detector implemented; reference model evidence committed.</td></tr>
+      <tr><td>Reporting layer</td><td>Write metrics, alert JSONL, Markdown reports, and static dashboards.</td><td>Generated through CLI and Makefile targets.</td></tr>
+      <tr><td>Jetson deployment layer</td><td>Package service, dashboard, TensorRT engines, and benchmark path for Thor.</td><td>Runbook and benchmark template present; measured hardware run pending.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Evidence Snapshot</h2>
+    <div class="grid">
+      <article class="card good"><span>Events replayed</span><strong>12</strong><p>reports/demo/runtime_metrics.json</p></article>
+      <article class="card warn"><span>Alerts emitted</span><strong>4</strong><p>reports/demo/alerts.jsonl</p></article>
+      <article class="card good"><span>Detector gate</span><strong>PASS</strong><p>reports/training_run.json</p></article>
+      <article class="card warn"><span>Thor benchmark</span><strong>pending-thor-run</strong><p>hardware values pending</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reproducibility</h2>
+    <table>
+      <tr><th>Task</th><th>Command</th></tr>
+      <tr><td>Install development environment</td><td><code>make install-dev</code></td></tr>
+      <tr><td>Run tests</td><td><code>make test</code></td></tr>
+      <tr><td>Generate demo report</td><td><code>make demo-report</code></td></tr>
+      <tr><td>Build static reports</td><td><code>make static-reports</code></td></tr>
+      <tr><td>Verify full artifact path</td><td><code>make verify</code></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Scope Boundary</h2>
+    <p class="callout">This is defensive replay and edge-runtime evidence. It does not generate malware, execute exploitation, perform autonomous response, or claim measured Jetson AGX Thor latency until hardware benchmark artifacts are committed.</p>
+  </section>
+</main>
+</body>
+</html>
