@@ -21,7 +21,11 @@ from jetson_edge_ai_security.datasets import (
 )
 from jetson_edge_ai_security.detection import BaselineDetector, BaselineThresholds
 from jetson_edge_ai_security.models.train import bench_app, export_app, models_app, train_app
-from jetson_edge_ai_security.runtime import PipelineRunner, write_replay_artifacts
+from jetson_edge_ai_security.runtime import (
+    PipelineRunner,
+    write_replay_artifacts,
+    write_static_report_pages,
+)
 from jetson_edge_ai_security.schemas import Alert
 from jetson_edge_ai_security.sources import CsvReplaySource
 from jetson_edge_ai_security.utils import configure_logging
@@ -228,7 +232,6 @@ def seed_db(
     """
     import asyncio
     import random
-
     from datetime import timedelta
 
     from jetson_edge_ai_security.alerts.store import AlertStore
@@ -352,8 +355,21 @@ def generate_demo_report(
         )
         for artifact in paths:
             console.print(f"Wrote artifact: {artifact}", markup=False)
+        if output_dir.name == "demo":
+            for page in write_static_report_pages(reports_dir=output_dir.parent):
+                console.print(f"Wrote page: {page}", markup=False)
     finally:
         demo_path.unlink(missing_ok=True)
+
+
+@app.command("build-static-reports")
+def build_static_reports(
+    reports_dir: Annotated[Path, typer.Option(help="Directory containing committed report artifacts.")] = Path("reports"),
+) -> None:
+    """Build portfolio-style static HTML landing and dashboard pages."""
+
+    for page in write_static_report_pages(reports_dir=reports_dir):
+        console.print(f"Wrote page: {page}", markup=False)
 
 
 def _detector_from_config(config: AppConfig) -> BaselineDetector:

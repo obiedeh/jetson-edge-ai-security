@@ -4,6 +4,8 @@ Jetson Edge AI Security is a production-oriented defensive telemetry runtime for
 
 The project is edge-native because the runtime is built around streaming sources, small memory windows, conservative baseline detection, and simple dependencies that can run on Jetson-class devices before heavier model runners are introduced.
 
+> [Open the evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Open the static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md)
+
 ## Core Stack
 
 **Implemented:** Python · Typer · Pydantic · CSV replay · sliding-window features · baseline anomaly detection · Pytest
@@ -30,6 +32,18 @@ The project is edge-native because the runtime is built around streaming sources
 - [Sample outputs](artifacts/sample-outputs/)
 - [Logs](artifacts/logs/)
 - [Reports](artifacts/reports/)
+
+```mermaid
+flowchart LR
+    A["Defensive telemetry<br/>CSV replay / lab data"] --> B["TrafficSource API"]
+    B --> C["Normalized TelemetryEvent"]
+    C --> D["Sliding-window features"]
+    D --> E["Baseline detector<br/>rules / optional IsolationForest"]
+    E --> F["Alert builder"]
+    F --> G["Runtime metrics<br/>alerts.jsonl / replay report"]
+    G --> H["Operator review<br/>edge security evidence"]
+    I["Future adapters<br/>PCAP / Zeek / Suricata / MQTT"] -. planned .-> B
+```
 
 ## Recommended GitHub About
 
@@ -149,6 +163,7 @@ edge-security run-demo
 
 ```bash
 edge-security generate-demo-report --output-dir reports/demo
+edge-security build-static-reports --reports-dir reports
 ```
 
 The demo report writes:
@@ -156,6 +171,8 @@ The demo report writes:
 - `reports/demo/runtime_metrics.json`
 - `reports/demo/alerts.jsonl`
 - `reports/demo/replay_report.md`
+- `reports/index.html`
+- `reports/dashboard.html`
 
 For the reviewer-facing deliverables checklist, see [PORTFOLIO_DELIVERABLES.md](PORTFOLIO_DELIVERABLES.md).
 
