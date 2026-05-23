@@ -140,6 +140,9 @@ export default function SettingsPage() {
             {restartMsg}
           </div>
         )}
+        <div className="mt-2 text-xs text-gray-500">
+          Source switching updates the runtime config. Restart the pipeline to apply.
+        </div>
       </Section>
 
       {/* Model selector */}
