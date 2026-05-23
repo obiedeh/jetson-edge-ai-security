@@ -7,7 +7,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from jetson_edge_ai_security.runtime.metrics import RuntimeMetrics
-from jetson_edge_ai_security.runtime.reporting import write_replay_artifacts
+from jetson_edge_ai_security.runtime.reporting import (
+    write_replay_artifacts,
+    write_static_report_pages,
+)
 from jetson_edge_ai_security.schemas import Alert, FeatureWindow
 
 _TS = datetime(2026, 1, 1, tzinfo=UTC)
@@ -137,3 +140,66 @@ def test_write_replay_artifacts_creates_output_dir(tmp_path: Path) -> None:
     )
 
     assert nested.exists()
+
+
+def test_write_static_report_pages_creates_landing_and_dashboard(tmp_path: Path) -> None:
+    reports_dir = tmp_path / "reports"
+    demo_dir = reports_dir / "demo"
+    demo_dir.mkdir(parents=True)
+    (demo_dir / "runtime_metrics.json").write_text(
+        json.dumps(
+            {
+                "events_seen": 12,
+                "windows_seen": 8,
+                "detections_seen": 4,
+                "alerts_emitted": 4,
+                "rows_skipped": 0,
+                "alert_severity_counts": {"high": 2, "medium": 2},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (reports_dir / "training_run.json").write_text(
+        json.dumps(
+            {
+                "detector": {
+                    "evaluation": {"gbc_auc": 0.9796, "if_auc": 0.6433},
+                    "gate": {"result": "PASS"},
+                    "onnx_export": {"path": "models/exports/gbm_detector.onnx"},
+                },
+                "forecaster": {
+                    "evaluation": {"ridge_mae": 7.49, "lag1_mae": 10.24},
+                    "gate": {"result": "PASS"},
+                    "onnx_export": {"path": "models/exports/ar_forecaster.onnx"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (reports_dir / "thor_benchmark.json").write_text(
+        json.dumps(
+            {
+                "source_badge": "pending-thor-run",
+                "gates": {
+                    "detector_p95_latency_ms": {"status": "pending"},
+                    "forecaster_p95_latency_ms": {"status": "pending"},
+                    "throughput_at_1000_rps": {"status": "pending"},
+                    "memory_footprint_gb": {"status": "pending"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    paths = write_static_report_pages(reports_dir=reports_dir)
+
+    assert {path.name for path in paths} == {"index.html", "dashboard.html"}
+    index = (reports_dir / "index.html").read_text(encoding="utf-8")
+    dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
+    assert "Edge Security Telemetry Evidence Pack" in index
+    assert "Jetson Edge AI Security Dashboard" in dashboard
+    assert "Operational Decision Summary" in dashboard
+    assert "Evidence vs Boundary" in dashboard
+    assert "No offensive malware generation" in index
+    assert "No live production IDS deployment claim" in dashboard
+    assert "pending-thor-run" in dashboard
