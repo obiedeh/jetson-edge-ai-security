@@ -58,7 +58,7 @@ def write_static_report_pages(
     *,
     reports_dir: Path = Path("reports"),
 ) -> list[Path]:
-    """Write portfolio-style static landing, dashboard, tech brief, and business case pages."""
+    """Write portfolio-style static HTML landing and dashboard pages."""
 
     reports_dir.mkdir(parents=True, exist_ok=True)
     demo_metrics = _read_json(reports_dir / "demo" / "runtime_metrics.json")
@@ -69,7 +69,6 @@ def write_static_report_pages(
     dashboard_path = reports_dir / "dashboard.html"
     tech_brief_path = reports_dir / "tech-brief.html"
     business_case_path = reports_dir / "business-case.html"
-
     index_path.write_text(
         _render_index_page(
             demo_metrics=demo_metrics,
@@ -86,22 +85,8 @@ def write_static_report_pages(
         ),
         encoding="utf-8",
     )
-    tech_brief_path.write_text(
-        _render_tech_brief_page(
-            demo_metrics=demo_metrics,
-            training_run=training_run,
-            thor_benchmark=thor_benchmark,
-        ),
-        encoding="utf-8",
-    )
-    business_case_path.write_text(
-        _render_business_case_page(
-            demo_metrics=demo_metrics,
-            training_run=training_run,
-            thor_benchmark=thor_benchmark,
-        ),
-        encoding="utf-8",
-    )
+    tech_brief_path.write_text(_render_tech_brief_page(), encoding="utf-8")
+    business_case_path.write_text(_render_business_case_page(), encoding="utf-8")
     return [index_path, dashboard_path, tech_brief_path, business_case_path]
 
 
@@ -213,24 +198,82 @@ def _page_shell(title: str, subtitle: str, body: str) -> str:
 <body>
 <main>
   <header class="hero">
-    <div class="eyebrow">Jetson Edge AI Security</div>
+    <div class="eyebrow">Jetson Edge Intrusion Detection</div>
     <h1>{escape(title)}</h1>
     <p>{escape(subtitle)}</p>
     <p>
-      <a href="index.html">Landing</a> |
-      <a href="dashboard.html">Dashboard</a> |
-      <a href="tech-brief.html">Technical brief</a> |
-      <a href="business-case.html">Business case</a> |
+      <a href="dashboard.html">Open dashboard</a> |
+      <a href="../README.md">README</a> |
       <a href="../docs/architecture.md">Architecture</a> |
       <a href="../deploy/thor/operator-runbook.md">Thor runbook</a>
     </p>
   </header>
   {body}
-  <p class="footer">Generated from committed defensive replay, model, and benchmark artifacts. No offensive tooling or autonomous response is claimed.</p>
+  <p class="footer">Generated from committed defensive replay, model, and benchmark artifacts. No offensive tooling, autonomous response, or production IDS deployment is claimed.</p>
 </main>
 </body>
 </html>
 """
+
+
+def _status_table(rows: list[tuple[str, str, str]]) -> str:
+    body = "".join(
+        "<tr>"
+        f"<td>{escape(layer)}</td>"
+        f"<td>{escape(current)}</td>"
+        f"<td>{escape(planned)}</td>"
+        "</tr>"
+        for layer, current, planned in rows
+    )
+    return (
+        "<table>"
+        "<tr><th>Layer</th><th>Current working system</th><th>Planned Jetson ingestion upgrade</th></tr>"
+        f"{body}</table>"
+    )
+
+
+def _current_vs_planned_table() -> str:
+    return _status_table(
+        [
+            ("Input source", "Fixed CSV fixture", "Jetson-generated flow CSV"),
+            ("Capture mode", "Deterministic replay", "SPAN, TAP, or local interface capture"),
+            ("Packet stage", "Not required for current evidence", "Rotating PCAP files"),
+            (
+                "Flow extraction",
+                "CSV columns normalized into TelemetryEvent",
+                "Zeek conn.log, Suricata eve.json, CICFlow-style records",
+            ),
+            (
+                "Analytics path",
+                "Lookback analytics, forecasting, alerts, reports",
+                "Same existing analytics path",
+            ),
+            ("Dashboard impact", "Implemented", "No detector/dashboard rewrite intended"),
+            ("Thor benchmark", "Template committed", "Pending measured Thor-class run"),
+        ]
+    )
+
+
+def _planned_upgrade_table() -> str:
+    rows = [
+        ("Current input", "fixed CSV fixture", "implemented"),
+        ("Next input", "Jetson-generated flow CSV", "planned"),
+        ("Capture modes", "SPAN / TAP / local interface", "planned"),
+        (
+            "Flow extraction",
+            "Zeek conn.log, Suricata eve.json, CICFlow-style records",
+            "planned",
+        ),
+        ("Pipeline impact", "No detector/dashboard rewrite required", "design boundary"),
+        ("Thor benchmark", "pending measured run", "not claimed"),
+    ]
+    body = "".join(
+        "<tr>"
+        f"<td>{escape(item)}</td><td>{escape(value)}</td><td>{escape(status)}</td>"
+        "</tr>"
+        for item, value, status in rows
+    )
+    return f"<table><tr><th>Item</th><th>Detail</th><th>Status</th></tr>{body}</table>"
 
 
 def _render_index_page(
@@ -243,29 +286,46 @@ def _render_index_page(
         [
             _card("Demo events replayed", _metric(demo_metrics, "events_seen"), "Built-in defensive replay", "good"),
             _card("Alerts emitted", _metric(demo_metrics, "alerts_emitted"), "Operator-review evidence", "warn"),
-            _card("Detector AUC", _metric(training_run, "detector", "evaluation", "gbc_auc"), "GBM detector on fixture data", "good"),
+            _card("Detector AUC", _metric(training_run, "detector", "evaluation", "gbc_auc"), "GBM detector on 5k fixture", "good"),
             _card("Thor validation", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "Hardware benchmark pending until measured", "warn"),
         ]
     )
     body = f"""
 <section>
-  <h2>Executive Evidence Summary</h2>
+  <h2>Evidence Summary</h2>
   <div class="grid">{cards}</div>
 </section>
 
 <section>
-  <h2>Problem</h2>
-  <p>Edge security telemetry can arrive from CSV replay, packet captures, IDS logs, or future live sources. The engineering problem is normalizing those sources into one defensive runtime path without rewriting feature extraction, detection, alerting, or reporting.</p>
+  <h2>Current Working Analytics System</h2>
+  <p>The current implementation uses fixed CSV telemetry as a deterministic fixture for lookback analytics, forecasting, operator-reviewed alerts, reports, and dashboard evidence.</p>
+  <div class="grid">
+    {_card("Input source", "fixed_csv", "Deterministic fixture for repeatable evidence", "neutral")}
+    {_card("Lookback analysis", "implemented", "Feature windows and runtime metrics are generated", "good")}
+    {_card("Forecasting", "implemented", "Training evidence records the forecaster gate", "good")}
+    {_card("Alerts", "implemented", "Alerts are emitted for operator review", "warn")}
+  </div>
+</section>
+
+<section>
+  <h2>Planned Jetson Telemetry-Ingestion Upgrade</h2>
+  <p>Fixed CSV is the deterministic test fixture, not the product ceiling. The planned upgrade adds Jetson-generated flow CSVs from packet capture and defensive telemetry sources such as Zeek logs, Suricata eve.json, and CICFlow-style records.</p>
+  {_planned_upgrade_table()}
+</section>
+
+<section>
+  <h2>Why This Exists</h2>
+  <p>Edge nodes, robotics cells, private-network sites, and AI-enabled systems need local defensive telemetry review. This project does not replace a SIEM or claim a production IDS. It shows how local flow-style signals can become observable, forecastable, reviewable, and benchmarkable near the edge.</p>
 </section>
 
 <section>
   <h2>What I Built</h2>
-  <p>A pluggable edge-security telemetry runtime that normalizes defensive events, extracts sliding-window features, runs conservative detection, emits alerts, stores evidence artifacts, and provides a Jetson deployment path.</p>
+  <p>I built a defensive edge telemetry runtime that normalizes events, extracts sliding-window features, runs conservative detection, emits alerts, stores evidence artifacts, and preserves a Jetson deployment path.</p>
   <div>
     <span class="pill">TrafficSource API</span>
     <span class="pill">TelemetryEvent schema</span>
-    <span class="pill">CSV replay</span>
-    <span class="pill">PCAP replay path</span>
+    <span class="pill">fixed CSV fixture</span>
+    <span class="pill">planned flow ingestion</span>
     <span class="pill">GBM detector artifact</span>
     <span class="pill">AR forecaster artifact</span>
     <span class="pill">FastAPI + web dashboard</span>
@@ -273,12 +333,14 @@ def _render_index_page(
 </section>
 
 <section>
-  <h2>Reviewer Path</h2>
+  <h2>Visual Evidence Links</h2>
   <div class="grid">
-    {_link_card("Operator dashboard", "dashboard.html", "Runtime, model, alert, and Thor-readiness evidence in one reviewer-facing dashboard.")}
-    {_link_card("Technical brief", "tech-brief.html", "Architecture, runtime pipeline, data contracts, model path, and deployment boundary.")}
-    {_link_card("Business case", "business-case.html", "Why the project matters for edge AI operations, security review, and Jetson-class deployments.")}
+    {_link_card("Operator dashboard", "dashboard.html", "Static evidence dashboard with runtime, model, and Thor-readiness summaries.")}
     {_link_card("Replay report", "demo/replay_report.md", "Defensive replay summary with events, windows, alerts, and safety boundary.")}
+    {_link_card("Technical brief", "tech-brief.html", "Architecture principle, current pipeline, planned source adapters, and boundaries.")}
+    {_link_card("Business case", "business-case.html", "Why local defensive telemetry matters near edge nodes and robotics cells.")}
+    {_link_card("Training metrics", "training_run.json", "Committed detector and forecaster metrics, ONNX paths, gates, and CPU latency.")}
+    {_link_card("Thor benchmark", "thor_benchmark.json", "Pending hardware benchmark template; values remain pending until measured on device.")}
   </div>
 </section>
 
@@ -293,16 +355,17 @@ def _render_index_page(
         <li>Sliding-window feature extraction</li>
         <li>Alert JSONL and runtime metrics</li>
         <li>Reference detector and forecaster artifacts</li>
-        <li>Jetson AGX Thor deployment runbook</li>
+        <li>Jetson AGX Thor-class deployment runbook</li>
       </ul>
     </div>
     <div>
       <h3>Boundary preserved</h3>
       <ul>
         <li>No offensive malware generation</li>
-        <li>No autonomous attack execution</li>
+        <li>No exploit replay or offensive tooling</li>
         <li>No autonomous response action</li>
-        <li>No live production IDS claim</li>
+        <li>No live production IDS deployment claim</li>
+        <li>No line-rate capture claim</li>
         <li>Thor latency remains pending until measured</li>
       </ul>
     </div>
@@ -310,8 +373,8 @@ def _render_index_page(
 </section>
 """
     return _page_shell(
-        "Edge Security Telemetry Evidence Pack",
-        "Defensive replay, normalized telemetry, model evidence, alert artifacts, and Jetson deployment readiness.",
+        "Jetson Edge Intrusion Detection",
+        "Defensive edge telemetry, lookback analytics, forecasting, and operator-reviewed IDS alerts for Jetson-class network nodes.",
         body,
     )
 
@@ -324,9 +387,9 @@ def _render_dashboard_page(
 ) -> str:
     decision_cards = "".join(
         [
-            _card("Primary runtime", "defensive telemetry replay", "CSV now; PCAP/IDS adapters remain integration paths", "neutral"),
-            _card("Detector gate", _metric(training_run, "detector", "gate", "result"), "Threshold reported in training_run.json", "good"),
-            _card("Forecaster gate", _metric(training_run, "forecaster", "gate", "result"), "MAE threshold reported in training_run.json", "good"),
+            _card("Current input", "fixed_csv", "Deterministic fixture for repeatable evidence", "neutral"),
+            _card("Detector gate", _metric(training_run, "detector", "gate", "result"), "delta AUC threshold reported in training_run.json", "good"),
+            _card("Forecaster gate", _metric(training_run, "forecaster", "gate", "result"), "MAE reduction threshold reported in training_run.json", "good"),
             _card("Thor benchmark", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "No fabricated hardware latency", "warn"),
         ]
     )
@@ -345,12 +408,31 @@ def _render_dashboard_page(
 </section>
 
 <section>
-  <h2>Problem → Build → Evidence → Next Validation</h2>
+  <h2>Current Working System</h2>
+  <p>The dashboard separates implemented CSV-driven analytics from planned Jetson flow ingestion. Completed metrics below come from the current fixed CSV fixture path.</p>
+  <table>
+    <tr><th>Capability</th><th>Status</th><th>Evidence</th></tr>
+    <tr><td>Input source</td><td>fixed_csv</td><td>Deterministic fixture for replay and reporting</td></tr>
+    <tr><td>Lookback analysis</td><td>implemented</td><td>{escape(_metric(demo_metrics, "windows_seen"))} feature windows</td></tr>
+    <tr><td>Forecasting</td><td>implemented</td><td>Forecaster gate {_metric(training_run, "forecaster", "gate", "result")}</td></tr>
+    <tr><td>Alerts</td><td>implemented</td><td>{escape(_metric(demo_metrics, "alerts_emitted"))} alerts emitted</td></tr>
+    <tr><td>Dashboard / reporting</td><td>implemented</td><td>Static GitHub Pages-compatible evidence pack</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Planned Jetson Ingestion Upgrade</h2>
+  <p class="callout">Planned work is not counted as completed evidence. The next input is Jetson-generated flow CSV from defensive packet/flow sources, then the same analytics pipeline continues unchanged.</p>
+  {_planned_upgrade_table()}
+</section>
+
+<section>
+  <h2>Problem -> What I Built -> What I Found -> What I Would Validate Next</h2>
   <div class="two">
     <div><h3>Problem</h3><p>Edge IDS telemetry arrives from heterogeneous defensive sources, but operator workflows need one normalized evidence path.</p></div>
-    <div><h3>What I Built</h3><p>A source-agnostic runtime that converts telemetry into events, windows, detections, alerts, metrics, and reviewer artifacts.</p></div>
+    <div><h3>What I Built</h3><p>A source-agnostic runtime that converts defensive telemetry into events, windows, detections, alerts, metrics, and evidence artifacts.</p></div>
     <div><h3>What I Found</h3><p>The committed demo emits {_metric(demo_metrics, "alerts_emitted")} alerts from {_metric(demo_metrics, "windows_seen")} feature windows, and model gates are recorded in training evidence.</p></div>
-    <div><h3>What I Would Validate Next</h3><p>Run the Thor benchmark on actual hardware, connect measured IDS logs, and keep all response actions human-reviewed.</p></div>
+    <div><h3>What I Would Validate Next</h3><p>Generate Jetson flow CSV from defensive captures, run the Thor-class benchmark on actual hardware, and keep all response actions operator-reviewed.</p></div>
   </div>
 </section>
 
@@ -386,7 +468,7 @@ def _render_dashboard_page(
 
 <section>
   <h2>Jetson / Thor Readiness</h2>
-  <p class="callout">Thor benchmark values remain pending until `deploy/thor/run_benchmark.py` is executed on real hardware. This dashboard does not fabricate edge latency.</p>
+  <p class="callout">Thor benchmark values remain pending until `deploy/thor/run_benchmark.py` is executed on the exact target hardware. This dashboard does not fabricate edge latency, throughput, memory, power, or thermal behavior.</p>
   <table>
     <tr><th>Gate</th><th>Threshold</th><th>Status</th></tr>
     <tr><td>Detector p95 latency</td><td>10 ms</td><td>{_metric(thor_benchmark, "gates", "detector_p95_latency_ms", "status")}</td></tr>
@@ -406,7 +488,7 @@ def _render_dashboard_page(
         <li>Defensive replay metrics and alert artifacts</li>
         <li>Reference detector and forecaster training evidence</li>
         <li>FastAPI/web dashboard integration path</li>
-        <li>Thor runbook and benchmark template</li>
+        <li>Thor-class runbook and benchmark template</li>
       </ul>
     </div>
     <div>
@@ -414,131 +496,100 @@ def _render_dashboard_page(
       <ul>
         <li>No offensive tooling</li>
         <li>No malware generation</li>
-        <li>No autonomous attack execution</li>
+        <li>No exploit replay</li>
         <li>No autonomous response action</li>
         <li>No live production IDS deployment claim</li>
+        <li>No line-rate capture claim</li>
       </ul>
     </div>
   </div>
 </section>
 """
     return _page_shell(
-        "Jetson Edge AI Security Dashboard",
-        "Operator-facing defensive telemetry runtime evidence for replay, detection, alerts, and Jetson readiness.",
+        "Jetson Edge Intrusion Detection Dashboard",
+        "Defensive edge telemetry, lookback analytics, forecasting, and operator-reviewed IDS alerts for Jetson-class network nodes.",
         body,
     )
 
 
-def _render_tech_brief_page(
-    *,
-    demo_metrics: dict[str, object],
-    training_run: dict[str, object],
-    thor_benchmark: dict[str, object],
-) -> str:
+def _render_tech_brief_page() -> str:
     body = f"""
 <section>
   <h2>Technical Brief</h2>
-  <p>This project implements a defensive edge-security telemetry runtime for Jetson-class deployment paths. The system is intentionally source-agnostic: every source adapter normalizes telemetry into a shared event contract before feature extraction, detection, alerting, storage, and reporting.</p>
+  <p>Jetson Edge Intrusion Detection is built around one architecture rule: adapters may change, but the analytics pipeline should not. The current implementation validates the lookback, forecasting, alert, and reporting layers with fixed CSV telemetry as a deterministic fixture.</p>
 </section>
 
 <section>
-  <h2>Architecture</h2>
+  <h2>Current vs Planned Pipeline</h2>
+  {_current_vs_planned_table()}
+</section>
+
+<section>
+  <h2>Architecture Principle</h2>
+  <p class="callout">Adapters may change. The analytics pipeline should not.</p>
+  <p>The planned upgrade adds a Jetson packet/flow ingestion stage before the existing CSV contract. New sources should normalize into the same event/schema boundary so the detector, lookback, forecasting, alerting, and dashboard layers remain stable.</p>
+</section>
+
+<section>
+  <h2>Adapter Status</h2>
   <table>
-    <tr><th>Layer</th><th>Role</th><th>Current state</th></tr>
-    <tr><td>Source adapters</td><td>Convert CSV, PCAP, or future IDS logs into defensive telemetry streams.</td><td>CSV replay implemented; PCAP path tested; Zeek/Suricata/MQTT planned.</td></tr>
-    <tr><td>Schema layer</td><td>Normalize raw fields into TelemetryEvent and Alert contracts.</td><td>Pydantic schemas implemented and tested.</td></tr>
-    <tr><td>Feature pipeline</td><td>Build sliding-window features for baseline detection and future ML models.</td><td>Window extraction implemented and tested.</td></tr>
-    <tr><td>Detection layer</td><td>Emit conservative alerts from baseline rules and optional model paths.</td><td>Baseline detector implemented; reference model evidence committed.</td></tr>
-    <tr><td>Reporting layer</td><td>Write metrics, alerts JSONL, Markdown reports, and static dashboards.</td><td>Generated through CLI and Makefile targets.</td></tr>
-    <tr><td>Jetson deployment layer</td><td>Package service, dashboard, TensorRT engines, and benchmark path for Thor.</td><td>Runbook and benchmark template present; measured hardware run pending.</td></tr>
+    <tr><th>Adapter</th><th>Status</th><th>Purpose</th></tr>
+    <tr><td>CsvTrafficSource</td><td>Implemented / current fixture</td><td>Reads fixed CSV telemetry and emits normalized events.</td></tr>
+    <tr><td>ZeekConnLogSource</td><td>Planned</td><td>Normalize Zeek conn.log records into the event contract.</td></tr>
+    <tr><td>SuricataEveJsonSource</td><td>Planned</td><td>Normalize Suricata eve.json flow and alert records.</td></tr>
+    <tr><td>CicFlowCsvSource</td><td>Planned</td><td>Normalize CICFlow-style records.</td></tr>
+    <tr><td>PcapFlowSource / PcapCaptureStage</td><td>Planned</td><td>Capture or replay packets, rotate PCAP files, and feed defensive flow extraction.</td></tr>
   </table>
 </section>
 
 <section>
-  <h2>Evidence Snapshot</h2>
-  <div class="grid">
-    {_card("Events replayed", _metric(demo_metrics, "events_seen"), "reports/demo/runtime_metrics.json", "good")}
-    {_card("Alerts emitted", _metric(demo_metrics, "alerts_emitted"), "alerts.jsonl evidence", "warn")}
-    {_card("Detector gate", _metric(training_run, "detector", "gate", "result"), "training_run.json", "good")}
-    {_card("Thor benchmark", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "hardware values pending", "warn")}
-  </div>
-</section>
-
-<section>
-  <h2>Reproducibility</h2>
-  <table>
-    <tr><th>Task</th><th>Command</th></tr>
-    <tr><td>Install development environment</td><td><code>make install-dev</code></td></tr>
-    <tr><td>Run tests</td><td><code>make test</code></td></tr>
-    <tr><td>Generate demo report</td><td><code>make demo-report</code></td></tr>
-    <tr><td>Build static reports</td><td><code>make static-reports</code></td></tr>
-    <tr><td>Verify full artifact path</td><td><code>make verify</code></td></tr>
-  </table>
-</section>
-
-<section>
-  <h2>Scope Boundary</h2>
-  <p class="callout">This is defensive replay and edge-runtime evidence. It does not generate malware, execute exploitation, perform autonomous response, or claim measured Jetson AGX Thor latency until hardware benchmark artifacts are committed.</p>
+  <h2>Boundary</h2>
+  <ul>
+    <li>Defensive telemetry only.</li>
+    <li>No malware generation, exploit replay, or offensive tooling.</li>
+    <li>No autonomous response.</li>
+    <li>No production IDS deployment claim.</li>
+    <li>No line-rate capture claim until packet drops, throughput, storage write rate, and flow extraction performance are measured.</li>
+  </ul>
 </section>
 """
     return _page_shell(
         "Technical Brief",
-        "Architecture, runtime flow, evidence path, reproducibility, and Jetson deployment boundary.",
+        "Current CSV-driven analytics, planned Jetson flow ingestion, stable event contracts, and defensive boundaries.",
         body,
     )
 
 
-def _render_business_case_page(
-    *,
-    demo_metrics: dict[str, object],
-    training_run: dict[str, object],
-    thor_benchmark: dict[str, object],
-) -> str:
-    body = f"""
+def _render_business_case_page() -> str:
+    body = """
 <section>
   <h2>Business Case</h2>
-  <p>Industrial edge systems, robotics cells, and private-network sites increasingly generate security telemetry close to the physical environment. Sending every signal to a central platform can add latency, bandwidth cost, and operational blind spots. This project shows how defensive telemetry can be normalized and reviewed at the edge before heavier model runners or central security systems are introduced.</p>
+  <p>Edge nodes, robotics cells, private-network sites, and AI-enabled edge systems need local defensive telemetry review. The useful question is not whether this replaces a SIEM. It does not. The useful question is whether local flow records can become observable, forecastable, reviewable, and benchmarkable near the edge.</p>
 </section>
 
 <section>
-  <h2>Who This Helps</h2>
-  <div class="grid">
-    {_card("Edge AI teams", "runtime proof", "Reproducible CLI, reports, and dashboard artifacts", "good")}
-    {_card("Security operators", "reviewable alerts", "Alert JSONL, replay reports, and safety boundary", "warn")}
-    {_card("Robotics / OT teams", "local telemetry", "Designed for constrained edge nodes and human review", "neutral")}
-    {_card("AI infrastructure teams", "deployment path", "FastAPI, systemd, SQLite, TensorRT plan, Thor runbook", "neutral")}
-  </div>
-</section>
-
-<section>
-  <h2>Operational Value</h2>
-  <table>
-    <tr><th>Operational problem</th><th>Project response</th><th>Evidence</th></tr>
-    <tr><td>Telemetry formats vary across sources.</td><td>Normalize every source into a shared event schema.</td><td>TrafficSource API and Pydantic schemas.</td></tr>
-    <tr><td>Operators need evidence, not black-box claims.</td><td>Generate runtime metrics, alert JSONL, reports, and dashboards.</td><td>{_metric(demo_metrics, "events_seen")} events and {_metric(demo_metrics, "alerts_emitted")} alerts in committed demo evidence.</td></tr>
-    <tr><td>Edge deployments need small, inspectable runtimes.</td><td>Use conservative baseline detection first, with model paths introduced behind evidence gates.</td><td>Detector gate: {_metric(training_run, "detector", "gate", "result")}.</td></tr>
-    <tr><td>Hardware claims must be measured.</td><td>Keep Thor latency pending until real benchmark output exists.</td><td>{_metric(thor_benchmark, "source_badge", default="pending-thor-run")}.</td></tr>
-  </table>
-</section>
-
-<section>
-  <h2>Why It Matters for the Portfolio</h2>
-  <p>This repo supports the Physical AI and Edge AI portfolio by showing runtime security, telemetry normalization, operational evidence, and Jetson deployment thinking. It is not a malware project and not an offensive security toolkit. It is a defensive edge observability and evidence-generation system.</p>
-</section>
-
-<section>
-  <h2>Next Validation Milestones</h2>
+  <h2>What This Demonstrates</h2>
   <ul>
-    <li>Run the Thor benchmark on actual Jetson AGX Thor hardware.</li>
-    <li>Replay a documented public defensive dataset and commit the artifact bundle.</li>
-    <li>Add dashboard screenshot or short GIF for recruiter-fast comprehension.</li>
-    <li>Connect measured IDS logs while keeping response actions human-reviewed.</li>
+    <li>Fixed CSV telemetry can drive deterministic lookback analytics, forecasting, alerts, and static reports.</li>
+    <li>Operator-reviewed alerts create a review path without autonomous response.</li>
+    <li>The same analytics pipeline can accept future Jetson-generated flow CSVs when the source adapters are measured.</li>
+    <li>Thor-class benchmark artifacts remain pending until real hardware measurements exist.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What This Does Not Claim</h2>
+  <ul>
+    <li>It does not replace a SIEM or production IDS.</li>
+    <li>It does not claim line-rate capture.</li>
+    <li>It does not claim measured Thor performance yet.</li>
+    <li>It does not perform offensive security actions or autonomous response.</li>
   </ul>
 </section>
 """
     return _page_shell(
         "Business Case",
-        "Why defensive edge telemetry, alert evidence, and Jetson readiness matter for operational AI systems.",
+        "Local defensive telemetry evidence for Jetson-class edge nodes, without production IDS or autonomous response claims.",
         body,
     )
 

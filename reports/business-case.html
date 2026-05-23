@@ -3,66 +3,96 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Jetson Edge AI Security Business Case</title>
+  <title>Business Case</title>
   <style>
-    :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2c; --panel2:#17223a; --line:#293653; --text:#eef4ff; --muted:#9fb0ca; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; }
-    * { box-sizing:border-box; } body { margin:0; background:radial-gradient(circle at top left,#13223d 0,var(--bg) 34rem); color:var(--text); font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    main { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 64px; } header { padding:28px 0 18px; } .eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }
-    h1 { margin:8px 0 10px; font-size:clamp(2.1rem,5vw,4.5rem); line-height:1.02; } h2 { margin:0 0 14px; font-size:1.45rem; } h3 { margin:0 0 8px; } p, li, td { color:var(--muted); } a { color:#7dd3fc; text-decoration:none; } a:hover { text-decoration:underline; }
-    section { margin-top:28px; padding:24px; background:rgba(18,26,44,.9); border:1px solid var(--line); border-radius:8px; } .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
-    .card { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:16px; min-height:120px; } .card span { display:block; color:var(--muted); font-size:.9rem; } .card strong { display:block; margin-top:6px; font-size:1.55rem; line-height:1.15; } .good { border-color:rgba(34,197,94,.55); } .warn { border-color:rgba(245,158,11,.65); }
-    table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; } th { color:var(--text); background:#0f1729; }
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2c;
+      --panel-2: #17223a;
+      --line: #293653;
+      --text: #eef4ff;
+      --muted: #9fb0ca;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --risk: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #13223d 0, var(--bg) 34rem);
+      color: var(--text);
+      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header.hero { padding: 28px 0 18px; }
+    .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.08em; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2.1rem, 5vw, 4.5rem); line-height: 1.02; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 1.45rem; }
+    h3 { margin: 0 0 8px; }
+    p { color: var(--muted); margin: 0 0 12px; }
+    a { color: #7dd3fc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    section { margin-top: 28px; padding: 24px; background: rgba(18, 26, 44, 0.9); border: 1px solid var(--line); border-radius: 8px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .two { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .card, .link-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-height: 120px; }
+    .card span { display: block; color: var(--muted); font-size: 0.9rem; }
+    .card strong { display: block; margin-top: 6px; font-size: 1.55rem; line-height: 1.15; }
+    .card.good { border-color: rgba(34, 197, 94, 0.55); }
+    .card.warn { border-color: rgba(245, 158, 11, 0.65); }
+    .card.risk { border-color: rgba(239, 68, 68, 0.65); }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; margin: 0 6px 6px 0; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 8px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { color: var(--text); background: #0f1729; }
+    td { color: var(--muted); }
+    ul { margin: 0; padding-left: 20px; color: var(--muted); }
+    .callout { border-left: 4px solid var(--warn); padding-left: 14px; }
+    .footer { margin-top: 24px; color: var(--muted); font-size: 0.92rem; }
   </style>
 </head>
 <body>
 <main>
-  <header>
-    <div class="eyebrow">Jetson Edge AI Security</div>
+  <header class="hero">
+    <div class="eyebrow">Jetson Edge Intrusion Detection</div>
     <h1>Business Case</h1>
-    <p>Why defensive edge telemetry, alert evidence, and Jetson readiness matter for operational AI systems.</p>
-    <p><a href="index.html">Landing</a> | <a href="dashboard.html">Dashboard</a> | <a href="tech-brief.html">Technical brief</a> | <a href="../docs/architecture.md">Architecture docs</a></p>
+    <p>Local defensive telemetry evidence for Jetson-class edge nodes, without production IDS or autonomous response claims.</p>
+    <p>
+      <a href="dashboard.html">Open dashboard</a> |
+      <a href="../README.md">README</a> |
+      <a href="../docs/architecture.md">Architecture</a> |
+      <a href="../deploy/thor/operator-runbook.md">Thor runbook</a>
+    </p>
   </header>
+  
+<section>
+  <h2>Business Case</h2>
+  <p>Edge nodes, robotics cells, private-network sites, and AI-enabled edge systems need local defensive telemetry review. The useful question is not whether this replaces a SIEM. It does not. The useful question is whether local flow records can become observable, forecastable, reviewable, and benchmarkable near the edge.</p>
+</section>
 
-  <section>
-    <h2>Why This Exists</h2>
-    <p>Industrial edge systems, robotics cells, and private-network sites generate security telemetry close to the physical environment. Sending every signal to a central platform can add latency, bandwidth cost, and operational blind spots. This project shows how defensive telemetry can be normalized and reviewed at the edge before heavier model runners or central security systems are introduced.</p>
-  </section>
+<section>
+  <h2>What This Demonstrates</h2>
+  <ul>
+    <li>Fixed CSV telemetry can drive deterministic lookback analytics, forecasting, alerts, and static reports.</li>
+    <li>Operator-reviewed alerts create a review path without autonomous response.</li>
+    <li>The same analytics pipeline can accept future Jetson-generated flow CSVs when the source adapters are measured.</li>
+    <li>Thor-class benchmark artifacts remain pending until real hardware measurements exist.</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Who This Helps</h2>
-    <div class="grid">
-      <article class="card good"><span>Edge AI teams</span><strong>runtime proof</strong><p>Reproducible CLI, reports, and dashboard artifacts.</p></article>
-      <article class="card warn"><span>Security operators</span><strong>reviewable alerts</strong><p>Alert JSONL, replay reports, and safety boundary.</p></article>
-      <article class="card"><span>Robotics / OT teams</span><strong>local telemetry</strong><p>Designed for constrained edge nodes and human review.</p></article>
-      <article class="card"><span>AI infrastructure teams</span><strong>deployment path</strong><p>FastAPI, systemd, SQLite, TensorRT plan, Thor runbook.</p></article>
-    </div>
-  </section>
+<section>
+  <h2>What This Does Not Claim</h2>
+  <ul>
+    <li>It does not replace a SIEM or production IDS.</li>
+    <li>It does not claim line-rate capture.</li>
+    <li>It does not claim measured Thor performance yet.</li>
+    <li>It does not perform offensive security actions or autonomous response.</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Operational Value</h2>
-    <table>
-      <tr><th>Operational problem</th><th>Project response</th><th>Evidence</th></tr>
-      <tr><td>Telemetry formats vary across sources.</td><td>Normalize every source into a shared event schema.</td><td>TrafficSource API and Pydantic schemas.</td></tr>
-      <tr><td>Operators need evidence, not black-box claims.</td><td>Generate runtime metrics, alert JSONL, reports, and dashboards.</td><td>12 events and 4 alerts in committed demo evidence.</td></tr>
-      <tr><td>Edge deployments need small, inspectable runtimes.</td><td>Use conservative baseline detection first, with model paths introduced behind evidence gates.</td><td>Detector gate: PASS.</td></tr>
-      <tr><td>Hardware claims must be measured.</td><td>Keep Thor latency pending until real benchmark output exists.</td><td>pending-thor-run.</td></tr>
-    </table>
-  </section>
-
-  <section>
-    <h2>Portfolio Signal</h2>
-    <p>This repo supports the Physical AI and Edge AI portfolio by showing runtime security, telemetry normalization, operational evidence, and Jetson deployment thinking. It is not a malware project and not an offensive security toolkit. It is a defensive edge observability and evidence-generation system.</p>
-  </section>
-
-  <section>
-    <h2>Next Validation Milestones</h2>
-    <ul>
-      <li>Run the Thor benchmark on actual Jetson AGX Thor hardware.</li>
-      <li>Replay a documented public defensive dataset and commit the artifact bundle.</li>
-      <li>Add dashboard screenshot or short GIF for recruiter-fast comprehension.</li>
-      <li>Connect measured IDS logs while keeping response actions human-reviewed.</li>
-    </ul>
-  </section>
+  <p class="footer">Generated from committed defensive replay, model, and benchmark artifacts. No offensive tooling, autonomous response, or production IDS deployment is claimed.</p>
 </main>
 </body>
 </html>

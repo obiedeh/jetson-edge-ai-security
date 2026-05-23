@@ -3,70 +3,110 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Jetson Edge AI Security Technical Brief</title>
+  <title>Technical Brief</title>
   <style>
-    :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2c; --panel2:#17223a; --line:#293653; --text:#eef4ff; --muted:#9fb0ca; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; }
-    * { box-sizing: border-box; } body { margin:0; background:radial-gradient(circle at top left,#13223d 0,var(--bg) 34rem); color:var(--text); font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    main { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 64px; } header { padding:28px 0 18px; } .eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }
-    h1 { margin:8px 0 10px; font-size:clamp(2.1rem,5vw,4.5rem); line-height:1.02; } h2 { margin:0 0 14px; font-size:1.45rem; } h3 { margin:0 0 8px; } p, li, td { color:var(--muted); } a { color:#7dd3fc; text-decoration:none; } a:hover { text-decoration:underline; }
-    section { margin-top:28px; padding:24px; background:rgba(18,26,44,.9); border:1px solid var(--line); border-radius:8px; } .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); } .two { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
-    .card { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:16px; min-height:120px; } .card span { display:block; color:var(--muted); font-size:.9rem; } .card strong { display:block; margin-top:6px; font-size:1.55rem; line-height:1.15; } .good { border-color:rgba(34,197,94,.55); } .warn { border-color:rgba(245,158,11,.65); }
-    table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; } th { color:var(--text); background:#0f1729; } code { color:#e0f2fe; } .callout { border-left:4px solid var(--warn); padding-left:14px; }
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2c;
+      --panel-2: #17223a;
+      --line: #293653;
+      --text: #eef4ff;
+      --muted: #9fb0ca;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --risk: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #13223d 0, var(--bg) 34rem);
+      color: var(--text);
+      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header.hero { padding: 28px 0 18px; }
+    .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.08em; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2.1rem, 5vw, 4.5rem); line-height: 1.02; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 1.45rem; }
+    h3 { margin: 0 0 8px; }
+    p { color: var(--muted); margin: 0 0 12px; }
+    a { color: #7dd3fc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    section { margin-top: 28px; padding: 24px; background: rgba(18, 26, 44, 0.9); border: 1px solid var(--line); border-radius: 8px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .two { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .card, .link-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-height: 120px; }
+    .card span { display: block; color: var(--muted); font-size: 0.9rem; }
+    .card strong { display: block; margin-top: 6px; font-size: 1.55rem; line-height: 1.15; }
+    .card.good { border-color: rgba(34, 197, 94, 0.55); }
+    .card.warn { border-color: rgba(245, 158, 11, 0.65); }
+    .card.risk { border-color: rgba(239, 68, 68, 0.65); }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; margin: 0 6px 6px 0; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 8px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { color: var(--text); background: #0f1729; }
+    td { color: var(--muted); }
+    ul { margin: 0; padding-left: 20px; color: var(--muted); }
+    .callout { border-left: 4px solid var(--warn); padding-left: 14px; }
+    .footer { margin-top: 24px; color: var(--muted); font-size: 0.92rem; }
   </style>
 </head>
 <body>
 <main>
-  <header>
-    <div class="eyebrow">Jetson Edge AI Security</div>
+  <header class="hero">
+    <div class="eyebrow">Jetson Edge Intrusion Detection</div>
     <h1>Technical Brief</h1>
-    <p>Architecture, runtime flow, evidence path, reproducibility, and Jetson deployment boundary.</p>
-    <p><a href="index.html">Landing</a> | <a href="dashboard.html">Dashboard</a> | <a href="business-case.html">Business case</a> | <a href="../docs/architecture.md">Architecture docs</a> | <a href="../deploy/thor/operator-runbook.md">Thor runbook</a></p>
+    <p>Current CSV-driven analytics, planned Jetson flow ingestion, stable event contracts, and defensive boundaries.</p>
+    <p>
+      <a href="dashboard.html">Open dashboard</a> |
+      <a href="../README.md">README</a> |
+      <a href="../docs/architecture.md">Architecture</a> |
+      <a href="../deploy/thor/operator-runbook.md">Thor runbook</a>
+    </p>
   </header>
+  
+<section>
+  <h2>Technical Brief</h2>
+  <p>Jetson Edge Intrusion Detection is built around one architecture rule: adapters may change, but the analytics pipeline should not. The current implementation validates the lookback, forecasting, alert, and reporting layers with fixed CSV telemetry as a deterministic fixture.</p>
+</section>
 
-  <section>
-    <h2>System Purpose</h2>
-    <p>This project implements a defensive edge-security telemetry runtime for Jetson-class deployment paths. The system is source-agnostic: every adapter normalizes telemetry into a shared event contract before feature extraction, detection, alerting, storage, and reporting.</p>
-  </section>
+<section>
+  <h2>Current vs Planned Pipeline</h2>
+  <table><tr><th>Layer</th><th>Current working system</th><th>Planned Jetson ingestion upgrade</th></tr><tr><td>Input source</td><td>Fixed CSV fixture</td><td>Jetson-generated flow CSV</td></tr><tr><td>Capture mode</td><td>Deterministic replay</td><td>SPAN, TAP, or local interface capture</td></tr><tr><td>Packet stage</td><td>Not required for current evidence</td><td>Rotating PCAP files</td></tr><tr><td>Flow extraction</td><td>CSV columns normalized into TelemetryEvent</td><td>Zeek conn.log, Suricata eve.json, CICFlow-style records</td></tr><tr><td>Analytics path</td><td>Lookback analytics, forecasting, alerts, reports</td><td>Same existing analytics path</td></tr><tr><td>Dashboard impact</td><td>Implemented</td><td>No detector/dashboard rewrite intended</td></tr><tr><td>Thor benchmark</td><td>Template committed</td><td>Pending measured Thor-class run</td></tr></table>
+</section>
 
-  <section>
-    <h2>Architecture</h2>
-    <table>
-      <tr><th>Layer</th><th>Role</th><th>Current state</th></tr>
-      <tr><td>Source adapters</td><td>Convert CSV, PCAP, or future IDS logs into defensive telemetry streams.</td><td>CSV replay implemented; PCAP path tested; Zeek, Suricata, and MQTT planned.</td></tr>
-      <tr><td>Schema layer</td><td>Normalize raw fields into TelemetryEvent and Alert contracts.</td><td>Pydantic schemas implemented and tested.</td></tr>
-      <tr><td>Feature pipeline</td><td>Build sliding-window features for baseline detection and future ML paths.</td><td>Window extraction implemented and tested.</td></tr>
-      <tr><td>Detection layer</td><td>Emit conservative alerts from baseline rules and optional model paths.</td><td>Baseline detector implemented; reference model evidence committed.</td></tr>
-      <tr><td>Reporting layer</td><td>Write metrics, alert JSONL, Markdown reports, and static dashboards.</td><td>Generated through CLI and Makefile targets.</td></tr>
-      <tr><td>Jetson deployment layer</td><td>Package service, dashboard, TensorRT engines, and benchmark path for Thor.</td><td>Runbook and benchmark template present; measured hardware run pending.</td></tr>
-    </table>
-  </section>
+<section>
+  <h2>Architecture Principle</h2>
+  <p class="callout">Adapters may change. The analytics pipeline should not.</p>
+  <p>The planned upgrade adds a Jetson packet/flow ingestion stage before the existing CSV contract. New sources should normalize into the same event/schema boundary so the detector, lookback, forecasting, alerting, and dashboard layers remain stable.</p>
+</section>
 
-  <section>
-    <h2>Evidence Snapshot</h2>
-    <div class="grid">
-      <article class="card good"><span>Events replayed</span><strong>12</strong><p>reports/demo/runtime_metrics.json</p></article>
-      <article class="card warn"><span>Alerts emitted</span><strong>4</strong><p>reports/demo/alerts.jsonl</p></article>
-      <article class="card good"><span>Detector gate</span><strong>PASS</strong><p>reports/training_run.json</p></article>
-      <article class="card warn"><span>Thor benchmark</span><strong>pending-thor-run</strong><p>hardware values pending</p></article>
-    </div>
-  </section>
+<section>
+  <h2>Adapter Status</h2>
+  <table>
+    <tr><th>Adapter</th><th>Status</th><th>Purpose</th></tr>
+    <tr><td>CsvTrafficSource</td><td>Implemented / current fixture</td><td>Reads fixed CSV telemetry and emits normalized events.</td></tr>
+    <tr><td>ZeekConnLogSource</td><td>Planned</td><td>Normalize Zeek conn.log records into the event contract.</td></tr>
+    <tr><td>SuricataEveJsonSource</td><td>Planned</td><td>Normalize Suricata eve.json flow and alert records.</td></tr>
+    <tr><td>CicFlowCsvSource</td><td>Planned</td><td>Normalize CICFlow-style records.</td></tr>
+    <tr><td>PcapFlowSource / PcapCaptureStage</td><td>Planned</td><td>Capture or replay packets, rotate PCAP files, and feed defensive flow extraction.</td></tr>
+  </table>
+</section>
 
-  <section>
-    <h2>Reproducibility</h2>
-    <table>
-      <tr><th>Task</th><th>Command</th></tr>
-      <tr><td>Install development environment</td><td><code>make install-dev</code></td></tr>
-      <tr><td>Run tests</td><td><code>make test</code></td></tr>
-      <tr><td>Generate demo report</td><td><code>make demo-report</code></td></tr>
-      <tr><td>Build static reports</td><td><code>make static-reports</code></td></tr>
-      <tr><td>Verify full artifact path</td><td><code>make verify</code></td></tr>
-    </table>
-  </section>
+<section>
+  <h2>Boundary</h2>
+  <ul>
+    <li>Defensive telemetry only.</li>
+    <li>No malware generation, exploit replay, or offensive tooling.</li>
+    <li>No autonomous response.</li>
+    <li>No production IDS deployment claim.</li>
+    <li>No line-rate capture claim until packet drops, throughput, storage write rate, and flow extraction performance are measured.</li>
+  </ul>
+</section>
 
-  <section>
-    <h2>Scope Boundary</h2>
-    <p class="callout">This is defensive replay and edge-runtime evidence. It does not generate malware, execute exploitation, perform autonomous response, or claim measured Jetson AGX Thor latency until hardware benchmark artifacts are committed.</p>
-  </section>
+  <p class="footer">Generated from committed defensive replay, model, and benchmark artifacts. No offensive tooling, autonomous response, or production IDS deployment is claimed.</p>
 </main>
 </body>
 </html>

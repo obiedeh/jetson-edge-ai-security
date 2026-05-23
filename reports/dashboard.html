@@ -3,114 +3,174 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Jetson Edge AI Security Dashboard</title>
+  <title>Jetson Edge Intrusion Detection Dashboard</title>
   <style>
-    :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2c; --panel2:#17223a; --line:#293653; --text:#eef4ff; --muted:#9fb0ca; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; }
-    * { box-sizing:border-box; } body { margin:0; background:radial-gradient(circle at top left,#13223d 0,var(--bg) 34rem); color:var(--text); font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    main { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 64px; } header { padding:28px 0 18px; } .eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }
-    h1 { margin:8px 0 10px; font-size:clamp(2.1rem,5vw,4.5rem); line-height:1.02; } h2 { margin:0 0 14px; font-size:1.45rem; } h3 { margin:0 0 8px; } p,li,td { color:var(--muted); } a { color:#7dd3fc; text-decoration:none; } a:hover { text-decoration:underline; }
-    section { margin-top:28px; padding:24px; background:rgba(18,26,44,.9); border:1px solid var(--line); border-radius:8px; } .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); } .two { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
-    .card { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:16px; min-height:120px; } .card span { display:block; color:var(--muted); font-size:.9rem; } .card strong { display:block; margin-top:6px; font-size:1.55rem; line-height:1.15; } .good { border-color:rgba(34,197,94,.55); } .warn { border-color:rgba(245,158,11,.65); }
-    table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; } th { color:var(--text); background:#0f1729; } .callout { border-left:4px solid var(--warn); padding-left:14px; }
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2c;
+      --panel-2: #17223a;
+      --line: #293653;
+      --text: #eef4ff;
+      --muted: #9fb0ca;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --risk: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #13223d 0, var(--bg) 34rem);
+      color: var(--text);
+      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header.hero { padding: 28px 0 18px; }
+    .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.08em; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2.1rem, 5vw, 4.5rem); line-height: 1.02; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 1.45rem; }
+    h3 { margin: 0 0 8px; }
+    p { color: var(--muted); margin: 0 0 12px; }
+    a { color: #7dd3fc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    section { margin-top: 28px; padding: 24px; background: rgba(18, 26, 44, 0.9); border: 1px solid var(--line); border-radius: 8px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .two { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .card, .link-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-height: 120px; }
+    .card span { display: block; color: var(--muted); font-size: 0.9rem; }
+    .card strong { display: block; margin-top: 6px; font-size: 1.55rem; line-height: 1.15; }
+    .card.good { border-color: rgba(34, 197, 94, 0.55); }
+    .card.warn { border-color: rgba(245, 158, 11, 0.65); }
+    .card.risk { border-color: rgba(239, 68, 68, 0.65); }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; margin: 0 6px 6px 0; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 8px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { color: var(--text); background: #0f1729; }
+    td { color: var(--muted); }
+    ul { margin: 0; padding-left: 20px; color: var(--muted); }
+    .callout { border-left: 4px solid var(--warn); padding-left: 14px; }
+    .footer { margin-top: 24px; color: var(--muted); font-size: 0.92rem; }
   </style>
 </head>
 <body>
 <main>
-  <header>
-    <div class="eyebrow">Jetson Edge AI Security</div>
-    <h1>Jetson Edge AI Security Dashboard</h1>
-    <p>Operator-facing defensive telemetry runtime evidence for replay, detection, alerts, and Jetson readiness.</p>
-    <p><a href="index.html">Landing</a> | <a href="tech-brief.html">Technical brief</a> | <a href="business-case.html">Business case</a> | <a href="../docs/architecture.md">Architecture docs</a> | <a href="../deploy/thor/operator-runbook.md">Thor runbook</a></p>
+  <header class="hero">
+    <div class="eyebrow">Jetson Edge Intrusion Detection</div>
+    <h1>Jetson Edge Intrusion Detection Dashboard</h1>
+    <p>Defensive edge telemetry, lookback analytics, forecasting, and operator-reviewed IDS alerts for Jetson-class network nodes.</p>
+    <p>
+      <a href="dashboard.html">Open dashboard</a> |
+      <a href="../README.md">README</a> |
+      <a href="../docs/architecture.md">Architecture</a> |
+      <a href="../deploy/thor/operator-runbook.md">Thor runbook</a>
+    </p>
   </header>
+  
+<section>
+  <h2>Operational Decision Summary</h2>
+  <div class="grid"><article class="card neutral"><span>Current input</span><strong>fixed_csv</strong><p>Deterministic fixture for repeatable evidence</p></article><article class="card good"><span>Detector gate</span><strong>PASS</strong><p>delta AUC threshold reported in training_run.json</p></article><article class="card good"><span>Forecaster gate</span><strong>PASS</strong><p>MAE reduction threshold reported in training_run.json</p></article><article class="card warn"><span>Thor benchmark</span><strong>pending-thor-run</strong><p>No fabricated hardware latency</p></article></div>
+</section>
 
-  <section>
-    <h2>Operational Decision Summary</h2>
-    <div class="grid">
-      <article class="card"><span>Primary runtime</span><strong>defensive telemetry replay</strong><p>CSV now; PCAP/IDS adapters remain integration paths.</p></article>
-      <article class="card good"><span>Detector gate</span><strong>PASS</strong><p>Threshold reported in training_run.json.</p></article>
-      <article class="card good"><span>Forecaster gate</span><strong>PASS</strong><p>MAE threshold reported in training_run.json.</p></article>
-      <article class="card warn"><span>Thor benchmark</span><strong>pending-thor-run</strong><p>No fabricated hardware latency.</p></article>
+<section>
+  <h2>Current Working System</h2>
+  <p>The dashboard separates implemented CSV-driven analytics from planned Jetson flow ingestion. Completed metrics below come from the current fixed CSV fixture path.</p>
+  <table>
+    <tr><th>Capability</th><th>Status</th><th>Evidence</th></tr>
+    <tr><td>Input source</td><td>fixed_csv</td><td>Deterministic fixture for replay and reporting</td></tr>
+    <tr><td>Lookback analysis</td><td>implemented</td><td>8 feature windows</td></tr>
+    <tr><td>Forecasting</td><td>implemented</td><td>Forecaster gate PASS</td></tr>
+    <tr><td>Alerts</td><td>implemented</td><td>4 alerts emitted</td></tr>
+    <tr><td>Dashboard / reporting</td><td>implemented</td><td>Static GitHub Pages-compatible evidence pack</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Planned Jetson Ingestion Upgrade</h2>
+  <p class="callout">Planned work is not counted as completed evidence. The next input is Jetson-generated flow CSV from defensive packet/flow sources, then the same analytics pipeline continues unchanged.</p>
+  <table><tr><th>Item</th><th>Detail</th><th>Status</th></tr><tr><td>Current input</td><td>fixed CSV fixture</td><td>implemented</td></tr><tr><td>Next input</td><td>Jetson-generated flow CSV</td><td>planned</td></tr><tr><td>Capture modes</td><td>SPAN / TAP / local interface</td><td>planned</td></tr><tr><td>Flow extraction</td><td>Zeek conn.log, Suricata eve.json, CICFlow-style records</td><td>planned</td></tr><tr><td>Pipeline impact</td><td>No detector/dashboard rewrite required</td><td>design boundary</td></tr><tr><td>Thor benchmark</td><td>pending measured run</td><td>not claimed</td></tr></table>
+</section>
+
+<section>
+  <h2>Problem -> What I Built -> What I Found -> What I Would Validate Next</h2>
+  <div class="two">
+    <div><h3>Problem</h3><p>Edge IDS telemetry arrives from heterogeneous defensive sources, but operator workflows need one normalized evidence path.</p></div>
+    <div><h3>What I Built</h3><p>A source-agnostic runtime that converts defensive telemetry into events, windows, detections, alerts, metrics, and evidence artifacts.</p></div>
+    <div><h3>What I Found</h3><p>The committed demo emits 4 alerts from 8 feature windows, and model gates are recorded in training evidence.</p></div>
+    <div><h3>What I Would Validate Next</h3><p>Generate Jetson flow CSV from defensive captures, run the Thor-class benchmark on actual hardware, and keep all response actions operator-reviewed.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Runtime Evidence</h2>
+  <table>
+    <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+    <tr><td>Events seen</td><td>12</td><td>reports/demo/runtime_metrics.json</td></tr>
+    <tr><td>Feature windows</td><td>8</td><td>reports/demo/runtime_metrics.json</td></tr>
+    <tr><td>Detections seen</td><td>4</td><td>reports/demo/runtime_metrics.json</td></tr>
+    <tr><td>Alerts emitted</td><td>4</td><td>reports/demo/runtime_metrics.json</td></tr>
+    <tr><td>Rows skipped</td><td>0</td><td>reports/demo/runtime_metrics.json</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Alert Severity Distribution</h2>
+  <table>
+    <tr><th>Severity</th><th>Count</th></tr>
+    <tr><td>high</td><td>2</td></tr><tr><td>medium</td><td>2</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Model Evidence</h2>
+  <table>
+    <tr><th>Layer</th><th>Evidence</th><th>Status</th></tr>
+    <tr><td>Detector</td><td>GBM AUC 0.9796 vs IsolationForest AUC 0.6433</td><td>PASS</td></tr>
+    <tr><td>Forecaster</td><td>Ridge MAE 7.492 vs lag baseline 10.24</td><td>PASS</td></tr>
+    <tr><td>ONNX exports</td><td>models/exports/gbm_detector.onnx and models/exports/ar_forecaster.onnx</td><td>exported</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Jetson / Thor Readiness</h2>
+  <p class="callout">Thor benchmark values remain pending until `deploy/thor/run_benchmark.py` is executed on the exact target hardware. This dashboard does not fabricate edge latency, throughput, memory, power, or thermal behavior.</p>
+  <table>
+    <tr><th>Gate</th><th>Threshold</th><th>Status</th></tr>
+    <tr><td>Detector p95 latency</td><td>10 ms</td><td>pending</td></tr>
+    <tr><td>Forecaster p95 latency</td><td>50 ms</td><td>pending</td></tr>
+    <tr><td>Throughput at 1000 RPS</td><td>1000 ev/s</td><td>pending</td></tr>
+    <tr><td>Memory footprint</td><td>4 GB</td><td>pending</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Evidence vs Boundary</h2>
+  <div class="two">
+    <div>
+      <h3>Evidence demonstrated</h3>
+      <ul>
+        <li>TrafficSource abstraction and normalized telemetry events</li>
+        <li>Defensive replay metrics and alert artifacts</li>
+        <li>Reference detector and forecaster training evidence</li>
+        <li>FastAPI/web dashboard integration path</li>
+        <li>Thor-class runbook and benchmark template</li>
+      </ul>
     </div>
-  </section>
-
-  <section>
-    <h2>Problem to Evidence Path</h2>
-    <div class="two">
-      <div><h3>Problem</h3><p>Edge IDS telemetry arrives from heterogeneous defensive sources, but operator workflows need one normalized evidence path.</p></div>
-      <div><h3>What I Built</h3><p>A source-agnostic runtime that converts telemetry into events, windows, detections, alerts, metrics, and reviewer artifacts.</p></div>
-      <div><h3>What I Found</h3><p>The committed demo emits 4 alerts from 8 feature windows, and model gates are recorded in training evidence.</p></div>
-      <div><h3>Next Validation</h3><p>Run the Thor benchmark on actual hardware, connect measured IDS logs, and keep all response actions human-reviewed.</p></div>
+    <div>
+      <h3>Boundary preserved</h3>
+      <ul>
+        <li>No offensive tooling</li>
+        <li>No malware generation</li>
+        <li>No exploit replay</li>
+        <li>No autonomous response action</li>
+        <li>No live production IDS deployment claim</li>
+        <li>No line-rate capture claim</li>
+      </ul>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>Runtime Evidence</h2>
-    <table>
-      <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
-      <tr><td>Events seen</td><td>12</td><td>reports/demo/runtime_metrics.json</td></tr>
-      <tr><td>Feature windows</td><td>8</td><td>reports/demo/runtime_metrics.json</td></tr>
-      <tr><td>Detections seen</td><td>4</td><td>reports/demo/runtime_metrics.json</td></tr>
-      <tr><td>Alerts emitted</td><td>4</td><td>reports/demo/runtime_metrics.json</td></tr>
-      <tr><td>Rows skipped</td><td>0</td><td>reports/demo/runtime_metrics.json</td></tr>
-    </table>
-  </section>
-
-  <section>
-    <h2>Alert Severity Distribution</h2>
-    <table>
-      <tr><th>Severity</th><th>Count</th></tr>
-      <tr><td>high</td><td>2</td></tr>
-      <tr><td>medium</td><td>2</td></tr>
-    </table>
-  </section>
-
-  <section>
-    <h2>Model Evidence</h2>
-    <table>
-      <tr><th>Layer</th><th>Evidence</th><th>Status</th></tr>
-      <tr><td>Detector</td><td>GBM AUC 0.9796 vs IsolationForest AUC 0.6433</td><td>PASS</td></tr>
-      <tr><td>Forecaster</td><td>Ridge MAE 7.492028 vs lag baseline 10.24</td><td>PASS</td></tr>
-      <tr><td>ONNX exports</td><td>models/exports/gbm_detector.onnx and models/exports/ar_forecaster.onnx</td><td>exported</td></tr>
-    </table>
-  </section>
-
-  <section>
-    <h2>Jetson / Thor Readiness</h2>
-    <p class="callout">Thor benchmark values remain pending until deploy/thor/run_benchmark.py is executed on real hardware. This dashboard does not fabricate edge latency.</p>
-    <table>
-      <tr><th>Gate</th><th>Threshold</th><th>Status</th></tr>
-      <tr><td>Detector p95 latency</td><td>10 ms</td><td>pending</td></tr>
-      <tr><td>Forecaster p95 latency</td><td>50 ms</td><td>pending</td></tr>
-      <tr><td>Throughput at 1000 RPS</td><td>1000 ev/s</td><td>pending</td></tr>
-      <tr><td>Memory footprint</td><td>4 GB</td><td>pending</td></tr>
-    </table>
-  </section>
-
-  <section>
-    <h2>Evidence vs Boundary</h2>
-    <div class="two">
-      <div>
-        <h3>Evidence demonstrated</h3>
-        <ul>
-          <li>TrafficSource abstraction and normalized telemetry events</li>
-          <li>Defensive replay metrics and alert artifacts</li>
-          <li>Reference detector and forecaster training evidence</li>
-          <li>FastAPI/web dashboard integration path</li>
-          <li>Thor runbook and benchmark template</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Boundary preserved</h3>
-        <ul>
-          <li>No offensive tooling</li>
-          <li>No malware generation</li>
-          <li>No autonomous attack execution</li>
-          <li>No autonomous response action</li>
-          <li>No live production IDS deployment claim</li>
-        </ul>
-      </div>
-    </div>
-  </section>
+  <p class="footer">Generated from committed defensive replay, model, and benchmark artifacts. No offensive tooling, autonomous response, or production IDS deployment is claimed.</p>
 </main>
 </body>
 </html>

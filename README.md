@@ -1,33 +1,129 @@
-# Jetson Edge AI Security
+# Jetson Edge Intrusion Detection
 
-Jetson Edge AI Security is a production-oriented defensive telemetry runtime for edge IDS research and deployment. It converts replayed or observed security telemetry into normalized events, rolling features, baseline detections, alerts, and benchmark-ready metrics.
+**Defensive edge telemetry, lookback analytics, forecasting, and operator-reviewed IDS alerts for Jetson-class network nodes.**
 
-The project is edge-native because the runtime is built around streaming sources, small memory windows, conservative baseline detection, and simple dependencies that can run on Jetson-class devices before heavier model runners are introduced.
+Jetson Edge Intrusion Detection is a defensive edge telemetry system for Jetson-class nodes. The current implementation uses fixed CSV telemetry as a deterministic fixture for lookback analytics, forecasting, operator-reviewed alerts, reports, and dashboard evidence.
 
-> [Evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Technical brief](https://obiedeh.github.io/jetson-edge-ai-security/reports/tech-brief.html) | [Business case](https://obiedeh.github.io/jetson-edge-ai-security/reports/business-case.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md)
+Fixed CSV is the deterministic test fixture, not the product ceiling. The planned Jetson sniffer upgrade adds Jetson-generated flow CSVs from packet capture and defensive telemetry sources such as Zeek logs, Suricata `eve.json`, and CICFlow-style records.
 
-## Core Stack
+> [Open the evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Open the static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md) | [Sniffer upgrade plan](docs/jetson-sniffer-upgrade-plan.md)
 
-**Implemented:** Python · Typer · Pydantic · CSV replay · sliding-window features · baseline anomaly detection · Pytest
+## Current Implementation
 
-**Planned / integration path:** Jetson runtime metrics · PCAP/Zeek/Suricata adapters · public dataset replay artifacts
+The working pipeline is intentionally small and inspectable:
 
-<p>
-  <img src="https://img.shields.io/badge/Python-3.x-blue" alt="Python" />
-  <img src="https://img.shields.io/badge/Typer-CLI-2F855A" alt="Typer" />
-  <img src="https://img.shields.io/badge/Pydantic-schemas-E92063" alt="Pydantic" />
-  <img src="https://img.shields.io/badge/scikit--learn-optional-F7931E" alt="scikit-learn optional" />
-  <img src="https://img.shields.io/badge/Pytest-tested-brightgreen" alt="Pytest" />
-  <img src="https://img.shields.io/badge/Jetson-integration%20path-76B900" alt="NVIDIA Jetson integration path" />
-  <img src="https://img.shields.io/badge/Defensive%20Security-telemetry-555555" alt="Defensive Security" />
-</p>
+```text
+fixed CSV telemetry
+  -> normalized TelemetryEvent records
+  -> lookback analytics and sliding-window features
+  -> baseline detection and forecasting evidence
+  -> operator-reviewed alerts
+  -> dashboard, reports, and benchmark templates
+```
+
+Implemented today:
+
+- Pluggable `TrafficSource` API with context-manager lifecycle.
+- `TelemetryEvent` and `Alert` schemas using Pydantic.
+- CSV replay for Edge-IIoT-style datasets and similar IDS exports.
+- Sliding-window feature extraction over iterable event streams.
+- Rule-based baseline detector with optional `sklearn` IsolationForest support.
+- Pipeline runner that tracks events, windows, detections, skipped rows, and emitted alerts.
+- Typer CLI for config validation, CSV replay, demo execution, and static report generation.
+- Static evidence pack under `reports/`.
+
+## Why This Matters
+
+Edge nodes, robotics cells, private-network sites, and AI-enabled systems need local defensive telemetry that can be reviewed close to the runtime environment. The value here is not replacing a SIEM or claiming a production IDS. The value is making local flow-style signals observable, forecastable, reviewable, and benchmarkable near the edge.
+
+## Run This Demo
+
+```bash
+git clone https://github.com/obiedeh/jetson-edge-ai-security.git
+cd jetson-edge-ai-security
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+edge-security run-demo
+edge-security generate-demo-report --output-dir reports/demo
+edge-security build-static-reports --reports-dir reports
+```
+
+Optional ML detector support:
+
+```bash
+python -m pip install -e ".[ml]"
+```
+
+## View the Evidence Pack
+
+- [Landing page](reports/index.html)
+- [Dashboard](reports/dashboard.html)
+- [Demo replay report](reports/demo/replay_report.md)
+- [Runtime metrics](reports/demo/runtime_metrics.json)
+- [Training evidence](reports/training_run.json)
+- [Thor benchmark template](reports/thor_benchmark.json)
+- [Portfolio deliverables](PORTFOLIO_DELIVERABLES.md)
+
+GitHub shows committed HTML files as source code. Use the GitHub Pages links at the top of this README to open rendered pages.
+
+## Current vs Planned
+
+| Layer | Current working system | Planned Jetson ingestion upgrade |
+|---|---|---|
+| Input source | Fixed CSV fixture | Jetson-generated flow CSV |
+| Capture mode | Deterministic replay | SPAN, TAP, or local interface capture |
+| Packet stage | Not required for current evidence | Rotating PCAP files |
+| Flow extraction | CSV columns normalized into `TelemetryEvent` | Zeek `conn.log`, Suricata `eve.json`, CICFlow-style records |
+| Analytics path | Lookback analytics, forecasting, alerts, reports | Same existing analytics path |
+| Dashboard impact | Implemented | No detector/dashboard rewrite intended |
+| Hardware benchmark | Template committed | Pending measured Thor-class run |
+
+Adapters may change. The analytics pipeline should not.
+
+## Defensive Boundary
+
+This repo is defensive only.
+
+- No malware generation.
+- No exploit replay.
+- No offensive tooling.
+- No autonomous response.
+- No line-rate capture claim.
+- No production IDS deployment claim.
+- No measured Thor latency, throughput, power, or memory claim until benchmark artifacts are committed.
+
+## Planned Jetson Sniffer Upgrade
+
+The planned upgrade is documented in [docs/jetson-sniffer-upgrade-plan.md](docs/jetson-sniffer-upgrade-plan.md).
+
+Planned pipeline:
+
+```text
+SPAN/TAP/local interface
+  -> rotating PCAP
+  -> Zeek / Suricata / CICFlow-style flow extraction
+  -> generated CSV
+  -> existing lookback, forecasting, alert, and dashboard pipeline
+```
+
+The intent is source-agnostic flow ingestion. New sources should normalize into the same event/schema contract instead of forcing a detector or dashboard rewrite.
+
+## Evidence Status
+
+| Evidence | Status |
+|---|---|
+| Fixed CSV fixture replay | Implemented |
+| Lookback analytics | Implemented |
+| Forecasting evidence | Implemented |
+| Operator-reviewed alerts | Implemented |
+| Static landing page and dashboard | Implemented |
+| Zeek / Suricata / CICFlow adapters | Planned |
+| Jetson-generated flow CSV | Planned |
+| Thor-class hardware benchmark | Pending measured run |
 
 ## Architecture and Evidence
 
-- [Evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html)
-- [Static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html)
-- [Technical brief](https://obiedeh.github.io/jetson-edge-ai-security/reports/tech-brief.html)
-- [Business case](https://obiedeh.github.io/jetson-edge-ai-security/reports/business-case.html)
 - [Architecture overview](docs/architecture.md)
 - [System architecture diagram](docs/diagrams/system-architecture.mmd)
 - [Runtime flow diagram](docs/diagrams/runtime-flow.mmd)
@@ -39,196 +135,99 @@ The project is edge-native because the runtime is built around streaming sources
 
 ```mermaid
 flowchart LR
-    A["Defensive telemetry<br/>CSV replay / lab data"] --> B["TrafficSource API"]
+    A["Fixed CSV telemetry fixture"] --> B["TrafficSource API"]
     B --> C["Normalized TelemetryEvent"]
-    C --> D["Sliding-window features"]
-    D --> E["Baseline detector<br/>rules / optional IsolationForest"]
-    E --> F["Alert builder"]
-    F --> G["Runtime metrics<br/>alerts.jsonl / replay report"]
-    G --> H["Operator review<br/>edge security evidence"]
-    I["Future adapters<br/>PCAP / Zeek / Suricata / MQTT"] -. planned .-> B
+    C --> D["Lookback analytics and feature windows"]
+    D --> E["Forecasting and baseline detection"]
+    E --> F["Operator-reviewed alerts"]
+    F --> G["Dashboard and evidence reports"]
+    H["Planned Jetson flow ingestion<br/>PCAP / Zeek / Suricata / CICFlow"] -. "generated CSV" .-> B
 ```
 
-## Recommended GitHub About
+## Core Stack
 
-- **Suggested short description:** Edge AI runtime security system for Jetson-class devices with telemetry parsing, anomaly detection, alerting, and deployment reports.
-- **Suggested topics/tags:** `jetson`, `edge-ai`, `security`, `anomaly-detection`, `telemetry`, `runtime-monitoring`, `ai-infrastructure`
-- **Positioning category:** Core
+**Implemented:** Python, Typer, Pydantic, CSV replay, sliding-window features, baseline anomaly detection, pytest.
 
-## Current MVP
+**Planned ingestion path:** Jetson-generated flow CSVs, Zeek logs, Suricata `eve.json`, CICFlow-style records, Thor-class benchmark evidence.
 
-- Pluggable `TrafficSource` API with context-manager lifecycle.
-- `TelemetryEvent` and `Alert` schemas using Pydantic.
-- CSV replay for Edge-IIoT style datasets and similar IDS exports.
-- Sliding window feature extraction over an iterable event stream.
-- Rule-based baseline detector with optional `sklearn` IsolationForest.
-- Pipeline runner that tracks events, windows, detections, and emitted alerts.
-- Typer CLI for config validation, CSV replay, and a built-in demo.
+<p>
+  <img src="https://img.shields.io/badge/Python-3.x-blue" alt="Python" />
+  <img src="https://img.shields.io/badge/Typer-CLI-2F855A" alt="Typer" />
+  <img src="https://img.shields.io/badge/Pydantic-schemas-E92063" alt="Pydantic" />
+  <img src="https://img.shields.io/badge/scikit--learn-optional-F7931E" alt="scikit-learn optional" />
+  <img src="https://img.shields.io/badge/Pytest-tested-brightgreen" alt="Pytest" />
+  <img src="https://img.shields.io/badge/Jetson-integration%20path-76B900" alt="NVIDIA Jetson integration path" />
+  <img src="https://img.shields.io/badge/Defensive%20Security-telemetry-555555" alt="Defensive Security" />
+</p>
 
-## Execution Targets
+## Commands
 
-- Linux is the primary runtime target.
-- Jetson Orin-class Linux is the intended edge deployment target for this project.
-- The current MVP should run as a lightweight Python runtime for CSV replay and baseline detection on Jetson-class devices.
-- Jetson hardware benchmark artifacts are still pending and should be added before claiming measured edge performance.
-
-## Telemetry Source Strategy
-
-The runtime normalizes every source into `TelemetryEvent` before feature extraction. That keeps ML, detection, alerting, and reporting independent from the source adapter.
-
-Supported now:
-
-- CSV replay from defensive datasets and lab captures.
-
-Planned adapters:
-
-- PCAP replay for packet captures.
-- Live capture for defensive interface monitoring.
-- MQTT telemetry ingestion.
-- Zeek log ingestion.
-- Suricata EVE JSON ingestion.
-
-Attack traffic support is intentionally limited to controlled defensive lab telemetry, replay, simulation, and IDS-log ingestion.
-
-## What Is Intentionally Not Included
-
-- Offensive malware generation or exploitation tooling.
-- Autonomous attack execution.
-- Notebook-only runtime paths.
-- Deep learning as the default detector.
-- Hardcoded `/data` paths or hidden global state.
-
-Existing notebooks and reports should remain reference material. Reusable academic ideas are preserved in runtime form through CSV column mapping, label normalization, timestamp parsing, temporal aggregation, leakage-aware feature windows, and attack-count forecasting scaffolding.
-
-## Install
-
-```bash
-git clone https://github.com/obiedeh/jetson-edge-ai-security.git
-cd jetson-edge-ai-security
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[dev]"
-```
-
-Optional ML detector support:
-
-```bash
-python -m pip install -e ".[ml]"
-```
-
-## Run Tests
-
-```bash
-python -m pytest
-```
-
-## Validate Config
+Validate config:
 
 ```bash
 edge-security validate-config --config configs/default.yaml
 ```
 
-## Run CSV Replay
+Run CSV replay:
 
 ```bash
 edge-security replay-csv --path data/sample.csv --limit 1000
 ```
 
-For malformed-row enforcement during data quality checks:
+Enforce malformed-row handling:
 
 ```bash
 edge-security replay-csv --path data/sample.csv --strict
 ```
 
-## Public Dataset Mode
-
-You can list known public defensive datasets:
+List known public defensive datasets:
 
 ```bash
 edge-security list-datasets
 ```
 
-For datasets with an allowlisted direct archive URL, the runtime can download, extract, find a CSV, and replay it:
+Fetch and replay an allowlisted dataset:
 
 ```bash
 edge-security fetch-dataset wustl-iiot-2021
 edge-security replay-dataset wustl-iiot-2021 --limit 1000
 ```
 
-The first auto-download target is `wustl-iiot-2021`, because its official project page exposes a direct ZIP archive. Other noteworthy datasets, such as CICIoT2023, ToN_IoT, BoT-IoT, and Edge-IIoTset, are listed for awareness but may require manual download through forms or SharePoint. For those, download the dataset yourself and use `replay-csv --path <local.csv>`.
-
-## Run This Demo
+Run tests:
 
 ```bash
-edge-security run-demo
+python -m pytest
 ```
 
-## Generate Evidence Artifacts
+Run the full verification path:
 
 ```bash
-edge-security generate-demo-report --output-dir reports/demo
-edge-security build-static-reports --reports-dir reports
+make verify
 ```
 
-The demo report writes:
+## Thor-Class Deployment Readiness
 
-- `reports/demo/runtime_metrics.json`
-- `reports/demo/alerts.jsonl`
-- `reports/demo/replay_report.md`
-- `reports/index.html`
-- `reports/dashboard.html`
-- `reports/tech-brief.html`
-- `reports/business-case.html`
+**Target hardware:** Jetson AGX Thor-class target hardware. Record the exact device SKU, JetPack version, memory configuration, NIC/interface name, and benchmark environment in the generated benchmark artifact.
 
-For the reviewer-facing deliverables checklist, see [PORTFOLIO_DELIVERABLES.md](PORTFOLIO_DELIVERABLES.md).
-
-## Validated on Jetson AGX Thor
-
-**Target hardware:** NVIDIA Jetson AGX Thor (64 GB LPDDR5, tegra-234)
-**JetPack:** 6.x · TensorRT 10.x · CUDA 12.x
-
-Performance gates (from `reports/thor_benchmark.json`):
+Performance gates from `reports/thor_benchmark.json` remain pending until a real run is committed:
 
 | Gate | Threshold | Status |
 |---|---|---|
-| Detector p95 latency (TensorRT FP16) | ≤ 10 ms per flow | Pending first Thor run |
-| Forecaster p95 latency (TensorRT FP16) | ≤ 50 ms per (20, 57) sequence | Pending first Thor run |
-| Throughput @ 1000 ev/s sustained 5 min | ≥ 1000 ev/s | Pending first Thor run |
-| Memory footprint (both engines + service) | ≤ 4 GB | Pending first Thor run |
+| Detector p95 latency | <= 10 ms per flow | Pending measured run |
+| Forecaster p95 latency | <= 50 ms per `(20, 57)` sequence | Pending measured run |
+| Throughput at 1000 events/sec | >= 1000 events/sec | Pending measured run |
+| Memory footprint | <= 4 GB | Pending measured run |
 
-Numbers are **measured, not aspirational**. Run `deploy/thor/run_benchmark.py` on
-the actual hardware to populate `reports/thor_benchmark.json` with real figures.
-The dashboard `validated-thor-benchmark` badge appears once the benchmark has run.
+The dashboard shows a `pending-thor-run` badge until `deploy/thor/run_benchmark.py` is executed on target hardware and the measured artifact is committed.
 
-### Deploy to Thor
+See [deploy/thor/operator-runbook.md](deploy/thor/operator-runbook.md) for install, upgrade, rollback, and benchmark procedures.
 
-```bash
-# 1. Build web dashboard on dev machine
-cd web && pnpm build && cd ..
+## Roadmap
 
-# 2. Copy to Thor
-scp -r . thor:/tmp/edge-ids-src
+The next steps are intentionally narrow:
 
-# 3. Install on Thor (as root)
-ssh thor "sudo bash /tmp/edge-ids-src/deploy/thor/install.sh"
+- Add source adapters that generate the same CSV/event contract from Zeek, Suricata, and CICFlow-style records.
+- Run a documented Thor-class hardware benchmark and commit measured latency, throughput, memory, power, and thermal notes.
+- Add packet-drop and flow-extraction measurements before making capture-performance claims.
+- Keep all response actions operator-reviewed.
 
-# 4. Build TensorRT engines
-ssh thor "python3 /opt/edge-ids/deploy/thor/build_tensorrt_engines.py --fp16"
-
-# 5. Run benchmark (5 min per tier)
-ssh thor "python3 /opt/edge-ids/deploy/thor/run_benchmark.py --trt"
-```
-
-See `deploy/thor/operator-runbook.md` for full install / upgrade / rollback procedures.
-
-## Deployment Architecture
-
-The runtime is designed so Thor deployment adds hardware-specific packaging
-without changing the detection pipeline:
-
-- FastAPI backend serves both the REST API and the web dashboard static build.
-- TensorRT FP16 engines replace ONNX CPU inference on Jetson.
-- `edge-security.service` (systemd) manages the process with auto-restart.
-- SQLite alerts store persists to `/var/lib/edge-ids/data/` (survives restarts).
-- PCAP replay source simulates SPAN/mirror traffic for offline validation;
-  live capture (`libpcap`) is deferred to v1.x.
