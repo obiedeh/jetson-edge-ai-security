@@ -142,7 +142,7 @@ def test_write_replay_artifacts_creates_output_dir(tmp_path: Path) -> None:
     assert nested.exists()
 
 
-def test_write_static_report_pages_creates_landing_and_dashboard(tmp_path: Path) -> None:
+def test_write_static_report_pages_creates_portfolio_pages(tmp_path: Path) -> None:
     reports_dir = tmp_path / "reports"
     demo_dir = reports_dir / "demo"
     demo_dir.mkdir(parents=True)
@@ -193,13 +193,25 @@ def test_write_static_report_pages_creates_landing_and_dashboard(tmp_path: Path)
 
     paths = write_static_report_pages(reports_dir=reports_dir)
 
-    assert {path.name for path in paths} == {"index.html", "dashboard.html"}
+    assert {path.name for path in paths} == {
+        "index.html",
+        "dashboard.html",
+        "tech-brief.html",
+        "business-case.html",
+    }
     index = (reports_dir / "index.html").read_text(encoding="utf-8")
     dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
+    tech_brief = (reports_dir / "tech-brief.html").read_text(encoding="utf-8")
+    business_case = (reports_dir / "business-case.html").read_text(encoding="utf-8")
+
     assert "Edge Security Telemetry Evidence Pack" in index
     assert "Jetson Edge AI Security Dashboard" in dashboard
+    assert "Technical Brief" in tech_brief
+    assert "Business Case" in business_case
     assert "Operational Decision Summary" in dashboard
     assert "Evidence vs Boundary" in dashboard
     assert "No offensive malware generation" in index
     assert "No live production IDS deployment claim" in dashboard
     assert "pending-thor-run" in dashboard
+    assert "Reproducibility" in tech_brief
+    assert "Operational Value" in business_case
