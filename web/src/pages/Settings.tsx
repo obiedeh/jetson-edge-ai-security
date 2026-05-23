@@ -31,10 +31,14 @@ export default function SettingsPage() {
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
   const [benchRunning, setBenchRunning] = useState(false)
   const [benchMsg, setBenchMsg] = useState<string | null>(null)
+  const [restarting, setRestarting] = useState(false)
+  const [restartMsg, setRestartMsg] = useState<string | null>(null)
 
   useEffect(() => {
     api.getModels().then(setModels).catch(() => null)
     api.getBenchmarkRuns().then(r => setBenchRuns(r.runs)).catch(() => null)
+    // Load the currently persisted source from the backend
+    api.getRuntimeStatus().then(s => setActiveSource(s.source)).catch(() => null)
   }, [])
 
   const handleSetActiveModel = async (type: 'detector' | 'forecaster', name: string) => {
@@ -106,9 +110,36 @@ export default function SettingsPage() {
             </label>
           ))}
         </div>
-        <div className="mt-3 text-xs text-gray-500">
-          Source switching updates the runtime config. Restart the pipeline to apply.
+        <div className="mt-4 flex items-center gap-3 flex-wrap">
+          <button
+            onClick={async () => {
+              setRestarting(true)
+              setRestartMsg(null)
+              try {
+                const r = await api.restartRuntime(activeSource)
+                setRestartMsg(`✓ ${r.message}`)
+              } catch (e: unknown) {
+                setRestartMsg(`✗ ${e instanceof Error ? e.message : String(e)}`)
+              } finally {
+                setRestarting(false)
+              }
+            }}
+            disabled={restarting || activeSource === 'live-mirror'}
+            className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded text-sm font-medium disabled:opacity-50 transition-colors flex items-center gap-2"
+          >
+            {restarting
+              ? <><span className="animate-spin inline-block">↻</span> Restarting…</>
+              : '↻ Restart Runtime'}
+          </button>
+          {activeSource === 'live-mirror' && (
+            <span className="text-xs text-gray-500 italic">Live mirror is not available in v0.x</span>
+          )}
         </div>
+        {restartMsg && (
+          <div className={cn('mt-2 text-sm', restartMsg.startsWith('✓') ? 'text-green-400' : 'text-red-400')}>
+            {restartMsg}
+          </div>
+        )}
       </Section>
 
       {/* Model selector */}

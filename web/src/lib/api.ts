@@ -233,4 +233,15 @@ export const api = {
   getBenchmarkRuns: () => get<BenchmarkRunsResponse>('/benchmark/runs'),
 
   triggerThorBenchmark: () => post<{ started: boolean; message: string }>('/benchmark/thor', {}),
+
+  restartRuntime: (source: string) =>
+    post<{ ok: boolean; source: string; message: string; restarted_at: string }>(
+      '/runtime/restart',
+      { source },
+    ),
+
+  getRuntimeStatus: () =>
+    get<{ source: string; bg_tasks_running: number; demo_tick_interval_s: number; forecast_tick_interval_s: number; timestamp: string }>(
+      '/runtime/status',
+    ),
 }
