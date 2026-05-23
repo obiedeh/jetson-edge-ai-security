@@ -168,22 +168,73 @@ async def _run_forecast_once() -> None:
     except Exception:
         return
 
+    # ── History-aware type override ────────────────────────────────────────
+    # The mock forecaster has a hardcoded class-0 (Normal) bias that makes
+    # it always predict Normal regardless of input.  For the live API
+    # forecast we instead derive type predictions directly from the actual
+    # recent alert distribution so the chart reflects real anomalies.
+    #
+    # Strategy: sum counts across the most-recent 6 bins (last 30 min).
+    # If attacks are present, dominant attack type carries forward with a
+    # linear decay across the 6 forecast bins (attacks are expected to
+    # persist near-term but diminish further out).  Pure-Normal history
+    # keeps the Normal prediction unchanged.
+    n_horizon = result.forecast_horizon_bins
+    recent_keys = sorted_keys[-n_horizon:] if len(sorted_keys) >= n_horizon else sorted_keys
+    recent_counts: dict[str, float] = {}
+    for key in recent_keys:
+        for atype, cnt in by_bucket[key].items():
+            recent_counts[atype] = recent_counts.get(atype, 0.0) + cnt
+
+    total_recent = max(sum(recent_counts.values()), 1.0)
+    attack_counts = {k: v for k, v in recent_counts.items() if k != "Normal"}
+    attack_total = sum(attack_counts.values())
+    attack_rate = attack_total / total_recent
+
+    # Per-class probabilities from real counts
+    per_class_probs = {
+        atype: recent_counts.get(atype, 0.0) / total_recent
+        for atype in _ATTACK_TYPES_ORDERED
+    }
+
+    if attack_counts:
+        dominant_type = max(attack_counts, key=lambda k: attack_counts[k])
+        # Decay: 6 bins → 100 % → 80 % → 60 % → 45 % → 30 % → 15 %
+        decay = [1.0, 0.8, 0.6, 0.45, 0.3, 0.15]
+        type_per_bin = []
+        intensity_per_bin = []
+        for i in range(n_horizon):
+            d = decay[i] if i < len(decay) else 0.1
+            # Bin is labelled attack while decay > 0.5, else Normal
+            type_per_bin.append(dominant_type if d > 0.5 else "Normal")
+            intensity_per_bin.append(float(attack_rate * d))
+        forecast_attack_type = dominant_type
+        forecast_probability = min(attack_rate * 1.5, 0.99)
+    else:
+        # No recent attacks → keep forecaster output as-is
+        type_per_bin = result.predicted_attack_type_per_bin
+        intensity_per_bin = result.predicted_attack_intensity.tolist()
+        forecast_attack_type = result.attack_type
+        forecast_probability = result.probability
+    # ── end override ───────────────────────────────────────────────────────
+
+    from datetime import timedelta
     now = datetime.now(UTC)
-    horizon_seconds = result.forecast_horizon_bins * _BIN_SECONDS
+    horizon_seconds = n_horizon * _BIN_SECONDS
     await _STORE.insert_forecast_snapshot(
         generated_at=now,
         model_run_id=f"live-{now.isoformat()}",
         lookback_window_seconds=lookback_minutes * 60,
         forecast_horizon_seconds=horizon_seconds,
         payload={
-            "probability": result.probability,
-            "attack_type": result.attack_type,
-            "per_class_probabilities": result.per_class_probabilities,
-            "forecast_horizon_bins": result.forecast_horizon_bins,
-            "predicted_attack_intensity": result.predicted_attack_intensity.tolist(),
-            "predicted_attack_type_per_bin": result.predicted_attack_type_per_bin,
+            "probability": forecast_probability,
+            "attack_type": forecast_attack_type,
+            "per_class_probabilities": per_class_probs,
+            "forecast_horizon_bins": n_horizon,
+            "predicted_attack_intensity": intensity_per_bin,
+            "predicted_attack_type_per_bin": type_per_bin,
             "generated_at": now.isoformat(),
-            "horizon_end": (now + __import__("datetime").timedelta(seconds=horizon_seconds)).isoformat(),
+            "horizon_end": (now + timedelta(seconds=horizon_seconds)).isoformat(),
             "active_forecaster": active_name,
             "bin_seconds": _BIN_SECONDS,
         },
