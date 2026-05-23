@@ -33,6 +33,8 @@ validate-artifacts:
 	test -s reports/demo/replay_report.md
 	test -s reports/index.html
 	test -s reports/dashboard.html
+	test -s reports/tech-brief.html
+	test -s reports/business-case.html
 
 verify: lint typecheck test demo-report static-reports validate-artifacts web-build
 
