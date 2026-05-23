@@ -20,7 +20,7 @@ from jetson_edge_ai_security.datasets import (
     prepare_dataset,
 )
 from jetson_edge_ai_security.detection import BaselineDetector, BaselineThresholds
-from jetson_edge_ai_security.models.train import bench_app, export_app, train_app
+from jetson_edge_ai_security.models.train import bench_app, export_app, models_app, train_app
 from jetson_edge_ai_security.runtime import PipelineRunner, write_replay_artifacts
 from jetson_edge_ai_security.schemas import Alert
 from jetson_edge_ai_security.sources import CsvReplaySource
@@ -30,6 +30,7 @@ app = typer.Typer(help="Defensive edge security telemetry runtime")
 app.add_typer(train_app, name="train")
 app.add_typer(export_app, name="export")
 app.add_typer(bench_app, name="bench")
+app.add_typer(models_app, name="models")
 console = Console()
 
 
@@ -210,6 +211,75 @@ def _run_csv_pipeline(
         alerts = runner.run()
 
     return alerts, runner, source
+
+
+@app.command("seed-db")
+def seed_db(
+    count: Annotated[int, typer.Option(help="Number of alerts to insert.")] = 120,
+    span_minutes: Annotated[int, typer.Option(help="How many minutes back the oldest alert should be.")] = 119,
+    clear: Annotated[bool, typer.Option(help="Delete existing alerts before seeding.")] = True,
+    db_path: Annotated[Path, typer.Option(help="Path to alerts SQLite DB.")] = Path("data/alerts.db"),
+) -> None:
+    """Seed the alerts database with demo data anchored to *now*.
+
+    Use this whenever the dashboard Lookback page shows no data — the seeded
+    alerts always span the last --span-minutes minutes so all time-range
+    pickers (15m / 30m / 60m / 120m) return data immediately.
+    """
+    import asyncio
+    import random
+
+    from datetime import timedelta
+
+    from jetson_edge_ai_security.alerts.store import AlertStore
+
+    ATTACK_TYPES = [
+        "DDoS_ICMP", "DDoS_UDP", "DDoS_TCP", "DDoS_HTTP",
+        "Uploading", "Ransomware", "Normal",
+    ]
+    WEIGHTS = [20, 15, 15, 10, 15, 10, 15]
+    SOURCES = ["replay-csv", "replay-pcap"]
+
+    async def _seed() -> int:
+        import aiosqlite
+
+        store = AlertStore(db_path=db_path)
+        await store.init()
+
+        if clear:
+            async with aiosqlite.connect(str(db_path)) as db:
+                await db.execute("DELETE FROM alerts")
+                await db.commit()
+
+        rng = random.Random(99)
+        now = datetime.now(UTC)
+        step = span_minutes / max(count - 1, 1)
+
+        for i in range(count):
+            # newest at ~1 min ago, oldest at ~span_minutes ago
+            minutes_ago = 1 + (i * step) + rng.uniform(-step * 0.3, step * 0.3)
+            ts = now - timedelta(minutes=max(0.1, minutes_ago))
+            attack_type = rng.choices(ATTACK_TYPES, weights=WEIGHTS)[0]
+            await store.insert_alert(
+                timestamp=ts,
+                attack_type=attack_type,
+                confidence=round(rng.uniform(0.55, 0.99), 4),
+                severity=rng.choice(["low", "medium", "high", "critical"]),
+                source=rng.choice(SOURCES),
+                payload={
+                    "window_id": i,
+                    "source_ip": f"10.0.{rng.randint(0, 5)}.{rng.randint(1, 254)}",
+                    "dest_ip": f"192.168.1.{rng.randint(1, 10)}",
+                },
+            )
+
+        return count
+
+    n = asyncio.run(_seed())
+    console.print(
+        f"[green]✓[/green] Seeded {n} alerts spanning last ~{span_minutes} min → "
+        f"{db_path}"
+    )
 
 
 @app.command("run-demo")
