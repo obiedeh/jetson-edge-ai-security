@@ -141,8 +141,8 @@ export default function SettingsPage() {
           </div>
         )}
         <div className="mt-2 text-xs text-gray-500">
-          Saves the selected source to the runtime config and restarts background tasks.
-          To replay a real CSV or PCAP file, run <span className="font-mono text-gray-400">edge-security replay-csv</span> or <span className="font-mono text-gray-400">replay-pcap</span> from the CLI.
+          <div>Saves the selected source to the runtime config and restarts background tasks.</div>
+          <div className="mt-1">To replay a real CSV or PCAP file, run <span className="font-mono text-gray-400">edge-security replay-csv</span> or <span className="font-mono text-gray-400">replay-pcap</span> from the CLI.</div>
         </div>
       </Section>
 
