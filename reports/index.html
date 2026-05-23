@@ -3,132 +3,90 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edge Security Telemetry Evidence Pack</title>
+  <title>Jetson Edge AI Security Evidence Pack</title>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0b1020;
-      --panel: #121a2c;
-      --panel-2: #17223a;
-      --line: #293653;
-      --text: #eef4ff;
-      --muted: #9fb0ca;
-      --accent: #38bdf8;
-      --good: #22c55e;
-      --warn: #f59e0b;
-      --risk: #ef4444;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top left, #13223d 0, var(--bg) 34rem);
-      color: var(--text);
-      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
-    header.hero { padding: 28px 0 18px; }
-    .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.08em; }
-    h1 { margin: 8px 0 10px; font-size: clamp(2.1rem, 5vw, 4.5rem); line-height: 1.02; letter-spacing: 0; }
-    h2 { margin: 0 0 14px; font-size: 1.45rem; }
-    h3 { margin: 0 0 8px; }
-    p { color: var(--muted); margin: 0 0 12px; }
-    a { color: #7dd3fc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    section { margin-top: 28px; padding: 24px; background: rgba(18, 26, 44, 0.9); border: 1px solid var(--line); border-radius: 8px; }
-    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .two { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-    .card, .link-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-height: 120px; }
-    .card span { display: block; color: var(--muted); font-size: 0.9rem; }
-    .card strong { display: block; margin-top: 6px; font-size: 1.55rem; line-height: 1.15; }
-    .card.good { border-color: rgba(34, 197, 94, 0.55); }
-    .card.warn { border-color: rgba(245, 158, 11, 0.65); }
-    .card.risk { border-color: rgba(239, 68, 68, 0.65); }
-    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; margin: 0 6px 6px 0; }
-    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 8px; }
-    th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
-    th { color: var(--text); background: #0f1729; }
-    td { color: var(--muted); }
-    ul { margin: 0; padding-left: 20px; color: var(--muted); }
-    .callout { border-left: 4px solid var(--warn); padding-left: 14px; }
-    .footer { margin-top: 24px; color: var(--muted); font-size: 0.92rem; }
+    :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2c; --panel2:#17223a; --line:#293653; --text:#eef4ff; --muted:#9fb0ca; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; }
+    * { box-sizing:border-box; } body { margin:0; background:radial-gradient(circle at top left,#13223d 0,var(--bg) 34rem); color:var(--text); font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 64px; } header { padding:28px 0 18px; } .eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }
+    h1 { margin:8px 0 10px; font-size:clamp(2.1rem,5vw,4.5rem); line-height:1.02; } h2 { margin:0 0 14px; font-size:1.45rem; } h3 { margin:0 0 8px; } p,li,td { color:var(--muted); } a { color:#7dd3fc; text-decoration:none; } a:hover { text-decoration:underline; }
+    section { margin-top:28px; padding:24px; background:rgba(18,26,44,.9); border:1px solid var(--line); border-radius:8px; } .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); } .two { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+    .card,.link-card { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:16px; min-height:120px; } .card span { display:block; color:var(--muted); font-size:.9rem; } .card strong { display:block; margin-top:6px; font-size:1.55rem; line-height:1.15; } .good { border-color:rgba(34,197,94,.55); } .warn { border-color:rgba(245,158,11,.65); } .pill { display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:.85rem; margin:0 6px 6px 0; }
   </style>
 </head>
 <body>
 <main>
-  <header class="hero">
+  <header>
     <div class="eyebrow">Jetson Edge AI Security</div>
     <h1>Edge Security Telemetry Evidence Pack</h1>
     <p>Defensive replay, normalized telemetry, model evidence, alert artifacts, and Jetson deployment readiness.</p>
-    <p>
-      <a href="dashboard.html">Open dashboard</a> |
-      <a href="../README.md">README</a> |
-      <a href="../docs/architecture.md">Architecture</a> |
-      <a href="../deploy/thor/operator-runbook.md">Thor runbook</a>
-    </p>
+    <p><a href="dashboard.html">Dashboard</a> | <a href="tech-brief.html">Technical brief</a> | <a href="business-case.html">Business case</a> | <a href="../docs/architecture.md">Architecture docs</a> | <a href="../deploy/thor/operator-runbook.md">Thor runbook</a></p>
   </header>
-  
-<section>
-  <h2>Executive Evidence Summary</h2>
-  <div class="grid"><article class="card good"><span>Demo events replayed</span><strong>12</strong><p>Built-in defensive replay</p></article><article class="card warn"><span>Alerts emitted</span><strong>4</strong><p>Operator-review evidence</p></article><article class="card good"><span>Detector AUC</span><strong>0.9796</strong><p>GBM detector on 5k fixture</p></article><article class="card warn"><span>Thor validation</span><strong>pending-thor-run</strong><p>Hardware benchmark pending until measured</p></article></div>
-</section>
 
-<section>
-  <h2>Problem</h2>
-  <p>Edge security telemetry can arrive from CSV replay, packet captures, IDS logs, or future live sources. The engineering problem is normalizing those sources into one defensive runtime path without rewriting feature extraction, detection, alerting, or reporting.</p>
-</section>
-
-<section>
-  <h2>What I Built</h2>
-  <p>I built a pluggable edge-security telemetry runtime that normalizes defensive events, extracts sliding-window features, runs conservative detection, emits alerts, stores evidence artifacts, and provides a Jetson deployment path.</p>
-  <div>
-    <span class="pill">TrafficSource API</span>
-    <span class="pill">TelemetryEvent schema</span>
-    <span class="pill">CSV replay</span>
-    <span class="pill">PCAP replay path</span>
-    <span class="pill">GBM detector artifact</span>
-    <span class="pill">AR forecaster artifact</span>
-    <span class="pill">FastAPI + web dashboard</span>
-  </div>
-</section>
-
-<section>
-  <h2>Visual Evidence Links</h2>
-  <div class="grid">
-    <article class="link-card"><h3><a href="dashboard.html">Operator dashboard</a></h3><p>Static evidence dashboard with runtime, model, and Thor-readiness summaries.</p></article>
-    <article class="link-card"><h3><a href="demo/replay_report.md">Replay report</a></h3><p>Defensive replay summary with events, windows, alerts, and safety boundary.</p></article>
-    <article class="link-card"><h3><a href="training_run.json">Training metrics</a></h3><p>Committed detector and forecaster metrics, ONNX paths, gates, and CPU latency.</p></article>
-    <article class="link-card"><h3><a href="thor_benchmark.json">Thor benchmark</a></h3><p>Pending hardware benchmark template; values remain pending until measured on device.</p></article>
-  </div>
-</section>
-
-<section>
-  <h2>Evidence vs Boundary</h2>
-  <div class="two">
-    <div>
-      <h3>Evidence demonstrated</h3>
-      <ul>
-        <li>Defensive replay path</li>
-        <li>Normalized telemetry events</li>
-        <li>Sliding-window feature extraction</li>
-        <li>Alert JSONL and runtime metrics</li>
-        <li>Reference detector and forecaster artifacts</li>
-        <li>Jetson AGX Thor deployment runbook</li>
-      </ul>
+  <section>
+    <h2>Executive Evidence Summary</h2>
+    <div class="grid">
+      <article class="card good"><span>Demo events replayed</span><strong>12</strong><p>Built-in defensive replay.</p></article>
+      <article class="card warn"><span>Alerts emitted</span><strong>4</strong><p>Operator-review evidence.</p></article>
+      <article class="card good"><span>Detector AUC</span><strong>0.9796</strong><p>GBM detector on fixture data.</p></article>
+      <article class="card warn"><span>Thor validation</span><strong>pending-thor-run</strong><p>Hardware benchmark pending until measured.</p></article>
     </div>
-    <div>
-      <h3>Boundary preserved</h3>
-      <ul>
-        <li>No offensive malware generation</li>
-        <li>No autonomous attack execution</li>
-        <li>No autonomous response action</li>
-        <li>No live production IDS claim</li>
-        <li>Thor latency remains pending until measured</li>
-      </ul>
-    </div>
-  </div>
-</section>
+  </section>
 
-  <p class="footer">Generated from committed defensive replay, model, and benchmark artifacts. No offensive tooling or autonomous response is claimed.</p>
+  <section>
+    <h2>Problem</h2>
+    <p>Edge security telemetry can arrive from CSV replay, packet captures, IDS logs, or future live sources. The engineering problem is normalizing those sources into one defensive runtime path without rewriting feature extraction, detection, alerting, or reporting.</p>
+  </section>
+
+  <section>
+    <h2>What I Built</h2>
+    <p>A pluggable edge-security telemetry runtime that normalizes defensive events, extracts sliding-window features, runs conservative detection, emits alerts, stores evidence artifacts, and provides a Jetson deployment path.</p>
+    <div>
+      <span class="pill">TrafficSource API</span>
+      <span class="pill">TelemetryEvent schema</span>
+      <span class="pill">CSV replay</span>
+      <span class="pill">PCAP replay path</span>
+      <span class="pill">GBM detector artifact</span>
+      <span class="pill">AR forecaster artifact</span>
+      <span class="pill">FastAPI + web dashboard</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reviewer Path</h2>
+    <div class="grid">
+      <article class="link-card"><h3><a href="dashboard.html">Operator dashboard</a></h3><p>Runtime, model, alert, and Thor-readiness evidence in one reviewer-facing dashboard.</p></article>
+      <article class="link-card"><h3><a href="tech-brief.html">Technical brief</a></h3><p>Architecture, runtime pipeline, data contracts, model path, and deployment boundary.</p></article>
+      <article class="link-card"><h3><a href="business-case.html">Business case</a></h3><p>Why the project matters for edge AI operations, security review, and Jetson-class deployments.</p></article>
+      <article class="link-card"><h3><a href="demo/replay_report.md">Replay report</a></h3><p>Defensive replay summary with events, windows, alerts, and safety boundary.</p></article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Evidence vs Boundary</h2>
+    <div class="two">
+      <div>
+        <h3>Evidence demonstrated</h3>
+        <ul>
+          <li>Defensive replay path</li>
+          <li>Normalized telemetry events</li>
+          <li>Sliding-window feature extraction</li>
+          <li>Alert JSONL and runtime metrics</li>
+          <li>Reference detector and forecaster artifacts</li>
+          <li>Jetson AGX Thor deployment runbook</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Boundary preserved</h3>
+        <ul>
+          <li>No offensive malware generation</li>
+          <li>No autonomous attack execution</li>
+          <li>No autonomous response action</li>
+          <li>No live production IDS claim</li>
+          <li>Thor latency remains pending until measured</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 </main>
 </body>
 </html>
