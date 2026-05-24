@@ -70,8 +70,8 @@ def _build_lag_dataset(
     dataset: Path,
     lookback_bins: int = 20,
     forecast_bins: int = 6,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Build (X_feat, y_scalar, lag1_pred) for regression training.
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build (X_feat, y_scalar, lag1_pred, y_multi) for regression training.
 
     X_feat:     rich lag feature vector, shape (n, 64)
     y_scalar:   mean event-count over the next forecast_bins, shape (n,)

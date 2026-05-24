@@ -12,7 +12,7 @@ schema). Import from the appropriate module to avoid ambiguity.
 from __future__ import annotations
 
 import time
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
@@ -152,7 +152,7 @@ def _softmax(x: np.ndarray) -> np.ndarray:
     """Numerically stable softmax over the last axis."""
     shifted = x - x.max(axis=-1, keepdims=True)
     exp_x = np.exp(shifted)
-    return exp_x / exp_x.sum(axis=-1, keepdims=True)
+    return cast(np.ndarray, exp_x / exp_x.sum(axis=-1, keepdims=True))
 
 
 def _default_per_class(
