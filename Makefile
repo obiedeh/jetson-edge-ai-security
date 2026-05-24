@@ -13,7 +13,7 @@ install-dev: .venv
 	$(PIP) install -e ".[dev]"
 
 test: .venv
-	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 $(PYTHON) -m pytest -q
+	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 $(PYTHON) -m pytest -q -p pytest_asyncio.plugin
 
 lint: .venv
 	$(PYTHON) -m ruff check src tests
