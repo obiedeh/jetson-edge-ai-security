@@ -10,7 +10,7 @@ Manual download required — see docs/datasets.md for instructions.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -341,7 +341,7 @@ def time_aware_split(
 
 def feature_matrix(df: pd.DataFrame) -> np.ndarray:
     """Extract the (N, 56) float32 feature matrix from a normalized DataFrame."""
-    return df[NUMERIC_FEATURE_COLS].to_numpy(dtype=np.float32)
+    return cast(np.ndarray, df[NUMERIC_FEATURE_COLS].to_numpy(dtype=np.float32))
 
 
 def labels(df: pd.DataFrame) -> dict[str, Any]:

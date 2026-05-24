@@ -61,7 +61,7 @@ def _iter_packets_dpkt(path: Path) -> Iterator[tuple[float, dict]]:
                 continue
 
             ip = getattr(eth, "data", None)
-            if not hasattr(ip, "src"):
+            if ip is None or not hasattr(ip, "src") or not hasattr(ip, "dst"):
                 continue
 
             src_ip = _ip_to_str(ip.src)

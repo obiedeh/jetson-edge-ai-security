@@ -28,7 +28,7 @@ import subprocess
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 from fastapi import FastAPI, HTTPException, Query, Response
@@ -73,7 +73,10 @@ _forecast_interval: float = float(os.getenv("EDGE_IDS_FORECAST_TICK", "300"))
 
 def _active_source() -> str:
     """Return the currently configured input source (reads config each call)."""
-    return _load_config().get("runtime", {}).get("source", "replay-csv")
+    runtime = _load_config().get("runtime", {})
+    if not isinstance(runtime, dict):
+        return "replay-csv"
+    return str(runtime.get("source", "replay-csv"))
 
 
 async def _demo_alert_ticker(interval: float = 30.0) -> None:
@@ -333,7 +336,8 @@ def _load_training_run() -> dict[str, Any]:
     path = _REPORTS_DIR / "training_run.json"
     if path.exists():
         with path.open() as fh:
-            return json.load(fh)
+            data = json.load(fh)
+            return cast(dict[str, Any], data) if isinstance(data, dict) else {}
     return {}
 
 
