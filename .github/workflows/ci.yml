@@ -25,7 +25,7 @@ jobs:
       - name: Type check
         run: mypy src/jetson_edge_ai_security
       - name: Test
-        run: pytest -q
+        run: pytest -q -p pytest_asyncio.plugin
       - name: Generate demo evidence artifacts
         run: edge-security generate-demo-report --output-dir reports/demo
       - name: Validate evidence artifacts
