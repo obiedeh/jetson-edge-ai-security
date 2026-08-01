@@ -8,3 +8,7 @@ __pycache__/
 .coverage
 htmlcov/
 .DS_Store
+
+# runtime + build artifacts (generated, kept out of version control)
+data/
+web/.vite/
