@@ -4,7 +4,7 @@ These tests verify the full deployment on real Jetson AGX Thor hardware.
 On x86 CI they are completely skipped.
 
 To run on Thor:
-    JETSON_SOC=tegra-234 pytest tests/test_thor_smoke.py -v
+    JETSON_SOC=tegra264 pytest tests/test_thor_smoke.py -v
 """
 
 from __future__ import annotations

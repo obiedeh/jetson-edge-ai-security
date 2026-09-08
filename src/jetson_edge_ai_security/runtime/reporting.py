@@ -85,8 +85,8 @@ def write_static_report_pages(
         ),
         encoding="utf-8",
     )
-    tech_brief_path.write_text(_render_tech_brief_page(), encoding="utf-8")
-    business_case_path.write_text(_render_business_case_page(), encoding="utf-8")
+    tech_brief_path.write_text(_render_tech_brief_page(thor_benchmark), encoding="utf-8")
+    business_case_path.write_text(_render_business_case_page(thor_benchmark), encoding="utf-8")
     return [index_path, dashboard_path, tech_brief_path, business_case_path]
 
 
@@ -232,7 +232,141 @@ def _status_table(rows: list[tuple[str, str, str]]) -> str:
     )
 
 
-def _current_vs_planned_table() -> str:
+THOR_MEASURED_BADGE = "validated-thor-benchmark"
+
+
+def _thor_measured(thor_benchmark: dict[str, object]) -> bool:
+    return _value(thor_benchmark, "source_badge", default="") == THOR_MEASURED_BADGE
+
+
+def _thor_top_tier(thor_benchmark: dict[str, object], model: str) -> dict[str, object]:
+    """Return the highest-rate tier record for *model*, or an empty dict."""
+    models = _value(thor_benchmark, "models", default=[])
+    if not isinstance(models, list):
+        return {}
+    for entry in models:
+        if not isinstance(entry, dict) or entry.get("model") != model:
+            continue
+        tiers = entry.get("tiers")
+        if not isinstance(tiers, list):
+            return {}
+        valid = [t for t in tiers if isinstance(t, dict) and "error" not in t]
+        if not valid:
+            return {}
+        return max(valid, key=lambda t: float(t.get("target_rps", 0) or 0))
+    return {}
+
+
+def _thor_provider(thor_benchmark: dict[str, object]) -> str:
+    models = _value(thor_benchmark, "models", default=[])
+    if isinstance(models, list):
+        providers = sorted({str(m.get("provider")) for m in models if isinstance(m, dict) and m.get("provider")})
+        if providers:
+            return ", ".join(providers)
+    return "not recorded"
+
+
+def _thor_device(thor_benchmark: dict[str, object]) -> str:
+    soc = _metric(thor_benchmark, "hardware", "soc", default="unknown SoC")
+    host = _metric(thor_benchmark, "hardware", "host", default="")
+    return f"{host} ({soc})" if host and host != "not measured" else soc
+
+
+def _thor_status_line(thor_benchmark: dict[str, object]) -> str:
+    if not _thor_measured(thor_benchmark):
+        return "Pending measured Thor-class run"
+    return f"Measured inference run on {_thor_device(thor_benchmark)}; {_thor_provider(thor_benchmark)}"
+
+
+def _thor_callout(thor_benchmark: dict[str, object]) -> str:
+    if _thor_measured(thor_benchmark):
+        return (
+            "Values below come from a committed run of deploy/thor/run_benchmark.py on the named device. "
+            "They cover model inference only; packet capture and flow extraction are not measured."
+        )
+    return (
+        "Thor benchmark values remain pending until deploy/thor/run_benchmark.py is executed on the "
+        "exact target hardware. This dashboard does not fabricate edge latency, throughput, memory, "
+        "power, or thermal behavior."
+    )
+
+
+def _thor_next_step(thor_benchmark: dict[str, object]) -> str:
+    if _thor_measured(thor_benchmark):
+        return (
+            "Generate Jetson flow CSV from defensive captures, measure packet drops and flow extraction "
+            "on the same device, evaluate the detector on a public benchmark dataset, and keep all "
+            "response actions operator-reviewed."
+        )
+    return (
+        "Generate Jetson flow CSV from defensive captures, run the Thor-class benchmark on actual "
+        "hardware, and keep all response actions operator-reviewed."
+    )
+
+
+def _gate_row(thor_benchmark: dict[str, object], key: str, label: str, threshold: str) -> str:
+    measured = _value(thor_benchmark, "gates", key, "measured", default=None)
+    unit = _metric(thor_benchmark, "gates", key, "unit", default="")
+    shown = f"{measured:.4g} {unit}".strip() if isinstance(measured, (int, float)) else "not measured"
+    status = _metric(thor_benchmark, "gates", key, "status")
+    return (
+        f"<tr><td>{escape(label)}</td><td>{escape(threshold)}</td>"
+        f"<td>{escape(shown)}</td><td>{escape(status)}</td></tr>"
+    )
+
+
+def _thor_measurement_section(thor_benchmark: dict[str, object]) -> str:
+    """Detailed measured table; empty string when the artifact is still a template."""
+    if not _thor_measured(thor_benchmark):
+        return ""
+    rows = []
+    for model in ("detector", "forecaster"):
+        tier = _thor_top_tier(thor_benchmark, model)
+        if not tier:
+            continue
+        tegra = tier.get("tegrastats") if isinstance(tier.get("tegrastats"), dict) else {}
+        rails = tegra.get("rails_mw", {}) if isinstance(tegra, dict) else {}
+        vin = rails.get("VIN", {}) if isinstance(rails, dict) else {}
+        temps = tegra.get("temps_c", {}) if isinstance(tegra, dict) else {}
+        tj = temps.get("tj", {}) if isinstance(temps, dict) else {}
+        rows.append(
+            "<tr>"
+            f"<td>{escape(model)}</td>"
+            f"<td>{escape(str(tier.get('provider', 'not recorded')))}</td>"
+            f"<td>{escape(str(tier.get('target_rps', '')))}</td>"
+            f"<td>{escape(str(tier.get('actual_rps', 'not measured')))}</td>"
+            f"<td>{escape(str(tier.get('p50_ms', '')))} / {escape(str(tier.get('p95_ms', '')))} / {escape(str(tier.get('p99_ms', '')))}</td>"
+            f"<td>{escape(str(vin.get('p50', 'n/a')))} / {escape(str(vin.get('peak', 'n/a')))}</td>"
+            f"<td>{escape(str(tj.get('peak', 'n/a')))}</td>"
+            "</tr>"
+        )
+    idle = _value(thor_benchmark, "idle_baseline", "before_load", "rails_mw", "VIN", "p50", default=None)
+    idle_text = f"{idle} mW" if isinstance(idle, (int, float)) else "not recorded"
+    provider_errors = []
+    models = _value(thor_benchmark, "models", default=[])
+    if isinstance(models, list):
+        for m in models:
+            if isinstance(m, dict) and m.get("provider_error"):
+                provider_errors.append(f"{m.get('model')}: {str(m.get('provider_error'))[:160]}")
+    error_html = ""
+    if provider_errors:
+        items = "".join(f"<li>{escape(e)}</li>" for e in provider_errors)
+        error_html = f"<p>Execution provider fallbacks recorded in the artifact:</p><ul>{items}</ul>"
+    return f"""
+<section>
+  <h2>Thor Measurement</h2>
+  <p>Device: {escape(_thor_device(thor_benchmark))}. L4T: {escape(_metric(thor_benchmark, "hardware", "l4t_release"))}. Power mode: {escape(_metric(thor_benchmark, "hardware", "nvpmodel"))}. onnxruntime {escape(_metric(thor_benchmark, "hardware", "onnxruntime"))}, Python {escape(_metric(thor_benchmark, "hardware", "python"))}. Run {escape(_metric(thor_benchmark, "run_id"))}, {escape(_metric(thor_benchmark, "duration_per_tier_s"))} s per tier.</p>
+  <table>
+    <tr><th>Model</th><th>Provider</th><th>Target ev/s</th><th>Achieved ev/s</th><th>p50 / p95 / p99 ms</th><th>VIN p50 / peak mW</th><th>tj peak C</th></tr>
+    {"".join(rows)}
+  </table>
+  <p>Idle VIN before load: {escape(idle_text)}. Process peak RSS: {escape(_metric(thor_benchmark, "memory", "process_peak_rss_gb"))} GB. Inputs are synthetic Gaussian tensors of the model input shapes; this measures inference latency and throughput only, not packet capture or flow extraction.</p>
+  {error_html}
+</section>
+"""
+
+
+def _current_vs_planned_table(thor_benchmark: dict[str, object] | None = None) -> str:
     return _status_table(
         [
             ("Input source", "Fixed CSV fixture", "Jetson-generated flow CSV"),
@@ -249,12 +383,17 @@ def _current_vs_planned_table() -> str:
                 "Same existing analytics path",
             ),
             ("Dashboard impact", "Implemented", "No detector/dashboard rewrite intended"),
-            ("Thor benchmark", "Template committed", "Pending measured Thor-class run"),
+            (
+                "Thor benchmark",
+                "Measured run committed" if thor_benchmark and _thor_measured(thor_benchmark) else "Template committed",
+                _thor_status_line(thor_benchmark or {}),
+            ),
         ]
     )
 
 
-def _planned_upgrade_table() -> str:
+def _planned_upgrade_table(thor_benchmark: dict[str, object] | None = None) -> str:
+    measured = bool(thor_benchmark) and _thor_measured(thor_benchmark or {})
     rows = [
         ("Current input", "fixed CSV fixture", "implemented"),
         ("Next input", "Jetson-generated flow CSV", "planned"),
@@ -265,7 +404,11 @@ def _planned_upgrade_table() -> str:
             "planned",
         ),
         ("Pipeline impact", "No detector/dashboard rewrite required", "design boundary"),
-        ("Thor benchmark", "pending measured run", "not claimed"),
+        (
+            "Thor benchmark",
+            "measured inference run" if measured else "pending measured run",
+            "claimed for inference only" if measured else "not claimed",
+        ),
     ]
     body = "".join(
         "<tr>"
@@ -287,8 +430,23 @@ def _render_index_page(
             _card("Demo events replayed", _metric(demo_metrics, "events_seen"), "Built-in defensive replay", "good"),
             _card("Alerts emitted", _metric(demo_metrics, "alerts_emitted"), "Operator-review evidence", "warn"),
             _card("Detector AUC", _metric(training_run, "detector", "evaluation", "gbc_auc"), "GBM detector on 5k fixture", "good"),
-            _card("Thor validation", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "Hardware benchmark pending until measured", "warn"),
+            _card(
+                "Thor validation",
+                _metric(thor_benchmark, "source_badge", default="pending-thor-run"),
+                _thor_status_line(thor_benchmark),
+                "good" if _thor_measured(thor_benchmark) else "warn",
+            ),
         ]
+    )
+    thor_link_note = (
+        "Measured hardware benchmark: latency tiers, throughput, memory, tegrastats rails and gate results."
+        if _thor_measured(thor_benchmark)
+        else "Pending hardware benchmark template; values remain pending until measured on device."
+    )
+    thor_boundary_item = (
+        "Thor latency is measured for inference only; capture and flow extraction remain unmeasured"
+        if _thor_measured(thor_benchmark)
+        else "Thor latency remains pending until measured"
     )
     body = f"""
 <section>
@@ -310,7 +468,7 @@ def _render_index_page(
 <section>
   <h2>Planned Jetson Telemetry-Ingestion Upgrade</h2>
   <p>Fixed CSV is the deterministic test fixture, not the product ceiling. The planned upgrade adds Jetson-generated flow CSVs from packet capture and defensive telemetry sources such as Zeek logs, Suricata eve.json, and CICFlow-style records.</p>
-  {_planned_upgrade_table()}
+  {_planned_upgrade_table(thor_benchmark)}
 </section>
 
 <section>
@@ -340,7 +498,7 @@ def _render_index_page(
     {_link_card("Technical brief", "tech-brief.html", "Architecture principle, current pipeline, planned source adapters, and boundaries.")}
     {_link_card("Business case", "business-case.html", "Why local defensive telemetry matters near edge nodes and robotics cells.")}
     {_link_card("Training metrics", "training_run.json", "Committed detector and forecaster metrics, ONNX paths, gates, and CPU latency.")}
-    {_link_card("Thor benchmark", "thor_benchmark.json", "Pending hardware benchmark template; values remain pending until measured on device.")}
+    {_link_card("Thor benchmark", "thor_benchmark.json", thor_link_note)}
   </div>
 </section>
 
@@ -366,7 +524,7 @@ def _render_index_page(
         <li>No autonomous response action</li>
         <li>No live production IDS deployment claim</li>
         <li>No line-rate capture claim</li>
-        <li>Thor latency remains pending until measured</li>
+        <li>{escape(thor_boundary_item)}</li>
       </ul>
     </div>
   </div>
@@ -390,7 +548,12 @@ def _render_dashboard_page(
             _card("Current input", "fixed_csv", "Deterministic fixture for repeatable evidence", "neutral"),
             _card("Detector gate", _metric(training_run, "detector", "gate", "result"), "delta AUC threshold reported in training_run.json", "good"),
             _card("Forecaster gate", _metric(training_run, "forecaster", "gate", "result"), "MAE reduction threshold reported in training_run.json", "good"),
-            _card("Thor benchmark", _metric(thor_benchmark, "source_badge", default="pending-thor-run"), "No fabricated hardware latency", "warn"),
+            _card(
+                "Thor benchmark",
+                _metric(thor_benchmark, "source_badge", default="pending-thor-run"),
+                _thor_status_line(thor_benchmark) if _thor_measured(thor_benchmark) else "No fabricated hardware latency",
+                "good" if _thor_measured(thor_benchmark) else "warn",
+            ),
         ]
     )
     severity = _value(demo_metrics, "alert_severity_counts", default={})
@@ -423,7 +586,7 @@ def _render_dashboard_page(
 <section>
   <h2>Planned Jetson Ingestion Upgrade</h2>
   <p class="callout">Planned work is not counted as completed evidence. The next input is Jetson-generated flow CSV from defensive packet/flow sources, then the same analytics pipeline continues unchanged.</p>
-  {_planned_upgrade_table()}
+  {_planned_upgrade_table(thor_benchmark)}
 </section>
 
 <section>
@@ -432,7 +595,7 @@ def _render_dashboard_page(
     <div><h3>Problem</h3><p>Edge IDS telemetry arrives from heterogeneous defensive sources, but operator workflows need one normalized evidence path.</p></div>
     <div><h3>What I Built</h3><p>A source-agnostic runtime that converts defensive telemetry into events, windows, detections, alerts, metrics, and evidence artifacts.</p></div>
     <div><h3>What I Found</h3><p>The committed demo emits {_metric(demo_metrics, "alerts_emitted")} alerts from {_metric(demo_metrics, "windows_seen")} feature windows, and model gates are recorded in training evidence.</p></div>
-    <div><h3>What I Would Validate Next</h3><p>Generate Jetson flow CSV from defensive captures, run the Thor-class benchmark on actual hardware, and keep all response actions operator-reviewed.</p></div>
+    <div><h3>What I Would Validate Next</h3><p>{escape(_thor_next_step(thor_benchmark))}</p></div>
   </div>
 </section>
 
@@ -468,15 +631,16 @@ def _render_dashboard_page(
 
 <section>
   <h2>Jetson / Thor Readiness</h2>
-  <p class="callout">Thor benchmark values remain pending until `deploy/thor/run_benchmark.py` is executed on the exact target hardware. This dashboard does not fabricate edge latency, throughput, memory, power, or thermal behavior.</p>
+  <p class="callout">{escape(_thor_callout(thor_benchmark))}</p>
   <table>
-    <tr><th>Gate</th><th>Threshold</th><th>Status</th></tr>
-    <tr><td>Detector p95 latency</td><td>10 ms</td><td>{_metric(thor_benchmark, "gates", "detector_p95_latency_ms", "status")}</td></tr>
-    <tr><td>Forecaster p95 latency</td><td>50 ms</td><td>{_metric(thor_benchmark, "gates", "forecaster_p95_latency_ms", "status")}</td></tr>
-    <tr><td>Throughput at 1000 RPS</td><td>1000 ev/s</td><td>{_metric(thor_benchmark, "gates", "throughput_at_1000_rps", "status")}</td></tr>
-    <tr><td>Memory footprint</td><td>4 GB</td><td>{_metric(thor_benchmark, "gates", "memory_footprint_gb", "status")}</td></tr>
+    <tr><th>Gate</th><th>Threshold</th><th>Measured</th><th>Status</th></tr>
+    {_gate_row(thor_benchmark, "detector_p95_latency_ms", "Detector p95 latency", "<= 10 ms")}
+    {_gate_row(thor_benchmark, "forecaster_p95_latency_ms", "Forecaster p95 latency", "<= 50 ms")}
+    {_gate_row(thor_benchmark, "throughput_at_1000_rps", "Throughput at 1000 events/s", ">= 1000 ev/s")}
+    {_gate_row(thor_benchmark, "memory_footprint_gb", "Memory footprint", "<= 4 GB")}
   </table>
 </section>
+{_thor_measurement_section(thor_benchmark)}
 
 <section>
   <h2>Evidence vs Boundary</h2>
@@ -512,7 +676,8 @@ def _render_dashboard_page(
     )
 
 
-def _render_tech_brief_page() -> str:
+def _render_tech_brief_page(thor_benchmark: dict[str, object] | None = None) -> str:
+    thor = thor_benchmark or {}
     body = f"""
 <section>
   <h2>Technical Brief</h2>
@@ -521,7 +686,7 @@ def _render_tech_brief_page() -> str:
 
 <section>
   <h2>Current vs Planned Pipeline</h2>
-  {_current_vs_planned_table()}
+  {_current_vs_planned_table(thor)}
 </section>
 
 <section>
@@ -560,8 +725,20 @@ def _render_tech_brief_page() -> str:
     )
 
 
-def _render_business_case_page() -> str:
-    body = """
+def _render_business_case_page(thor_benchmark: dict[str, object] | None = None) -> str:
+    thor = thor_benchmark or {}
+    measured = _thor_measured(thor)
+    thor_demo = (
+        "A committed Thor benchmark records inference latency, throughput, memory and board power for the shipped models."
+        if measured
+        else "Thor-class benchmark artifacts remain pending until real hardware measurements exist."
+    )
+    thor_limit = (
+        "It does not claim measured capture or flow-extraction performance; the Thor artifact covers inference only."
+        if measured
+        else "It does not claim measured Thor performance yet."
+    )
+    body = f"""
 <section>
   <h2>Business Case</h2>
   <p>Edge nodes, robotics cells, private-network sites, and AI-enabled edge systems need local defensive telemetry review. The useful question is not whether this replaces a SIEM. It does not. The useful question is whether local flow records can become observable, forecastable, reviewable, and benchmarkable near the edge.</p>
@@ -573,7 +750,7 @@ def _render_business_case_page() -> str:
     <li>Fixed CSV telemetry can drive deterministic lookback analytics, forecasting, alerts, and static reports.</li>
     <li>Operator-reviewed alerts create a review path without autonomous response.</li>
     <li>The same analytics pipeline can accept future Jetson-generated flow CSVs when the source adapters are measured.</li>
-    <li>Thor-class benchmark artifacts remain pending until real hardware measurements exist.</li>
+    <li>{escape(thor_demo)}</li>
   </ul>
 </section>
 
@@ -582,7 +759,7 @@ def _render_business_case_page() -> str:
   <ul>
     <li>It does not replace a SIEM or production IDS.</li>
     <li>It does not claim line-rate capture.</li>
-    <li>It does not claim measured Thor performance yet.</li>
+    <li>{escape(thor_limit)}</li>
     <li>It does not perform offensive security actions or autonomous response.</li>
   </ul>
 </section>

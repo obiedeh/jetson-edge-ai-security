@@ -217,3 +217,58 @@ def test_write_static_report_pages_creates_landing_and_dashboard(tmp_path: Path)
     assert "pending-thor-run" in dashboard
     assert "Adapters may change" in tech_brief
     assert "does not replace a SIEM" in business_case
+
+
+def test_static_pages_render_measured_thor_benchmark(tmp_path: Path) -> None:
+    """A measured artifact must surface values and never the pending wording."""
+    reports_dir = tmp_path / "reports"
+    (reports_dir / "demo").mkdir(parents=True)
+    (reports_dir / "demo" / "runtime_metrics.json").write_text(
+        json.dumps({"events_seen": 12, "windows_seen": 8, "alerts_emitted": 4}), encoding="utf-8"
+    )
+    (reports_dir / "training_run.json").write_text("{}", encoding="utf-8")
+    tier = {
+        "target_rps": 1000.0, "actual_rps": 1000.1, "p50_ms": 0.021, "p95_ms": 0.024,
+        "p99_ms": 0.026, "provider": "CPUExecutionProvider",
+        "tegrastats": {"rails_mw": {"VIN": {"p50": 53252, "peak": 54118}}, "temps_c": {"tj": {"peak": 49.4}}},
+    }
+    (reports_dir / "thor_benchmark.json").write_text(
+        json.dumps(
+            {
+                "run_id": "abc123",
+                "source_badge": "validated-thor-benchmark",
+                "duration_per_tier_s": 300,
+                "hardware": {"host": "jetsonthor", "soc": "tegra264", "l4t_release": "R38", "nvpmodel": "120W", "onnxruntime": "1.29.0", "python": "3.12.3"},
+                "models": [
+                    {"model": "detector", "provider": "CPUExecutionProvider", "provider_error": "Fail: CUDA no kernel image", "tiers": [tier]},
+                    {"model": "forecaster", "provider": "CPUExecutionProvider", "tiers": [dict(tier, p95_ms=0.038)]},
+                ],
+                "memory": {"process_peak_rss_gb": 0.34},
+                "idle_baseline": {"before_load": {"rails_mw": {"VIN": {"p50": 24222}}}},
+                "gates": {
+                    "detector_p95_latency_ms": {"threshold": 10, "unit": "ms", "measured": 0.024, "status": "pass"},
+                    "forecaster_p95_latency_ms": {"threshold": 50, "unit": "ms", "measured": 0.038, "status": "pass"},
+                    "throughput_at_1000_rps": {"threshold": 1000, "unit": "events/s", "measured": 1000.1, "status": "pass"},
+                    "memory_footprint_gb": {"threshold": 4, "unit": "GB", "measured": 0.34, "status": "pass"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    write_static_report_pages(reports_dir=reports_dir)
+    dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
+    index = (reports_dir / "index.html").read_text(encoding="utf-8")
+    business = (reports_dir / "business-case.html").read_text(encoding="utf-8")
+    tech = (reports_dir / "tech-brief.html").read_text(encoding="utf-8")
+
+    assert "Thor Measurement" in dashboard
+    assert "0.024 ms" in dashboard and "0.34 GB" in dashboard
+    assert "CUDA no kernel image" in dashboard
+    assert "jetsonthor (tegra264)" in dashboard
+    assert "24222 mW" in dashboard
+    for page in (dashboard, index, business, tech):
+        assert "pending measured" not in page.lower()
+        assert "remain pending" not in page.lower()
+    assert "inference only" in business
+    assert "Measured run committed" in tech

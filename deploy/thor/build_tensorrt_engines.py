@@ -9,7 +9,7 @@ Usage:
     python3 deploy/thor/build_tensorrt_engines.py [--models-dir models/exports]
 
 Requirements:
-    - TensorRT 10.x (available on JetPack 6.x)
+    - TensorRT 10.x (JetPack 6.x or 7.x)
     - tensorrt Python bindings: pip install tensorrt
     - NVIDIA GPU + CUDA (Jetson or discrete GPU)
 

@@ -1,47 +1,605 @@
 {
-  "note": "Placeholder — real numbers pending first Thor run. Run deploy/thor/run_benchmark.py on Jetson AGX Thor to replace this file.",
-  "run_id": "pending-thor-run",
+  "run_id": "3cac5ed2b7bd",
+  "note": "Measured on the device described in `hardware`. Synthetic Gaussian inputs of the model input shapes; batch 1; single process; paced open-loop load. This is inference latency and throughput, not capture or flow-extraction performance.",
   "hardware": {
+    "host": "jetsonthor",
     "machine": "aarch64",
-    "soc": "tegra-234",
-    "device": "Jetson AGX Thor",
-    "jetpack": "JetPack 6.x (TBD)",
-    "tensorrt": "10.x (TBD)",
-    "cuda": "12.x (TBD)",
-    "lpddr5_gb": 64,
-    "benchmark_started_at": null
+    "kernel": "6.8.12-tegra",
+    "soc": "tegra264",
+    "devicetree_compatible": [
+      "nvidia,p4071-0000+p3834-0008",
+      "nvidia,p3834-0008",
+      "nvidia,tegra264"
+    ],
+    "is_jetson": true,
+    "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+    "nvpmodel": "NV Power Mode: 120W 1",
+    "cpu_count": 14,
+    "mem_total_gb": 122.82,
+    "loadavg_1m_at_start": 3.146484375,
+    "loadavg_5m_at_start": 2.60302734375,
+    "python": "3.12.3",
+    "onnxruntime": "1.29.0",
+    "numpy": "2.5.3",
+    "available_providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "git_sha": null,
+    "benchmark_started_at": "2026-09-08T18:43:58.796942+00:00"
   },
-  "benchmark_finished_at": null,
-  "duration_per_tier_s": 300,
+  "benchmark_finished_at": "2026-09-08T19:15:59.514576+00:00",
+  "duration_per_tier_s": 300.0,
+  "tiers_requested_rps": [
+    10.0,
+    100.0,
+    1000.0
+  ],
   "models": [
     {
       "model": "detector",
       "onnx": "gbm_detector.onnx",
-      "trt_ep": true,
-      "single_inference_p50_ms": null,
+      "onnx_sha256_16": "dfd424e674becf63",
+      "provider": "CPUExecutionProvider",
+      "provider_error": "Fail: [ONNXRuntimeError] : 1 : FAIL : Non-zero status code returned while running Slice node. Name:'' Status Message: CUDA error cudaErrorNoKernelImageForDevice:no kernel image is available for execution on the device",
+      "provider_requested": "auto",
+      "trt_requested": false,
+      "single_inference_p50_ms": 0.0211,
       "tiers": [
-        {"target_rps": 10, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
-        {"target_rps": 100, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
-        {"target_rps": 1000, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null}
+        {
+          "n_samples": 3001,
+          "elapsed_s": 300.0,
+          "actual_rps": 10.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.0296,
+          "p95_ms": 0.0596,
+          "p99_ms": 0.1697,
+          "min_ms": 0.021,
+          "max_ms": 0.2952,
+          "mean_ms": 0.0358,
+          "target_rps": 10.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.3443,
+          "tegrastats": {
+            "n_samples": 299,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 1965,
+                "peak": 3144,
+                "min": 1965
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 7862,
+                "peak": 9434,
+                "min": 7469
+              },
+              "VIN_SYS_5V0": {
+                "p50": 7608,
+                "peak": 8128,
+                "min": 7608
+              },
+              "VIN": {
+                "p50": 24440,
+                "peak": 27962,
+                "min": 22842
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 38.125,
+                "peak": 38.687
+              },
+              "tj": {
+                "p50": 39.218,
+                "peak": 39.625
+              },
+              "soc012": {
+                "p50": 37.687,
+                "peak": 38.218
+              },
+              "gpu": {
+                "p50": 38.312,
+                "peak": 38.687
+              },
+              "soc345": {
+                "p50": 39.218,
+                "peak": 39.625
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 36776,
+              "peak": 36779
+            }
+          }
+        },
+        {
+          "n_samples": 30001,
+          "elapsed_s": 300.003,
+          "actual_rps": 100.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.025,
+          "p95_ms": 0.0559,
+          "p99_ms": 0.1067,
+          "min_ms": 0.0091,
+          "max_ms": 8.5565,
+          "mean_ms": 0.0448,
+          "target_rps": 100.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.3457,
+          "tegrastats": {
+            "n_samples": 298,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 1964,
+                "peak": 1965,
+                "min": 1964
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 34580,
+                "peak": 35366,
+                "min": 27518
+              },
+              "VIN_SYS_5V0": {
+                "p50": 7912,
+                "peak": 7912,
+                "min": 7709
+              },
+              "VIN": {
+                "p50": 53572,
+                "peak": 55208,
+                "min": 47022
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 54.062,
+                "peak": 56.75
+              },
+              "tj": {
+                "p50": 54.093,
+                "peak": 56.75
+              },
+              "soc012": {
+                "p50": 52.25,
+                "peak": 54.812
+              },
+              "gpu": {
+                "p50": 46.187,
+                "peak": 48.5
+              },
+              "soc345": {
+                "p50": 49.312,
+                "peak": 51.625
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 36773,
+              "peak": 36779
+            }
+          }
+        },
+        {
+          "n_samples": 300001,
+          "elapsed_s": 300.0,
+          "actual_rps": 1000.0,
+          "deadline_misses": 43118,
+          "p50_ms": 0.0213,
+          "p95_ms": 0.0237,
+          "p99_ms": 0.028,
+          "min_ms": 0.0081,
+          "max_ms": 14.7371,
+          "mean_ms": 0.0227,
+          "target_rps": 1000.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.3558,
+          "tegrastats": {
+            "n_samples": 299,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 1964,
+                "peak": 2357,
+                "min": 1964
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 35744,
+                "peak": 35759,
+                "min": 34173
+              },
+              "VIN_SYS_5V0": {
+                "p50": 7912,
+                "peak": 8013,
+                "min": 7912
+              },
+              "VIN": {
+                "p50": 54298,
+                "peak": 56054,
+                "min": 52754
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 58.187,
+                "peak": 59.562
+              },
+              "tj": {
+                "p50": 58.187,
+                "peak": 59.562
+              },
+              "soc012": {
+                "p50": 56.125,
+                "peak": 57.375
+              },
+              "gpu": {
+                "p50": 50.062,
+                "peak": 51.125
+              },
+              "soc345": {
+                "p50": 53.156,
+                "peak": 54.093
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 36771,
+              "peak": 36774
+            }
+          }
+        }
       ]
     },
     {
       "model": "forecaster",
       "onnx": "ar_forecaster.onnx",
-      "trt_ep": true,
-      "single_inference_p50_ms": null,
+      "onnx_sha256_16": "169ca3f7290decfb",
+      "provider": "CPUExecutionProvider",
+      "provider_error": "Fail: [ONNXRuntimeError] : 1 : FAIL : Non-zero status code returned while running Slice node. Name:'' Status Message: CUDA error cudaErrorNoKernelImageForDevice:no kernel image is available for execution on the device",
+      "provider_requested": "auto",
+      "trt_requested": false,
+      "single_inference_p50_ms": 0.0134,
       "tiers": [
-        {"target_rps": 10, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
-        {"target_rps": 100, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null},
-        {"target_rps": 1000, "actual_rps": null, "p50_ms": null, "p95_ms": null, "p99_ms": null}
+        {
+          "n_samples": 3001,
+          "elapsed_s": 300.0,
+          "actual_rps": 10.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.2218,
+          "p95_ms": 0.2246,
+          "p99_ms": 0.2264,
+          "min_ms": 0.0151,
+          "max_ms": 1.6224,
+          "mean_ms": 0.2202,
+          "target_rps": 10.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.3585,
+          "tegrastats": {
+            "n_samples": 299,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 1965,
+                "peak": 1965,
+                "min": 1964
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 7469,
+                "peak": 24756,
+                "min": 7469
+              },
+              "VIN_SYS_5V0": {
+                "p50": 7709,
+                "peak": 8128,
+                "min": 7709
+              },
+              "VIN": {
+                "p50": 24458,
+                "peak": 26018,
+                "min": 23048
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 42.75,
+                "peak": 51.406
+              },
+              "tj": {
+                "p50": 44.125,
+                "peak": 52.593
+              },
+              "soc012": {
+                "p50": 42.906,
+                "peak": 51.5
+              },
+              "gpu": {
+                "p50": 43.031,
+                "peak": 51.0
+              },
+              "soc345": {
+                "p50": 44.125,
+                "peak": 52.593
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 36772,
+              "peak": 36774
+            }
+          }
+        },
+        {
+          "n_samples": 30001,
+          "elapsed_s": 300.0,
+          "actual_rps": 100.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.014,
+          "p95_ms": 0.0147,
+          "p99_ms": 0.0164,
+          "min_ms": 0.0134,
+          "max_ms": 0.3372,
+          "mean_ms": 0.0142,
+          "target_rps": 100.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.3585,
+          "tegrastats": {
+            "n_samples": 300,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 1965,
+                "peak": 1965,
+                "min": 1965
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 7469,
+                "peak": 8255,
+                "min": 7469
+              },
+              "VIN_SYS_5V0": {
+                "p50": 7709,
+                "peak": 8026,
+                "min": 7608
+              },
+              "VIN": {
+                "p50": 24342,
+                "peak": 26664,
+                "min": 23168
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 39.968,
+                "peak": 40.937
+              },
+              "tj": {
+                "p50": 41.218,
+                "peak": 42.281
+              },
+              "soc012": {
+                "p50": 40.031,
+                "peak": 41.062
+              },
+              "gpu": {
+                "p50": 40.125,
+                "peak": 41.156
+              },
+              "soc345": {
+                "p50": 41.218,
+                "peak": 42.281
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 36776,
+              "peak": 36777
+            }
+          }
+        },
+        {
+          "n_samples": 300001,
+          "elapsed_s": 300.0,
+          "actual_rps": 1000.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.0138,
+          "p95_ms": 0.0141,
+          "p99_ms": 0.0143,
+          "min_ms": 0.0132,
+          "max_ms": 1.0395,
+          "mean_ms": 0.0138,
+          "target_rps": 1000.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.3639,
+          "tegrastats": {
+            "n_samples": 299,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 1965,
+                "peak": 1965,
+                "min": 1965
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 7469,
+                "peak": 8255,
+                "min": 7469
+              },
+              "VIN_SYS_5V0": {
+                "p50": 7608,
+                "peak": 8026,
+                "min": 7608
+              },
+              "VIN": {
+                "p50": 24424,
+                "peak": 26194,
+                "min": 23152
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 39.062,
+                "peak": 39.437
+              },
+              "tj": {
+                "p50": 40.25,
+                "peak": 40.687
+              },
+              "soc012": {
+                "p50": 39.062,
+                "peak": 39.468
+              },
+              "gpu": {
+                "p50": 39.218,
+                "peak": 39.656
+              },
+              "soc345": {
+                "p50": 40.25,
+                "peak": 40.687
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 36774,
+              "peak": 36776
+            }
+          }
+        }
       ]
     }
   ],
-  "source_badge": "pending-thor-run",
+  "memory": {
+    "process_peak_rss_gb": 0.3639,
+    "process_rss_before_gb": 0.0552,
+    "process_rss_after_gb": 0.3639,
+    "note": "Process RSS only. Board RAM is in the tegrastats summaries when present."
+  },
+  "idle_baseline": {
+    "seconds": 60,
+    "before_load": {
+      "n_samples": 59,
+      "rails_mw": {
+        "VDD_GPU": {
+          "p50": 1965,
+          "peak": 1965,
+          "min": 1965
+        },
+        "VDD_CPU_SOC_MSS": {
+          "p50": 7469,
+          "peak": 7472,
+          "min": 7469
+        },
+        "VIN_SYS_5V0": {
+          "p50": 7709,
+          "peak": 7709,
+          "min": 7709
+        },
+        "VIN": {
+          "p50": 24170,
+          "peak": 25164,
+          "min": 23108
+        }
+      },
+      "temps_c": {
+        "cpu": {
+          "p50": 38.125,
+          "peak": 38.281
+        },
+        "tj": {
+          "p50": 39.25,
+          "peak": 39.375
+        },
+        "soc012": {
+          "p50": 37.781,
+          "peak": 37.968
+        },
+        "gpu": {
+          "p50": 38.468,
+          "peak": 38.656
+        },
+        "soc345": {
+          "p50": 39.25,
+          "peak": 39.375
+        }
+      },
+      "board_ram_used_mb": {
+        "p50": 36621,
+        "peak": 36621
+      }
+    },
+    "after_load": {
+      "n_samples": 60,
+      "rails_mw": {
+        "VDD_GPU": {
+          "p50": 1965,
+          "peak": 1965,
+          "min": 1965
+        },
+        "VDD_CPU_SOC_MSS": {
+          "p50": 7469,
+          "peak": 7862,
+          "min": 7469
+        },
+        "VIN_SYS_5V0": {
+          "p50": 7608,
+          "peak": 8026,
+          "min": 7608
+        },
+        "VIN": {
+          "p50": 24146,
+          "peak": 25642,
+          "min": 22884
+        }
+      },
+      "temps_c": {
+        "cpu": {
+          "p50": 38.75,
+          "peak": 38.906
+        },
+        "tj": {
+          "p50": 39.937,
+          "peak": 40.062
+        },
+        "soc012": {
+          "p50": 38.718,
+          "peak": 38.875
+        },
+        "gpu": {
+          "p50": 38.937,
+          "peak": 39.031
+        },
+        "soc345": {
+          "p50": 39.937,
+          "peak": 40.062
+        }
+      },
+      "board_ram_used_mb": {
+        "p50": 36776,
+        "peak": 36776
+      }
+    },
+    "note": "Board rails and temperatures while this process slept; other host activity is included."
+  },
+  "tegrastats_samples_file": "thor_benchmark_tegrastats.jsonl",
+  "tegrastats_sample_count": 1914,
   "gates": {
-    "detector_p95_latency_ms": {"threshold": 10, "measured": null, "status": "pending"},
-    "forecaster_p95_latency_ms": {"threshold": 50, "measured": null, "status": "pending"},
-    "throughput_at_1000_rps": {"threshold": 1000, "measured": null, "status": "pending"},
-    "memory_footprint_gb": {"threshold": 4, "measured": null, "status": "pending"}
-  }
+    "detector_p95_latency_ms": {
+      "threshold": 10.0,
+      "unit": "ms",
+      "measured": 0.0237,
+      "status": "pass",
+      "criterion": "p95 single-event latency at the 1000 events/s tier"
+    },
+    "forecaster_p95_latency_ms": {
+      "threshold": 50.0,
+      "unit": "ms",
+      "measured": 0.0141,
+      "status": "pass",
+      "criterion": "p95 single-sequence latency at the 1000 events/s tier"
+    },
+    "throughput_at_1000_rps": {
+      "threshold": 1000.0,
+      "unit": "events/s",
+      "measured": 1000.0,
+      "status": "pass",
+      "criterion": "lowest achieved events/s across models at the 1000 events/s tier; pass at >= 99% of target"
+    },
+    "memory_footprint_gb": {
+      "threshold": 4.0,
+      "unit": "GB",
+      "measured": 0.3639,
+      "status": "pass",
+      "criterion": "peak resident set size of the benchmark process (ru_maxrss)"
+    }
+  },
+  "source_badge": "validated-thor-benchmark"
 }

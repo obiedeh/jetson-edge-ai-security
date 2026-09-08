@@ -69,7 +69,7 @@
   
 <section>
   <h2>Evidence Summary</h2>
-  <div class="grid"><article class="card good"><span>Demo events replayed</span><strong>12</strong><p>Built-in defensive replay</p></article><article class="card warn"><span>Alerts emitted</span><strong>4</strong><p>Operator-review evidence</p></article><article class="card good"><span>Detector AUC</span><strong>0.9796</strong><p>GBM detector on 5k fixture</p></article><article class="card warn"><span>Thor validation</span><strong>pending-thor-run</strong><p>Hardware benchmark pending until measured</p></article></div>
+  <div class="grid"><article class="card good"><span>Demo events replayed</span><strong>12</strong><p>Built-in defensive replay</p></article><article class="card warn"><span>Alerts emitted</span><strong>4</strong><p>Operator-review evidence</p></article><article class="card good"><span>Detector AUC</span><strong>0.9796</strong><p>GBM detector on 5k fixture</p></article><article class="card good"><span>Thor validation</span><strong>validated-thor-benchmark</strong><p>Measured inference run on jetsonthor (tegra264); CPUExecutionProvider</p></article></div>
 </section>
 
 <section>
@@ -86,7 +86,7 @@
 <section>
   <h2>Planned Jetson Telemetry-Ingestion Upgrade</h2>
   <p>Fixed CSV is the deterministic test fixture, not the product ceiling. The planned upgrade adds Jetson-generated flow CSVs from packet capture and defensive telemetry sources such as Zeek logs, Suricata eve.json, and CICFlow-style records.</p>
-  <table><tr><th>Item</th><th>Detail</th><th>Status</th></tr><tr><td>Current input</td><td>fixed CSV fixture</td><td>implemented</td></tr><tr><td>Next input</td><td>Jetson-generated flow CSV</td><td>planned</td></tr><tr><td>Capture modes</td><td>SPAN / TAP / local interface</td><td>planned</td></tr><tr><td>Flow extraction</td><td>Zeek conn.log, Suricata eve.json, CICFlow-style records</td><td>planned</td></tr><tr><td>Pipeline impact</td><td>No detector/dashboard rewrite required</td><td>design boundary</td></tr><tr><td>Thor benchmark</td><td>pending measured run</td><td>not claimed</td></tr></table>
+  <table><tr><th>Item</th><th>Detail</th><th>Status</th></tr><tr><td>Current input</td><td>fixed CSV fixture</td><td>implemented</td></tr><tr><td>Next input</td><td>Jetson-generated flow CSV</td><td>planned</td></tr><tr><td>Capture modes</td><td>SPAN / TAP / local interface</td><td>planned</td></tr><tr><td>Flow extraction</td><td>Zeek conn.log, Suricata eve.json, CICFlow-style records</td><td>planned</td></tr><tr><td>Pipeline impact</td><td>No detector/dashboard rewrite required</td><td>design boundary</td></tr><tr><td>Thor benchmark</td><td>measured inference run</td><td>claimed for inference only</td></tr></table>
 </section>
 
 <section>
@@ -116,7 +116,7 @@
     <article class="link-card"><h3><a href="tech-brief.html">Technical brief</a></h3><p>Architecture principle, current pipeline, planned source adapters, and boundaries.</p></article>
     <article class="link-card"><h3><a href="business-case.html">Business case</a></h3><p>Why local defensive telemetry matters near edge nodes and robotics cells.</p></article>
     <article class="link-card"><h3><a href="training_run.json">Training metrics</a></h3><p>Committed detector and forecaster metrics, ONNX paths, gates, and CPU latency.</p></article>
-    <article class="link-card"><h3><a href="thor_benchmark.json">Thor benchmark</a></h3><p>Pending hardware benchmark template; values remain pending until measured on device.</p></article>
+    <article class="link-card"><h3><a href="thor_benchmark.json">Thor benchmark</a></h3><p>Measured hardware benchmark: latency tiers, throughput, memory, tegrastats rails and gate results.</p></article>
   </div>
 </section>
 
@@ -142,7 +142,7 @@
         <li>No autonomous response action</li>
         <li>No live production IDS deployment claim</li>
         <li>No line-rate capture claim</li>
-        <li>Thor latency remains pending until measured</li>
+        <li>Thor latency is measured for inference only; capture and flow extraction remain unmeasured</li>
       </ul>
     </div>
   </div>

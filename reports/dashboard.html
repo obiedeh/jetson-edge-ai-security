@@ -69,7 +69,7 @@
   
 <section>
   <h2>Operational Decision Summary</h2>
-  <div class="grid"><article class="card neutral"><span>Current input</span><strong>fixed_csv</strong><p>Deterministic fixture for repeatable evidence</p></article><article class="card good"><span>Detector gate</span><strong>PASS</strong><p>delta AUC threshold reported in training_run.json</p></article><article class="card good"><span>Forecaster gate</span><strong>PASS</strong><p>MAE reduction threshold reported in training_run.json</p></article><article class="card warn"><span>Thor benchmark</span><strong>pending-thor-run</strong><p>No fabricated hardware latency</p></article></div>
+  <div class="grid"><article class="card neutral"><span>Current input</span><strong>fixed_csv</strong><p>Deterministic fixture for repeatable evidence</p></article><article class="card good"><span>Detector gate</span><strong>PASS</strong><p>delta AUC threshold reported in training_run.json</p></article><article class="card good"><span>Forecaster gate</span><strong>PASS</strong><p>MAE reduction threshold reported in training_run.json</p></article><article class="card good"><span>Thor benchmark</span><strong>validated-thor-benchmark</strong><p>Measured inference run on jetsonthor (tegra264); CPUExecutionProvider</p></article></div>
 </section>
 
 <section>
@@ -88,7 +88,7 @@
 <section>
   <h2>Planned Jetson Ingestion Upgrade</h2>
   <p class="callout">Planned work is not counted as completed evidence. The next input is Jetson-generated flow CSV from defensive packet/flow sources, then the same analytics pipeline continues unchanged.</p>
-  <table><tr><th>Item</th><th>Detail</th><th>Status</th></tr><tr><td>Current input</td><td>fixed CSV fixture</td><td>implemented</td></tr><tr><td>Next input</td><td>Jetson-generated flow CSV</td><td>planned</td></tr><tr><td>Capture modes</td><td>SPAN / TAP / local interface</td><td>planned</td></tr><tr><td>Flow extraction</td><td>Zeek conn.log, Suricata eve.json, CICFlow-style records</td><td>planned</td></tr><tr><td>Pipeline impact</td><td>No detector/dashboard rewrite required</td><td>design boundary</td></tr><tr><td>Thor benchmark</td><td>pending measured run</td><td>not claimed</td></tr></table>
+  <table><tr><th>Item</th><th>Detail</th><th>Status</th></tr><tr><td>Current input</td><td>fixed CSV fixture</td><td>implemented</td></tr><tr><td>Next input</td><td>Jetson-generated flow CSV</td><td>planned</td></tr><tr><td>Capture modes</td><td>SPAN / TAP / local interface</td><td>planned</td></tr><tr><td>Flow extraction</td><td>Zeek conn.log, Suricata eve.json, CICFlow-style records</td><td>planned</td></tr><tr><td>Pipeline impact</td><td>No detector/dashboard rewrite required</td><td>design boundary</td></tr><tr><td>Thor benchmark</td><td>measured inference run</td><td>claimed for inference only</td></tr></table>
 </section>
 
 <section>
@@ -97,7 +97,7 @@
     <div><h3>Problem</h3><p>Edge IDS telemetry arrives from heterogeneous defensive sources, but operator workflows need one normalized evidence path.</p></div>
     <div><h3>What I Built</h3><p>A source-agnostic runtime that converts defensive telemetry into events, windows, detections, alerts, metrics, and evidence artifacts.</p></div>
     <div><h3>What I Found</h3><p>The committed demo emits 4 alerts from 8 feature windows, and model gates are recorded in training evidence.</p></div>
-    <div><h3>What I Would Validate Next</h3><p>Generate Jetson flow CSV from defensive captures, run the Thor-class benchmark on actual hardware, and keep all response actions operator-reviewed.</p></div>
+    <div><h3>What I Would Validate Next</h3><p>Generate Jetson flow CSV from defensive captures, measure packet drops and flow extraction on the same device, evaluate the detector on a public benchmark dataset, and keep all response actions operator-reviewed.</p></div>
   </div>
 </section>
 
@@ -133,15 +133,27 @@
 
 <section>
   <h2>Jetson / Thor Readiness</h2>
-  <p class="callout">Thor benchmark values remain pending until `deploy/thor/run_benchmark.py` is executed on the exact target hardware. This dashboard does not fabricate edge latency, throughput, memory, power, or thermal behavior.</p>
+  <p class="callout">Values below come from a committed run of deploy/thor/run_benchmark.py on the named device. They cover model inference only; packet capture and flow extraction are not measured.</p>
   <table>
-    <tr><th>Gate</th><th>Threshold</th><th>Status</th></tr>
-    <tr><td>Detector p95 latency</td><td>10 ms</td><td>pending</td></tr>
-    <tr><td>Forecaster p95 latency</td><td>50 ms</td><td>pending</td></tr>
-    <tr><td>Throughput at 1000 RPS</td><td>1000 ev/s</td><td>pending</td></tr>
-    <tr><td>Memory footprint</td><td>4 GB</td><td>pending</td></tr>
+    <tr><th>Gate</th><th>Threshold</th><th>Measured</th><th>Status</th></tr>
+    <tr><td>Detector p95 latency</td><td>&lt;= 10 ms</td><td>0.0237 ms</td><td>pass</td></tr>
+    <tr><td>Forecaster p95 latency</td><td>&lt;= 50 ms</td><td>0.0141 ms</td><td>pass</td></tr>
+    <tr><td>Throughput at 1000 events/s</td><td>&gt;= 1000 ev/s</td><td>1000 events/s</td><td>pass</td></tr>
+    <tr><td>Memory footprint</td><td>&lt;= 4 GB</td><td>0.3639 GB</td><td>pass</td></tr>
   </table>
 </section>
+
+<section>
+  <h2>Thor Measurement</h2>
+  <p>Device: jetsonthor (tegra264). L4T: # R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025. Power mode: NV Power Mode: 120W 1. onnxruntime 1.29.0, Python 3.12.3. Run 3cac5ed2b7bd, 300 s per tier.</p>
+  <table>
+    <tr><th>Model</th><th>Provider</th><th>Target ev/s</th><th>Achieved ev/s</th><th>p50 / p95 / p99 ms</th><th>VIN p50 / peak mW</th><th>tj peak C</th></tr>
+    <tr><td>detector</td><td>CPUExecutionProvider</td><td>1000.0</td><td>1000.0</td><td>0.0213 / 0.0237 / 0.028</td><td>54298 / 56054</td><td>59.562</td></tr><tr><td>forecaster</td><td>CPUExecutionProvider</td><td>1000.0</td><td>1000.0</td><td>0.0138 / 0.0141 / 0.0143</td><td>24424 / 26194</td><td>40.687</td></tr>
+  </table>
+  <p>Idle VIN before load: 24170 mW. Process peak RSS: 0.3639 GB. Inputs are synthetic Gaussian tensors of the model input shapes; this measures inference latency and throughput only, not packet capture or flow extraction.</p>
+  <p>Execution provider fallbacks recorded in the artifact:</p><ul><li>detector: Fail: [ONNXRuntimeError] : 1 : FAIL : Non-zero status code returned while running Slice node. Name:&#x27;&#x27; Status Message: CUDA error cudaErrorNoKernelImageForDevice</li><li>forecaster: Fail: [ONNXRuntimeError] : 1 : FAIL : Non-zero status code returned while running Slice node. Name:&#x27;&#x27; Status Message: CUDA error cudaErrorNoKernelImageForDevice</li></ul>
+</section>
+
 
 <section>
   <h2>Evidence vs Boundary</h2>

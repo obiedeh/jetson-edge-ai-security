@@ -67,7 +67,8 @@ The current runnable path uses `edge-security replay-csv`, `edge-security run-de
 
 - Demo reports are generated under `reports/demo/`.
 - Static evidence pages are generated under `reports/index.html` and `reports/dashboard.html`.
-- Thor-class benchmark status lives in `reports/thor_benchmark.json`.
+- Thor-class benchmark evidence lives in `reports/thor_benchmark.json`, with the 1 Hz `tegrastats` series in `reports/thor_benchmark_tegrastats.jsonl` and the console log in `reports/thor_benchmark_run.log`. The `source_badge` field says whether the file is a measured run or the template.
+- What a research-level write-up still needs is tracked in `docs/publication-plan.md`.
 - Diagram sources live in `docs/diagrams/`.
 
 ## Known Limitations

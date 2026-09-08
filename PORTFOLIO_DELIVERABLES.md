@@ -30,4 +30,4 @@ CI validates linting, type checks, tests, demo replay artifact generation, and a
 
 This repo does not generate malware, exploit systems, run autonomous attacks, or claim live production IDS coverage.
 
-Jetson Orin-class Linux is the intended edge target, but hardware latency, CPU, memory, and sustained runtime benchmark artifacts are still pending.
+Jetson AGX Thor-class Linux is the measured edge target; see `reports/thor_benchmark.json` for what has and has not been measured. Sustained runtime and capture-path benchmarks remain pending.

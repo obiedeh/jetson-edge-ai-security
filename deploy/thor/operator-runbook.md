@@ -76,7 +76,7 @@ python3 deploy/thor/run_benchmark.py \
 python3 deploy/thor/run_benchmark.py --duration 30 --tiers 100,1000
 ```
 
-Results land in `reports/thor_benchmark.json` and can be surfaced by the dashboard after the artifact is copied back into the repo.
+Results land in `reports/thor_benchmark.json` (plus `_tegrastats.jsonl` and `_run.log` beside it) and can be surfaced by the dashboard after the artifact is copied back into the repo.
 
 ## 6. Build TensorRT Engines
 
@@ -147,16 +147,16 @@ sqlite3 /var/lib/edge-ids/data/alerts.db \
 
 ## 11. Benchmark Reference
 
-This table is a benchmark template until `reports/thor_benchmark.json` contains measured output from the exact target device.
+Measured values below come from run `3cac5ed2b7bd` in `reports/thor_benchmark.json` (Jetson AGX Thor, R38 (release), 120W, CPU execution provider, 300 s per tier).
 
 | Metric | Target | Measured |
 |---|---|---|
-| Detector p95 latency | <= 10 ms | Pending measured run |
-| Forecaster p95 latency | <= 50 ms | Pending measured run |
-| Throughput at 1000 events/sec | >= 1000 events/sec | Pending measured run |
-| Memory footprint | <= 4 GB | Pending measured run |
+| Detector p95 latency | <= 10 ms | 0.0237 ms at 1000 events/s |
+| Forecaster p95 latency | <= 50 ms | 0.0141 ms at 1000 events/s |
+| Throughput at 1000 events/sec | >= 1000 events/sec | 1000.0 events/s |
+| Memory footprint | <= 4 GB | 0.3639 GB peak process RSS |
 
-Whatever the benchmark measures is what goes in the report. Do not claim line-rate capture, measured latency, measured throughput, memory footprint, power, or thermal behavior before artifacts exist.
+Whatever the benchmark measures is what goes in the report. These are inference-only figures on the CPU provider; do not claim line-rate capture or end-to-end latency before those artifacts exist.
 
 ## 12. Troubleshooting
 

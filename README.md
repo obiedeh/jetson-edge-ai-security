@@ -6,7 +6,9 @@ Jetson Edge Intrusion Detection is a defensive edge telemetry system for Jetson-
 
 Fixed CSV is the deterministic test fixture, not the product ceiling. The planned Jetson sniffer upgrade adds Jetson-generated flow CSVs from packet capture and defensive telemetry sources such as Zeek logs, Suricata `eve.json`, and CICFlow-style records.
 
-> [Open the evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Open the static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md) | [Sniffer upgrade plan](docs/jetson-sniffer-upgrade-plan.md)
+> [Evidence landing page](reports/index.html) | [Static dashboard](reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md) | [Sniffer upgrade plan](docs/jetson-sniffer-upgrade-plan.md)
+>
+> The repository is private and GitHub Pages is not enabled, so the pages render only from a local clone (`python -m http.server` in `reports/`). The `obiedeh.github.io` URLs become valid once the repository is public and Pages is enabled from `main`.
 
 ## Current Implementation
 
@@ -18,7 +20,7 @@ fixed CSV telemetry
   -> lookback analytics and sliding-window features
   -> baseline detection and forecasting evidence
   -> operator-reviewed alerts
-  -> dashboard, reports, and benchmark templates
+  -> dashboard, reports, and benchmark artifacts
 ```
 
 Implemented today:
@@ -62,10 +64,11 @@ python -m pip install -e ".[ml]"
 - [Demo replay report](reports/demo/replay_report.md)
 - [Runtime metrics](reports/demo/runtime_metrics.json)
 - [Training evidence](reports/training_run.json)
-- [Thor benchmark template](reports/thor_benchmark.json)
+- [Thor benchmark, measured](reports/thor_benchmark.json) with the [1 Hz tegrastats series](reports/thor_benchmark_tegrastats.jsonl) and [run log](reports/thor_benchmark_run.log)
+- [Publication plan: what a write-up can and cannot claim yet](docs/publication-plan.md)
 - [Portfolio deliverables](PORTFOLIO_DELIVERABLES.md)
 
-GitHub shows committed HTML files as source code. Use the GitHub Pages links at the top of this README to open rendered pages.
+GitHub shows committed HTML files as source code. Open them from a local clone, or enable GitHub Pages from `main` when the repository is public.
 
 ## Current vs Planned
 
@@ -77,7 +80,7 @@ GitHub shows committed HTML files as source code. Use the GitHub Pages links at 
 | Flow extraction | CSV columns normalized into `TelemetryEvent` | Zeek `conn.log`, Suricata `eve.json`, CICFlow-style records |
 | Analytics path | Lookback analytics, forecasting, alerts, reports | Same existing analytics path |
 | Dashboard impact | Implemented | No detector/dashboard rewrite intended |
-| Hardware benchmark | Template committed | Pending measured Thor-class run |
+| Hardware benchmark | Measured inference run committed (CPU provider) | Capture and flow-extraction measurement |
 
 Adapters may change. The analytics pipeline should not.
 
@@ -91,7 +94,7 @@ This repo is defensive only.
 - No autonomous response.
 - No line-rate capture claim.
 - No production IDS deployment claim.
-- No measured Thor latency, throughput, power, or memory claim until benchmark artifacts are committed.
+- Thor numbers are inference-only measurements from the committed artifact, on the CPU execution provider, with synthetic inputs. No capture, flow-extraction, or end-to-end latency claim.
 
 ## Planned Jetson Sniffer Upgrade
 
@@ -120,7 +123,7 @@ The intent is source-agnostic flow ingestion. New sources should normalize into 
 | Static landing page and dashboard | Implemented |
 | Zeek / Suricata / CICFlow adapters | Planned |
 | Jetson-generated flow CSV | Planned |
-| Thor-class hardware benchmark | Pending measured run |
+| Thor-class hardware benchmark | Measured, inference only, CPU provider |
 
 ## Architecture and Evidence
 
@@ -129,9 +132,8 @@ The intent is source-agnostic flow ingestion. New sources should normalize into 
 - [Runtime flow diagram](docs/diagrams/runtime-flow.mmd)
 - [Data flow diagram](docs/diagrams/data-flow.mmd)
 - [Deployment view diagram](docs/diagrams/deployment-view.mmd)
-- [Sample outputs](artifacts/sample-outputs/)
-- [Logs](artifacts/logs/)
-- [Reports](artifacts/reports/)
+
+The `artifacts/` directories are reserved for future capture-stage evidence and currently hold only placeholders. Committed evidence lives under `reports/` and `models/exports/`.
 
 ```mermaid
 flowchart LR
@@ -207,27 +209,30 @@ make verify
 
 ## Thor-Class Deployment Readiness
 
-**Target hardware:** Jetson AGX Thor-class target hardware. Record the exact device SKU, JetPack version, memory configuration, NIC/interface name, and benchmark environment in the generated benchmark artifact.
+**Measured device:** Jetson AGX Thor Developer Kit (`tegra264`), R38 (release), `nvpmodel` 120W, 14 CPU cores, 122 GB RAM, Python 3.12.3, onnxruntime 1.29.0. Run `3cac5ed2b7bd`, 2026-09-08, 300 s per tier at 10, 100 and 1000 events/s, 60 s idle sampling before and after. Artifact: [`reports/thor_benchmark.json`](reports/thor_benchmark.json); 1 Hz board telemetry: [`reports/thor_benchmark_tegrastats.jsonl`](reports/thor_benchmark_tegrastats.jsonl); console log: [`reports/thor_benchmark_run.log`](reports/thor_benchmark_run.log).
 
-Performance gates from `reports/thor_benchmark.json` remain pending until a real run is committed:
+| Gate | Threshold | Measured at 1000 events/s | Status |
+|---|---|---|---|
+| Detector p95 latency | <= 10 ms per flow | **0.0237 ms** (p50 0.0213, p99 0.028, max 14.7371) | pass |
+| Forecaster p95 latency | <= 50 ms per `(20, 57)` sequence | **0.0141 ms** (p50 0.0138, p99 0.0143, max 1.0395) | pass |
+| Throughput at 1000 events/sec | >= 1000 events/sec | **1000.0 events/s** achieved by both models | pass |
+| Memory footprint | <= 4 GB | **0.3639 GB** peak process RSS | pass |
 
-| Gate | Threshold | Status |
-|---|---|---|
-| Detector p95 latency | <= 10 ms per flow | Pending measured run |
-| Forecaster p95 latency | <= 50 ms per `(20, 57)` sequence | Pending measured run |
-| Throughput at 1000 events/sec | >= 1000 events/sec | Pending measured run |
-| Memory footprint | <= 4 GB | Pending measured run |
+What these numbers are and are not:
 
-The dashboard shows a `pending-thor-run` badge until `deploy/thor/run_benchmark.py` is executed on target hardware and the measured artifact is committed.
+- **CPU execution provider.** The PyPI `onnxruntime-gpu` 1.29.0 wheel loads a CUDA provider on Thor but fails at run time with `cudaErrorNoKernelImageForDevice`; the NVIDIA Jetson package index has no JetPack 7 build. The harness recorded the failure and fell back to CPU. For models this small (106 KB and 3 KB ONNX) the GPU would not change the result.
+- **Inference only.** Inputs are synthetic Gaussian tensors of the model input shapes, batch 1, one process, open-loop pacing. Packet capture, flow extraction and end-to-end packet-to-alert latency are not measured.
+- **Board power.** Idle VIN was 24170 mW. The forecaster tiers stayed near idle (24424 mW p50 at 1000 events/s). The detector session drew 54298 mW p50 at 100 and 1000 events/s with 43118 pacing misses out of 300001 at the top tier, and junction temperature peaked at 59.562 C. The difference is consistent with onnxruntime's default multi-threaded, spin-waiting thread pool being engaged for the tree-ensemble model and not for the linear one. That cause is a hypothesis; a controlled single-thread comparison is the next measurement and is listed in the [publication plan](docs/publication-plan.md).
+- **Host state.** One-minute load average was 3.1 at start from unrelated desktop activity, recorded in the artifact.
 
-See [deploy/thor/operator-runbook.md](deploy/thor/operator-runbook.md) for install, upgrade, rollback, and benchmark procedures.
+Reproduce on the device with the harness in [deploy/thor/run_benchmark.py](deploy/thor/run_benchmark.py); see [deploy/thor/operator-runbook.md](deploy/thor/operator-runbook.md) for install, upgrade, rollback, and benchmark procedures.
 
 ## Roadmap
 
 The next steps are intentionally narrow:
 
 - Add source adapters that generate the same CSV/event contract from Zeek, Suricata, and CICFlow-style records.
-- Run a documented Thor-class hardware benchmark and commit measured latency, throughput, memory, power, and thermal notes.
+- Measure end-to-end packet-to-alert latency on Thor and the single-thread versus default onnxruntime power comparison; the inference-only benchmark is committed.
 - Add packet-drop and flow-extraction measurements before making capture-performance claims.
 - Keep all response actions operator-reviewed.
 
