@@ -62,7 +62,9 @@ def _delta(a: float | None, b: float | None) -> float | None:
 
 def compare(baseline: dict[str, Any], variant: dict[str, Any]) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
-    for model in ("detector", "forecaster"):
+    base_models = [m["model"] for m in baseline.get("models", [])]
+    var_models = {m["model"] for m in variant.get("models", [])}
+    for model in [m for m in base_models if m in var_models]:
         base_tiers = _tiers(baseline, model)
         var_tiers = _tiers(variant, model)
         for target in sorted(set(base_tiers) & set(var_tiers)):

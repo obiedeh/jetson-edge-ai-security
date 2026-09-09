@@ -70,3 +70,16 @@ def test_compare_tolerates_missing_tegrastats(compare_mod) -> None:
     det = out["rows"][0]
     assert det["variant"]["vin_p50_mw"] is None
     assert det["delta"]["vin_p50_mw"] is None
+
+
+def test_compare_uses_model_names_from_artifacts(compare_mod) -> None:
+    """Models are taken from the artifacts, not a fixed detector/forecaster pair."""
+    tier = {"target_rps": 1000.0, "actual_rps": 1000.0, "deadline_misses": 0,
+            "p50_ms": 0.01, "p95_ms": 0.02, "p99_ms": 0.03}
+    base = {"run_id": "a", "session_options": {}, "duration_per_tier_s": 1,
+            "hardware": {}, "models": [{"model": "ridge_linear", "tiers": [tier]},
+                                       {"model": "mlp", "tiers": [tier]}]}
+    var = {"run_id": "b", "session_options": {}, "duration_per_tier_s": 1,
+           "hardware": {}, "models": [{"model": "mlp", "tiers": [tier]}]}
+    result = compare_mod.compare(base, var)
+    assert [r["model"] for r in result["rows"]] == ["mlp"]
