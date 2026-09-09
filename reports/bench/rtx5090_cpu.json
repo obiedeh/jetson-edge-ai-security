@@ -1,0 +1,207 @@
+{
+  "run_id": "be5179900b03",
+  "note": "Measured on the device described in `hardware`. Synthetic Gaussian inputs of the model input shapes; batch 1; single process; paced open-loop load. This is inference latency and throughput, not capture or flow-extraction performance.",
+  "hardware": {
+    "host": "aimlstation",
+    "machine": "x86_64",
+    "kernel": "6.17.0-22-generic",
+    "soc": null,
+    "devicetree_compatible": [],
+    "is_jetson": false,
+    "l4t_release": null,
+    "nvpmodel": null,
+    "cpu_count": 24,
+    "mem_total_gb": 30.93,
+    "loadavg_1m_at_start": 2.6865234375,
+    "loadavg_5m_at_start": 0.83251953125,
+    "python": "3.12.3",
+    "onnxruntime": "1.26.0",
+    "numpy": "1.26.4",
+    "available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "git_sha": "0650c3b",
+    "benchmark_started_at": "2026-09-09T01:32:52.374328+00:00"
+  },
+  "benchmark_finished_at": "2026-09-09T02:02:52.475930+00:00",
+  "duration_per_tier_s": 300.0,
+  "tiers_requested_rps": [
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "session_options": {
+    "intra_op_num_threads": "runtime default",
+    "inter_op_num_threads": "runtime default",
+    "allow_spinning": true,
+    "provider_requested": "cpu"
+  },
+  "models": [
+    {
+      "model": "detector",
+      "onnx": "gbm_detector.onnx",
+      "onnx_sha256_16": "dfd424e674becf63",
+      "provider": "CPUExecutionProvider",
+      "provider_error": null,
+      "provider_requested": "cpu",
+      "trt_requested": false,
+      "single_inference_p50_ms": 0.0146,
+      "tiers": [
+        {
+          "n_samples": 3001,
+          "elapsed_s": 300.0,
+          "actual_rps": 10.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.1024,
+          "p95_ms": 0.1248,
+          "p99_ms": 0.2046,
+          "min_ms": 0.0149,
+          "max_ms": 3.7792,
+          "mean_ms": 0.1096,
+          "target_rps": 10.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0604,
+          "tegrastats": null
+        },
+        {
+          "n_samples": 30001,
+          "elapsed_s": 300.0,
+          "actual_rps": 100.0,
+          "deadline_misses": 2,
+          "p50_ms": 0.0458,
+          "p95_ms": 0.112,
+          "p99_ms": 0.1361,
+          "min_ms": 0.0107,
+          "max_ms": 6.1645,
+          "mean_ms": 0.0618,
+          "target_rps": 100.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0612,
+          "tegrastats": null
+        },
+        {
+          "n_samples": 300001,
+          "elapsed_s": 300.0,
+          "actual_rps": 1000.0,
+          "deadline_misses": 656,
+          "p50_ms": 0.0387,
+          "p95_ms": 0.0834,
+          "p99_ms": 0.1102,
+          "min_ms": 0.0105,
+          "max_ms": 3.3823,
+          "mean_ms": 0.0413,
+          "target_rps": 1000.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0693,
+          "tegrastats": null
+        }
+      ]
+    },
+    {
+      "model": "forecaster",
+      "onnx": "ar_forecaster.onnx",
+      "onnx_sha256_16": "169ca3f7290decfb",
+      "provider": "CPUExecutionProvider",
+      "provider_error": null,
+      "provider_requested": "cpu",
+      "trt_requested": false,
+      "single_inference_p50_ms": 0.0066,
+      "tiers": [
+        {
+          "n_samples": 3001,
+          "elapsed_s": 300.0,
+          "actual_rps": 10.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.0899,
+          "p95_ms": 0.156,
+          "p99_ms": 0.2054,
+          "min_ms": 0.0074,
+          "max_ms": 0.3522,
+          "mean_ms": 0.0934,
+          "target_rps": 10.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.07,
+          "tegrastats": null
+        },
+        {
+          "n_samples": 30001,
+          "elapsed_s": 300.0,
+          "actual_rps": 100.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.0408,
+          "p95_ms": 0.0972,
+          "p99_ms": 0.1014,
+          "min_ms": 0.0083,
+          "max_ms": 0.1811,
+          "mean_ms": 0.0531,
+          "target_rps": 100.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0701,
+          "tegrastats": null
+        },
+        {
+          "n_samples": 300001,
+          "elapsed_s": 300.0,
+          "actual_rps": 1000.0,
+          "deadline_misses": 0,
+          "p50_ms": 0.0354,
+          "p95_ms": 0.0694,
+          "p99_ms": 0.0831,
+          "min_ms": 0.0073,
+          "max_ms": 0.2446,
+          "mean_ms": 0.0352,
+          "target_rps": 1000.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0702,
+          "tegrastats": null
+        }
+      ]
+    }
+  ],
+  "memory": {
+    "process_peak_rss_gb": 0.1161,
+    "process_rss_before_gb": 0.0496,
+    "process_rss_after_gb": 0.0702,
+    "note": "Process RSS only. Board RAM is in the tegrastats summaries when present."
+  },
+  "idle_baseline": {
+    "seconds": 0,
+    "before_load": null,
+    "after_load": null,
+    "note": "Board rails and temperatures while this process slept; other host activity is included."
+  },
+  "tegrastats_samples_file": null,
+  "tegrastats_sample_count": 0,
+  "gates": {
+    "detector_p95_latency_ms": {
+      "threshold": 10.0,
+      "unit": "ms",
+      "measured": 0.0834,
+      "status": "pass",
+      "criterion": "p95 single-event latency at the 1000 events/s tier"
+    },
+    "forecaster_p95_latency_ms": {
+      "threshold": 50.0,
+      "unit": "ms",
+      "measured": 0.0694,
+      "status": "pass",
+      "criterion": "p95 single-sequence latency at the 1000 events/s tier"
+    },
+    "throughput_at_1000_rps": {
+      "threshold": 1000.0,
+      "unit": "events/s",
+      "measured": 1000.0,
+      "status": "pass",
+      "criterion": "lowest achieved events/s across models at the 1000 events/s tier; pass at >= 99% of target"
+    },
+    "memory_footprint_gb": {
+      "threshold": 4.0,
+      "unit": "GB",
+      "measured": 0.1161,
+      "status": "pass",
+      "criterion": "peak resident set size of the benchmark process (ru_maxrss)"
+    }
+  },
+  "source_badge": "measured-cpu"
+}

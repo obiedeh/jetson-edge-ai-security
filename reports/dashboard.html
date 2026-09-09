@@ -164,6 +164,13 @@
   </table>
 </section>
 
+<section>
+  <h2>Cross-device inference comparison</h2>
+  <p>Recorded 1000 events/s tier, per model. The RTX host runs are CPU-only and are not pooled with Thor results. Sources: reports/thor_benchmark.json and reports/bench/*.json.</p>
+  <table><tr><th>Device/run</th><th>Model</th><th>p50 / p95 / p99 (ms)</th><th>Achieved events/s</th><th>Misses</th><th>Peak RSS (GB)</th><th>Provider</th></tr>
+  <tr><td>AGX Thor</td><td>detector</td><td>0.0213 / 0.0237 / 0.028</td><td>1000.0</td><td>43118</td><td>0.3558</td><td>CPUExecutionProvider</td></tr><tr><td>AGX Thor</td><td>forecaster</td><td>0.0138 / 0.0141 / 0.0143</td><td>1000.0</td><td>0</td><td>0.3639</td><td>CPUExecutionProvider</td></tr><tr><td>RTX 5090 host</td><td>detector</td><td>0.0387 / 0.0834 / 0.1102</td><td>1000.0</td><td>656</td><td>0.0693</td><td>CPUExecutionProvider</td></tr><tr><td>RTX 5090 host</td><td>forecaster</td><td>0.0354 / 0.0694 / 0.0831</td><td>1000.0</td><td>0</td><td>0.0702</td><td>CPUExecutionProvider</td></tr><tr><td>RTX 5090 host, single/no-spin</td><td>detector</td><td>0.0225 / 0.0338 / 0.0688</td><td>1000.0</td><td>0</td><td>0.0658</td><td>CPUExecutionProvider</td></tr><tr><td>RTX 5090 host, single/no-spin</td><td>forecaster</td><td>0.0397 / 0.0689 / 0.0966</td><td>1000.0</td><td>17</td><td>0.0692</td><td>CPUExecutionProvider</td></tr></table>
+</section>
+
 
 <section>
   <h2>Evidence vs Boundary</h2>

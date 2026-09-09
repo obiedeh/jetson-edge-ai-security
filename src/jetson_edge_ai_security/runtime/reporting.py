@@ -65,6 +65,8 @@ def write_static_report_pages(
     training_run = _read_json(reports_dir / "training_run.json")
     thor_benchmark = _read_json(reports_dir / "thor_benchmark.json")
     thor_threads = _read_json(reports_dir / "thor_benchmark_threads.json")
+    host_default = _read_json(reports_dir / "bench" / "rtx5090_cpu.json")
+    host_single = _read_json(reports_dir / "bench" / "rtx5090_cpu_single_thread.json")
 
     index_path = reports_dir / "index.html"
     dashboard_path = reports_dir / "dashboard.html"
@@ -84,6 +86,8 @@ def write_static_report_pages(
             training_run=training_run,
             thor_benchmark=thor_benchmark,
             thor_threads=thor_threads,
+            host_default=host_default,
+            host_single=host_single,
         ),
         encoding="utf-8",
     )
@@ -587,12 +591,45 @@ def _render_index_page(
     )
 
 
+def _cross_device_section(thor: dict[str, object], host: dict[str, object], single: dict[str, object]) -> str:
+    """Render matched 1000 events/s rows when both host artifacts are present."""
+    if not host or not single or not thor:
+        return ""
+    rows = []
+    for device, data in (("AGX Thor", thor), ("RTX 5090 host", host), ("RTX 5090 host, single/no-spin", single)):
+        models = data.get("models")
+        if not isinstance(models, list):
+            return ""
+        for model in models:
+            if not isinstance(model, dict):
+                continue
+            tiers = model.get("tiers")
+            if not isinstance(tiers, list):
+                continue
+            tier = next((t for t in tiers if isinstance(t, dict) and t.get("target_rps") == 1000.0), None)
+            if not isinstance(tier, dict):
+                continue
+            rows.append(f"<tr><td>{escape(device)}</td><td>{escape(str(model.get('model', 'unknown')))}</td>"
+                        f"<td>{escape(str(tier.get('p50_ms', 'not measured')))} / {escape(str(tier.get('p95_ms', 'not measured')))} / {escape(str(tier.get('p99_ms', 'not measured')))}</td>"
+                        f"<td>{escape(str(tier.get('actual_rps', 'not measured')))}</td><td>{escape(str(tier.get('deadline_misses', 'not measured')))}</td>"
+                        f"<td>{escape(str(tier.get('process_rss_gb', 'not measured')))}</td><td>{escape(str(tier.get('provider', 'not measured')))}</td></tr>")
+    if not rows:
+        return ""
+    return """<section>
+  <h2>Cross-device inference comparison</h2>
+  <p>Recorded 1000 events/s tier, per model. The RTX host runs are CPU-only and are not pooled with Thor results. Sources: reports/thor_benchmark.json and reports/bench/*.json.</p>
+  <table><tr><th>Device/run</th><th>Model</th><th>p50 / p95 / p99 (ms)</th><th>Achieved events/s</th><th>Misses</th><th>Peak RSS (GB)</th><th>Provider</th></tr>
+  """ + "".join(rows) + "</table>\n</section>\n"
+
+
 def _render_dashboard_page(
     *,
     demo_metrics: dict[str, object],
     training_run: dict[str, object],
     thor_benchmark: dict[str, object],
     thor_threads: dict[str, object] | None = None,
+    host_default: dict[str, object] | None = None,
+    host_single: dict[str, object] | None = None,
 ) -> str:
     decision_cards = "".join(
         [
@@ -693,6 +730,7 @@ def _render_dashboard_page(
 </section>
 {_thor_measurement_section(thor_benchmark)}
 {_thor_threads_section(thor_threads or {})}
+{_cross_device_section(thor_benchmark, host_default or {}, host_single or {})}
 
 <section>
   <h2>Evidence vs Boundary</h2>

@@ -312,3 +312,20 @@ def test_dashboard_omits_thread_pool_section_when_absent(tmp_path: Path) -> None
     write_static_report_pages(reports_dir=reports_dir)
     dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
     assert "Thread Pool Comparison" not in dashboard
+
+
+def test_dashboard_renders_cross_device_comparison_when_host_runs_present(tmp_path: Path) -> None:
+    reports_dir = tmp_path / "reports"
+    (reports_dir / "demo").mkdir(parents=True)
+    (reports_dir / "demo" / "runtime_metrics.json").write_text("{}", encoding="utf-8")
+    (reports_dir / "training_run.json").write_text("{}", encoding="utf-8")
+    tier = {"target_rps": 1000.0, "p50_ms": 0.1, "p95_ms": 0.2, "p99_ms": 0.3, "actual_rps": 1000.0, "deadline_misses": 0, "process_rss_gb": 0.1, "provider": "CPUExecutionProvider"}
+    payload = {"models": [{"model": "detector", "tiers": [tier]}]}
+    for name in ("thor_benchmark.json", "bench/rtx5090_cpu.json", "bench/rtx5090_cpu_single_thread.json"):
+        path = reports_dir / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload), encoding="utf-8")
+    write_static_report_pages(reports_dir=reports_dir)
+    dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
+    assert "Cross-device inference comparison" in dashboard
+    assert "RTX 5090 host" in dashboard
