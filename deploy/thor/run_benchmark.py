@@ -348,10 +348,14 @@ def _benchmark_session(
     deadline = start + duration_s
     next_event = start
 
+    next_heartbeat = start + 60.0
     while True:
         now = time.monotonic()
         if now >= deadline:
             break
+        if now >= next_heartbeat:
+            print(f"    ... {len(latencies)} samples, {now - start:.0f}s elapsed", flush=True)
+            next_heartbeat += 60.0
         if now < next_event:
             time.sleep(next_event - now)
         elif interval and now - next_event > interval:
@@ -444,6 +448,11 @@ def _evaluate_gates(results: list[dict[str, Any]], top_tier: float, peak_rss_gb:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Edge IDS Thor benchmark.")
+    # Line-buffer stdout so a redirected log shows progress while a run is in flight.
+    try:
+        sys.stdout.reconfigure(line_buffering=True)  # type: ignore[union-attr]
+    except (AttributeError, ValueError):
+        pass
     parser.add_argument("--models-dir", default="models/exports")
     parser.add_argument("--models-spec", help="JSON list of model name, file, input_name, and shape entries.")
     parser.add_argument("--output", default="reports/thor_benchmark.json")
