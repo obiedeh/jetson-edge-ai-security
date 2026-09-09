@@ -20,6 +20,7 @@ What is recorded:
 Usage::
 
     python3 deploy/thor/run_benchmark.py [--models-dir models/exports]
+                                         [--models-spec models.json]
                                          [--output reports/thor_benchmark.json]
                                          [--duration 300]
                                          [--tiers 10,100,1000]
@@ -312,6 +313,23 @@ def _load_session(
     return ort.InferenceSession(str(model_path), sess_options=session_options, providers=providers)
 
 
+def _model_configs(models_dir: Path, spec_path: str | None) -> list[tuple[str, str, str, tuple[int, ...]]]:
+    if not spec_path:
+        return [("detector", "gbm_detector.onnx", "X", (1, 57)), ("forecaster", "ar_forecaster.onnx", "H", (1, 20, 57))]
+    entries = json.loads(Path(spec_path).read_text())
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("models spec must be a non-empty JSON list")
+    configs = []
+    for entry in entries:
+        if not isinstance(entry, dict) or not all(k in entry for k in ("name", "file", "input_name", "shape")):
+            raise ValueError("each models spec entry requires name, file, input_name, and shape")
+        shape = tuple(int(d) for d in entry["shape"])
+        if not shape or any(d <= 0 for d in shape):
+            raise ValueError("model shape must contain positive dimensions")
+        configs.append((str(entry["name"]), str(entry["file"]), str(entry["input_name"]), shape))
+    return configs
+
+
 def _benchmark_session(
     sess: Any,
     input_data: dict[str, Any],
@@ -427,6 +445,7 @@ def _evaluate_gates(results: list[dict[str, Any]], top_tier: float, peak_rss_gb:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Edge IDS Thor benchmark.")
     parser.add_argument("--models-dir", default="models/exports")
+    parser.add_argument("--models-spec", help="JSON list of model name, file, input_name, and shape entries.")
     parser.add_argument("--output", default="reports/thor_benchmark.json")
     parser.add_argument("--duration", type=int, default=300, help="Seconds per load tier.")
     parser.add_argument("--tiers", default="10,100,1000", help="Comma-separated target events/s.")
@@ -476,10 +495,11 @@ def main() -> int:
         idle_before = _summarize_window(sampler.window(t0, time.monotonic()))
 
     rng = np.random.default_rng(42)
-    model_configs = [
-        ("detector", "gbm_detector.onnx", "X", (1, 57)),
-        ("forecaster", "ar_forecaster.onnx", "H", (1, 20, 57)),
-    ]
+    try:
+        model_configs = _model_configs(models_dir, args.models_spec)
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        print(f"ERROR: invalid models spec: {exc}", file=sys.stderr)
+        return 1
 
     all_results: list[dict[str, Any]] = []
     rss_before_gb = _current_rss_gb()

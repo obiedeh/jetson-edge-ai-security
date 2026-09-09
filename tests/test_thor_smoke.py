@@ -9,12 +9,15 @@ To run on Thor:
 
 from __future__ import annotations
 
+import json
 import os
 import platform
 import subprocess
 from pathlib import Path
 
 import pytest
+
+from deploy.thor.run_benchmark import _model_configs
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Skip guard
@@ -32,6 +35,14 @@ jetson_only = pytest.mark.skipif(
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Tests
+#
+
+
+def test_models_spec_loads(tmp_path: Path) -> None:
+    spec = tmp_path / "models.json"
+    spec.write_text(json.dumps([{"name": "ridge", "file": "ridge.onnx", "input_name": "X", "shape": [1, 16]}]))
+    assert _model_configs(tmp_path, str(spec)) == [("ridge", "ridge.onnx", "X", (1, 16))]
+
 # ──────────────────────────────────────────────────────────────────────────────
 
 
