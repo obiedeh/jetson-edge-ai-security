@@ -1,0 +1,66 @@
+2026-09-08 19:57:14.102829258 [W:onnxruntime:, transformer_memcpy.cc:111 ApplyImpl] 2 Memcpy nodes are added to the graph gbm_detector for CUDAExecutionProvider. It might have negative impact on performance (including unable to run CUDA graph). Set session_options.log_severity_level=1 to see the detail logs before this message.
+2026-09-08 19:57:14.125014205 [E:onnxruntime:, sequential_executor.cc:671 ExecuteKernel] Non-zero status code returned while running Slice node. Name:'' Status Message: CUDA error cudaErrorNoKernelImageForDevice:no kernel image is available for execution on the device
+2026-09-08 20:01:14.182764044 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'axis2'. It is not used by any node and should be removed from the model.
+2026-09-08 20:01:14.182844425 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'minus1'. It is not used by any node and should be removed from the model.
+2026-09-08 20:01:14.185458849 [W:onnxruntime:, transformer_memcpy.cc:111 ApplyImpl] 2 Memcpy nodes are added to the graph ar_forecaster for CUDAExecutionProvider. It might have negative impact on performance (including unable to run CUDA graph). Set session_options.log_severity_level=1 to see the detail logs before this message.
+2026-09-08 20:01:14.220609679 [E:onnxruntime:, sequential_executor.cc:671 ExecuteKernel] Non-zero status code returned while running Slice node. Name:'' Status Message: CUDA error cudaErrorNoKernelImageForDevice:no kernel image is available for execution on the device
+2026-09-08 20:01:14.222179292 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'axis2'. It is not used by any node and should be removed from the model.
+2026-09-08 20:01:14.222211903 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'minus1'. It is not used by any node and should be removed from the model.
+Hardware: {
+  "host": "jetsonthor",
+  "machine": "aarch64",
+  "kernel": "6.8.12-tegra",
+  "soc": "tegra264",
+  "devicetree_compatible": [
+    "nvidia,p4071-0000+p3834-0008",
+    "nvidia,p3834-0008",
+    "nvidia,tegra264"
+  ],
+  "is_jetson": true,
+  "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+  "nvpmodel": "NV Power Mode: 120W 1",
+  "cpu_count": 14,
+  "mem_total_gb": 122.82,
+  "loadavg_1m_at_start": 2.24951171875,
+  "loadavg_5m_at_start": 4.66162109375,
+  "python": "3.12.3",
+  "onnxruntime": "1.29.0",
+  "numpy": "2.5.3",
+  "available_providers": [
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "git_sha": null,
+  "benchmark_started_at": "2026-09-09T00:56:43.713457+00:00"
+}
+
+Idle baseline: sampling 30s before load
+
+============================================================
+Benchmarking: detector (gbm_detector.onnx) input (1, 57)
+  Provider failed, falling back to CPU: Fail: [ONNXRuntimeError] : 1 : FAIL : Non-zero status code returned while running Slice node. Name:'' Status Message: CUDA error cudaErrorNoKernelImageForDevice:no kernel image is available for execution on the device
+  Execution provider: CPUExecutionProvider
+  Single-inference p50: 0.0085 ms
+
+  Tier 100 events/s for 120s
+    n=12001 actual=100.0 ev/s p50=0.0217 p95=0.0273 p99=0.0423 ms misses=0
+
+  Tier 1000 events/s for 120s
+    n=120001 actual=1000.0 ev/s p50=0.0214 p95=0.0219 p99=0.0251 ms misses=0
+
+============================================================
+Benchmarking: forecaster (ar_forecaster.onnx) input (1, 20, 57)
+  Provider failed, falling back to CPU: Fail: [ONNXRuntimeError] : 1 : FAIL : Non-zero status code returned while running Slice node. Name:'' Status Message: CUDA error cudaErrorNoKernelImageForDevice:no kernel image is available for execution on the device
+  Execution provider: CPUExecutionProvider
+  Single-inference p50: 0.0348 ms
+
+  Tier 100 events/s for 120s
+    n=12001 actual=100.0 ev/s p50=0.0366 p95=0.0407 p99=0.0615 ms misses=0
+
+  Tier 1000 events/s for 120s
+    n=120001 actual=1000.0 ev/s p50=0.0361 p95=0.0367 p99=0.0379 ms misses=5
+
+Idle baseline: sampling 30s after load
+
+Wrote reports/thor_threads/single_thread.json
+Gates: {"detector_p95_latency_ms": "pass", "forecaster_p95_latency_ms": "pass", "throughput_at_1000_rps": "pass", "memory_footprint_gb": "pass"}

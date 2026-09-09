@@ -156,6 +156,16 @@
 
 
 <section>
+  <h2>Thread Pool Comparison</h2>
+  <p>Two matched runs on the same device differing only in onnxruntime session options. Baseline run 1e430379de9b uses runtime defaults; variant run 42314e8252e9 uses one intra-op thread, one inter-op thread and no spin waiting. Values are baseline / variant; delta is variant minus baseline. Source: reports/thor_benchmark_threads.json.</p>
+  <table>
+    <tr><th>Model</th><th>Target ev/s</th><th>VIN p50 mW</th><th>VIN delta mW</th><th>Pacing misses</th><th>p95 ms</th><th>tj peak C</th></tr>
+    <tr><td>detector</td><td>100</td><td>53384 / 24352</td><td>-29032</td><td>0 / 0</td><td>0.0587 / 0.0273</td><td>53.75 / 41.03</td></tr><tr><td>detector</td><td>1000</td><td>54102 / 24312</td><td>-29790</td><td>16944 / 0</td><td>0.0238 / 0.0219</td><td>56.56 / 40.38</td></tr><tr><td>forecaster</td><td>100</td><td>24424 / 24200</td><td>-224</td><td>0 / 0</td><td>0.0373 / 0.0407</td><td>48.88 / 40.06</td></tr><tr><td>forecaster</td><td>1000</td><td>24348 / 24172</td><td>-176</td><td>3 / 5</td><td>0.0365 / 0.0367</td><td>42.66 / 39.81</td></tr>
+  </table>
+</section>
+
+
+<section>
   <h2>Evidence vs Boundary</h2>
   <div class="two">
     <div>

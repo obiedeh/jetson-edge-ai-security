@@ -1,0 +1,214 @@
+{
+  "note": "Two runs of deploy/thor/run_benchmark.py on the same device differing only in onnxruntime session options. Deltas are variant minus baseline. Board power includes unrelated host activity; the idle baselines of each run are given for reference.",
+  "same_device": true,
+  "baseline": {
+    "run_id": "1e430379de9b",
+    "session_options": {
+      "intra_op_num_threads": "runtime default",
+      "inter_op_num_threads": "runtime default",
+      "allow_spinning": true,
+      "provider_requested": "auto"
+    },
+    "idle_vin_p50_mw": 24212.0,
+    "duration_per_tier_s": 120.0,
+    "loadavg_1m_at_start": 1.76123046875
+  },
+  "variant": {
+    "run_id": "42314e8252e9",
+    "session_options": {
+      "intra_op_num_threads": 1,
+      "inter_op_num_threads": 1,
+      "allow_spinning": false,
+      "provider_requested": "auto"
+    },
+    "idle_vin_p50_mw": 24176.0,
+    "duration_per_tier_s": 120.0,
+    "loadavg_1m_at_start": 2.24951171875
+  },
+  "rows": [
+    {
+      "model": "detector",
+      "target_rps": 100.0,
+      "baseline": {
+        "actual_rps": 100.0,
+        "p50_ms": 0.0242,
+        "p95_ms": 0.0587,
+        "p99_ms": 0.1256,
+        "max_ms": 8.8264,
+        "deadline_misses": 0,
+        "process_rss_gb": 0.3417,
+        "vin_p50_mw": 53384.0,
+        "vin_peak_mw": 56984.0,
+        "vdd_cpu_soc_mss_p50_mw": 34580.0,
+        "tj_peak_c": 53.75,
+        "provider": "CPUExecutionProvider"
+      },
+      "variant": {
+        "actual_rps": 100.0,
+        "p50_ms": 0.0217,
+        "p95_ms": 0.0273,
+        "p99_ms": 0.0423,
+        "max_ms": 0.3018,
+        "deadline_misses": 0,
+        "process_rss_gb": 0.3394,
+        "vin_p50_mw": 24352.0,
+        "vin_peak_mw": 26708.0,
+        "vdd_cpu_soc_mss_p50_mw": 7469.0,
+        "tj_peak_c": 41.031,
+        "provider": "CPUExecutionProvider"
+      },
+      "delta": {
+        "actual_rps": 0.0,
+        "p50_ms": -0.0025,
+        "p95_ms": -0.0314,
+        "p99_ms": -0.0833,
+        "max_ms": -8.5246,
+        "deadline_misses": 0,
+        "process_rss_gb": -0.0023,
+        "vin_p50_mw": -29032.0,
+        "vin_peak_mw": -30276.0,
+        "vdd_cpu_soc_mss_p50_mw": -27111.0,
+        "tj_peak_c": -12.719
+      }
+    },
+    {
+      "model": "detector",
+      "target_rps": 1000.0,
+      "baseline": {
+        "actual_rps": 1000.0,
+        "p50_ms": 0.0215,
+        "p95_ms": 0.0238,
+        "p99_ms": 0.0289,
+        "max_ms": 14.4675,
+        "deadline_misses": 16944,
+        "process_rss_gb": 0.3511,
+        "vin_p50_mw": 54102.0,
+        "vin_peak_mw": 55492.0,
+        "vdd_cpu_soc_mss_p50_mw": 35366.0,
+        "tj_peak_c": 56.562,
+        "provider": "CPUExecutionProvider"
+      },
+      "variant": {
+        "actual_rps": 1000.0,
+        "p50_ms": 0.0214,
+        "p95_ms": 0.0219,
+        "p99_ms": 0.0251,
+        "max_ms": 0.9852,
+        "deadline_misses": 0,
+        "process_rss_gb": 0.345,
+        "vin_p50_mw": 24312.0,
+        "vin_peak_mw": 25770.0,
+        "vdd_cpu_soc_mss_p50_mw": 7469.0,
+        "tj_peak_c": 40.375,
+        "provider": "CPUExecutionProvider"
+      },
+      "delta": {
+        "actual_rps": 0.0,
+        "p50_ms": -0.0001,
+        "p95_ms": -0.0019,
+        "p99_ms": -0.0038,
+        "max_ms": -13.4823,
+        "deadline_misses": -16944,
+        "process_rss_gb": -0.0061,
+        "vin_p50_mw": -29790.0,
+        "vin_peak_mw": -29722.0,
+        "vdd_cpu_soc_mss_p50_mw": -27897.0,
+        "tj_peak_c": -16.187
+      }
+    },
+    {
+      "model": "forecaster",
+      "target_rps": 100.0,
+      "baseline": {
+        "actual_rps": 100.0,
+        "p50_ms": 0.0362,
+        "p95_ms": 0.0373,
+        "p99_ms": 0.0394,
+        "max_ms": 1.1074,
+        "deadline_misses": 0,
+        "process_rss_gb": 0.3552,
+        "vin_p50_mw": 24424.0,
+        "vin_peak_mw": 26108.0,
+        "vdd_cpu_soc_mss_p50_mw": 7469.0,
+        "tj_peak_c": 48.875,
+        "provider": "CPUExecutionProvider"
+      },
+      "variant": {
+        "actual_rps": 100.0,
+        "p50_ms": 0.0366,
+        "p95_ms": 0.0407,
+        "p99_ms": 0.0615,
+        "max_ms": 0.3088,
+        "deadline_misses": 0,
+        "process_rss_gb": 0.3436,
+        "vin_p50_mw": 24200.0,
+        "vin_peak_mw": 26000.0,
+        "vdd_cpu_soc_mss_p50_mw": 7469.0,
+        "tj_peak_c": 40.062,
+        "provider": "CPUExecutionProvider"
+      },
+      "delta": {
+        "actual_rps": 0.0,
+        "p50_ms": 0.0004,
+        "p95_ms": 0.0034,
+        "p99_ms": 0.0221,
+        "max_ms": -0.7986,
+        "deadline_misses": 0,
+        "process_rss_gb": -0.0116,
+        "vin_p50_mw": -224.0,
+        "vin_peak_mw": -108.0,
+        "vdd_cpu_soc_mss_p50_mw": 0.0,
+        "tj_peak_c": -8.813
+      }
+    },
+    {
+      "model": "forecaster",
+      "target_rps": 1000.0,
+      "baseline": {
+        "actual_rps": 1000.0,
+        "p50_ms": 0.0359,
+        "p95_ms": 0.0365,
+        "p99_ms": 0.0369,
+        "max_ms": 0.2887,
+        "deadline_misses": 3,
+        "process_rss_gb": 0.3552,
+        "vin_p50_mw": 24348.0,
+        "vin_peak_mw": 25294.0,
+        "vdd_cpu_soc_mss_p50_mw": 7469.0,
+        "tj_peak_c": 42.656,
+        "provider": "CPUExecutionProvider"
+      },
+      "variant": {
+        "actual_rps": 1000.0,
+        "p50_ms": 0.0361,
+        "p95_ms": 0.0367,
+        "p99_ms": 0.0379,
+        "max_ms": 0.5771,
+        "deadline_misses": 5,
+        "process_rss_gb": 0.3461,
+        "vin_p50_mw": 24172.0,
+        "vin_peak_mw": 26322.0,
+        "vdd_cpu_soc_mss_p50_mw": 7469.0,
+        "tj_peak_c": 39.812,
+        "provider": "CPUExecutionProvider"
+      },
+      "delta": {
+        "actual_rps": 0.0,
+        "p50_ms": 0.0002,
+        "p95_ms": 0.0002,
+        "p99_ms": 0.001,
+        "max_ms": 0.2884,
+        "deadline_misses": 2,
+        "process_rss_gb": -0.0091,
+        "vin_p50_mw": -176.0,
+        "vin_peak_mw": 1028.0,
+        "vdd_cpu_soc_mss_p50_mw": 0.0,
+        "tj_peak_c": -2.844
+      }
+    }
+  ],
+  "sources": {
+    "reports/thor_threads/default.json": "9e573df150c97535a20c7beec597a7cc10c9b4fae365f07a0d3b571e2eb28430",
+    "reports/thor_threads/single_thread.json": "8a70a8d23acbbc09ae97c792b764b0f2d706263a2ca347010034659ebbc49a24"
+  }
+}

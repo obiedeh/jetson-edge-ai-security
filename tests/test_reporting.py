@@ -272,3 +272,43 @@ def test_static_pages_render_measured_thor_benchmark(tmp_path: Path) -> None:
         assert "remain pending" not in page.lower()
     assert "inference only" in business
     assert "Measured run committed" in tech
+
+
+def test_dashboard_renders_thread_pool_comparison_when_present(tmp_path: Path) -> None:
+    reports_dir = tmp_path / "reports"
+    (reports_dir / "demo").mkdir(parents=True)
+    (reports_dir / "demo" / "runtime_metrics.json").write_text("{}", encoding="utf-8")
+    (reports_dir / "training_run.json").write_text("{}", encoding="utf-8")
+    (reports_dir / "thor_benchmark.json").write_text(json.dumps({"source_badge": "pending-thor-run"}), encoding="utf-8")
+    (reports_dir / "thor_benchmark_threads.json").write_text(
+        json.dumps(
+            {
+                "baseline": {"run_id": "base1"},
+                "variant": {"run_id": "var1"},
+                "rows": [
+                    {
+                        "model": "detector", "target_rps": 1000.0,
+                        "baseline": {"vin_p50_mw": 54102.0, "deadline_misses": 16944, "p95_ms": 0.0238, "tj_peak_c": 56.562},
+                        "variant": {"vin_p50_mw": 24312.0, "deadline_misses": 0, "p95_ms": 0.0219, "tj_peak_c": 40.375},
+                        "delta": {"vin_p50_mw": -29790.0, "deadline_misses": -16944},
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    write_static_report_pages(reports_dir=reports_dir)
+    dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
+    assert "Thread Pool Comparison" in dashboard
+    assert "base1" in dashboard and "var1" in dashboard
+    assert "-29790" in dashboard
+    assert "16944 / 0" in dashboard
+
+
+def test_dashboard_omits_thread_pool_section_when_absent(tmp_path: Path) -> None:
+    reports_dir = tmp_path / "reports"
+    (reports_dir / "demo").mkdir(parents=True)
+    (reports_dir / "demo" / "runtime_metrics.json").write_text("{}", encoding="utf-8")
+    write_static_report_pages(reports_dir=reports_dir)
+    dashboard = (reports_dir / "dashboard.html").read_text(encoding="utf-8")
+    assert "Thread Pool Comparison" not in dashboard

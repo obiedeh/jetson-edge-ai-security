@@ -65,6 +65,7 @@ python -m pip install -e ".[ml]"
 - [Runtime metrics](reports/demo/runtime_metrics.json)
 - [Training evidence](reports/training_run.json)
 - [Thor benchmark, measured](reports/thor_benchmark.json) with the [1 Hz tegrastats series](reports/thor_benchmark_tegrastats.jsonl) and [run log](reports/thor_benchmark_run.log)
+- [Thread-pool power comparison](reports/thor_benchmark_threads.json) built from [`reports/thor_threads/`](reports/thor_threads/) by [deploy/thor/compare_thread_runs.py](deploy/thor/compare_thread_runs.py)
 - [Publication plan: what a write-up can and cannot claim yet](docs/publication-plan.md)
 - [Portfolio deliverables](PORTFOLIO_DELIVERABLES.md)
 
@@ -222,7 +223,7 @@ What these numbers are and are not:
 
 - **CPU execution provider.** The PyPI `onnxruntime-gpu` 1.29.0 wheel loads a CUDA provider on Thor but fails at run time with `cudaErrorNoKernelImageForDevice`; the NVIDIA Jetson package index has no JetPack 7 build. The harness recorded the failure and fell back to CPU. For models this small (106 KB and 3 KB ONNX) the GPU would not change the result.
 - **Inference only.** Inputs are synthetic Gaussian tensors of the model input shapes, batch 1, one process, open-loop pacing. Packet capture, flow extraction and end-to-end packet-to-alert latency are not measured.
-- **Board power.** Idle VIN was 24170 mW. The forecaster tiers stayed near idle (24424 mW p50 at 1000 events/s). The detector session drew 54298 mW p50 at 100 and 1000 events/s with 43118 pacing misses out of 300001 at the top tier, and junction temperature peaked at 59.562 C. The difference is consistent with onnxruntime's default multi-threaded, spin-waiting thread pool being engaged for the tree-ensemble model and not for the linear one. That cause is a hypothesis; a controlled single-thread comparison is the next measurement and is listed in the [publication plan](docs/publication-plan.md).
+- **Board power and the thread pool.** Idle VIN was 24170 mW and the forecaster tiers stayed near idle. In the full run the detector session drew about 54 W at 100 and 1000 events/s with 43118 pacing misses at the top tier. A matched comparison ([`reports/thor_benchmark_threads.json`](reports/thor_benchmark_threads.json), 120 s per tier, runs `1e430379de9b` and `42314e8252e9`) measured the cause: with onnxruntime defaults the detector drew **54102 mW** with **16944** misses at 1000 events/s; with `intra_op_num_threads=1`, `inter_op_num_threads=1` and spin waiting disabled it drew **24312 mW** with **0** misses, p95 0.0238 to 0.0219 ms, max 14.4675 to 0.9852 ms, junction peak 56.562 to 40.375 C. The CPU rail fell from 35366 to 7469 mW. The forecaster changed by under 0.2 W either way. For models this small the default spin-waiting thread pool costs about 30 W and buys nothing; the runbook now recommends the single-thread options for deployment. Raw runs: [`reports/thor_threads/`](reports/thor_threads/).
 - **Host state.** One-minute load average was 3.1 at start from unrelated desktop activity, recorded in the artifact.
 
 Reproduce on the device with the harness in [deploy/thor/run_benchmark.py](deploy/thor/run_benchmark.py); see [deploy/thor/operator-runbook.md](deploy/thor/operator-runbook.md) for install, upgrade, rollback, and benchmark procedures.
@@ -232,7 +233,7 @@ Reproduce on the device with the harness in [deploy/thor/run_benchmark.py](deplo
 The next steps are intentionally narrow:
 
 - Add source adapters that generate the same CSV/event contract from Zeek, Suricata, and CICFlow-style records.
-- Measure end-to-end packet-to-alert latency on Thor and the single-thread versus default onnxruntime power comparison; the inference-only benchmark is committed.
+- Measure end-to-end packet-to-alert latency on Thor; the inference-only benchmark and the thread-pool power comparison are committed.
 - Add packet-drop and flow-extraction measurements before making capture-performance claims.
 - Keep all response actions operator-reviewed.
 

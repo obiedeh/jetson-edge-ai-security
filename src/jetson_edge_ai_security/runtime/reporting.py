@@ -64,6 +64,7 @@ def write_static_report_pages(
     demo_metrics = _read_json(reports_dir / "demo" / "runtime_metrics.json")
     training_run = _read_json(reports_dir / "training_run.json")
     thor_benchmark = _read_json(reports_dir / "thor_benchmark.json")
+    thor_threads = _read_json(reports_dir / "thor_benchmark_threads.json")
 
     index_path = reports_dir / "index.html"
     dashboard_path = reports_dir / "dashboard.html"
@@ -82,6 +83,7 @@ def write_static_report_pages(
             demo_metrics=demo_metrics,
             training_run=training_run,
             thor_benchmark=thor_benchmark,
+            thor_threads=thor_threads,
         ),
         encoding="utf-8",
     )
@@ -315,6 +317,54 @@ def _gate_row(thor_benchmark: dict[str, object], key: str, label: str, threshold
     )
 
 
+def _as_dict(value: object) -> dict[str, object]:
+    return value if isinstance(value, dict) else {}
+
+
+def _thor_threads_section(comparison: dict[str, object]) -> str:
+    """Thread-pool comparison table; empty when reports/thor_benchmark_threads.json is absent."""
+    rows = comparison.get("rows")
+    if not isinstance(rows, list) or not rows:
+        return ""
+    body = ""
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        b = _as_dict(row.get("baseline"))
+        v = _as_dict(row.get("variant"))
+        d = _as_dict(row.get("delta"))
+        row_d: dict[str, object] = row
+
+        def cell(src: dict[str, object], key: str) -> str:
+            val = src.get(key)
+            if isinstance(val, float):
+                return f"{val:.0f}" if abs(val) >= 1000 else f"{val:.4g}"
+            return str(val if val is not None else "n/a")
+
+        body += (
+            "<tr>"
+            f"<td>{escape(str(row_d.get('model', '')))}</td><td>{escape(cell(row_d, 'target_rps'))}</td>"
+            f"<td>{escape(cell(b, 'vin_p50_mw'))} / {escape(cell(v, 'vin_p50_mw'))}</td>"
+            f"<td>{escape(cell(d, 'vin_p50_mw'))}</td>"
+            f"<td>{escape(cell(b, 'deadline_misses'))} / {escape(cell(v, 'deadline_misses'))}</td>"
+            f"<td>{escape(cell(b, 'p95_ms'))} / {escape(cell(v, 'p95_ms'))}</td>"
+            f"<td>{escape(cell(b, 'tj_peak_c'))} / {escape(cell(v, 'tj_peak_c'))}</td>"
+            "</tr>"
+        )
+    base = _as_dict(comparison.get("baseline"))
+    var = _as_dict(comparison.get("variant"))
+    return f"""
+<section>
+  <h2>Thread Pool Comparison</h2>
+  <p>Two matched runs on the same device differing only in onnxruntime session options. Baseline run {escape(str(base.get("run_id", "n/a")))} uses runtime defaults; variant run {escape(str(var.get("run_id", "n/a")))} uses one intra-op thread, one inter-op thread and no spin waiting. Values are baseline / variant; delta is variant minus baseline. Source: reports/thor_benchmark_threads.json.</p>
+  <table>
+    <tr><th>Model</th><th>Target ev/s</th><th>VIN p50 mW</th><th>VIN delta mW</th><th>Pacing misses</th><th>p95 ms</th><th>tj peak C</th></tr>
+    {body}
+  </table>
+</section>
+"""
+
+
 def _thor_measurement_section(thor_benchmark: dict[str, object]) -> str:
     """Detailed measured table; empty string when the artifact is still a template."""
     if not _thor_measured(thor_benchmark):
@@ -542,6 +592,7 @@ def _render_dashboard_page(
     demo_metrics: dict[str, object],
     training_run: dict[str, object],
     thor_benchmark: dict[str, object],
+    thor_threads: dict[str, object] | None = None,
 ) -> str:
     decision_cards = "".join(
         [
@@ -641,6 +692,7 @@ def _render_dashboard_page(
   </table>
 </section>
 {_thor_measurement_section(thor_benchmark)}
+{_thor_threads_section(thor_threads or {})}
 
 <section>
   <h2>Evidence vs Boundary</h2>

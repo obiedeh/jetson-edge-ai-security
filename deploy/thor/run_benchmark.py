@@ -271,13 +271,35 @@ def _summarize_window(samples: list[dict[str, Any]]) -> dict[str, Any]:
 # Inference
 # ──────────────────────────────────────────────────────────────────────────────
 
-def _load_session(model_path: Path, use_trt: bool = False, cpu_only: bool = False):
+def _session_options(intra: int, inter: int, spin: bool) -> Any:
+    """Build onnxruntime SessionOptions; 0 threads means the runtime default."""
+    import onnxruntime as ort
+
+    so = ort.SessionOptions()
+    if intra > 0:
+        so.intra_op_num_threads = intra
+    if inter > 0:
+        so.inter_op_num_threads = inter
+    if not spin:
+        so.add_session_config_entry("session.intra_op.allow_spinning", "0")
+        so.add_session_config_entry("session.inter_op.allow_spinning", "0")
+    return so
+
+
+def _load_session(
+    model_path: Path,
+    use_trt: bool = False,
+    cpu_only: bool = False,
+    session_options: Any = None,
+):
     import onnxruntime as ort
 
     available = ort.get_available_providers()
     providers: list[Any] = []
     if cpu_only:
-        return ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+        return ort.InferenceSession(
+            str(model_path), sess_options=session_options, providers=["CPUExecutionProvider"]
+        )
     if use_trt and "TensorrtExecutionProvider" in available:
         providers.append(("TensorrtExecutionProvider", {
             "trt_fp16_enable": True,
@@ -287,7 +309,7 @@ def _load_session(model_path: Path, use_trt: bool = False, cpu_only: bool = Fals
     if "CUDAExecutionProvider" in available:
         providers.append("CUDAExecutionProvider")
     providers.append("CPUExecutionProvider")
-    return ort.InferenceSession(str(model_path), providers=providers)
+    return ort.InferenceSession(str(model_path), sess_options=session_options, providers=providers)
 
 
 def _benchmark_session(
@@ -414,6 +436,9 @@ def main() -> int:
         help="auto: best available provider, falling back to CPU if it fails at run time; cpu: CPU only.",
     )
     parser.add_argument("--warmup", type=int, default=100, help="Single-inference warmup iterations.")
+    parser.add_argument("--intra-op-threads", type=int, default=0, help="onnxruntime intra-op threads; 0 = runtime default.")
+    parser.add_argument("--inter-op-threads", type=int, default=0, help="onnxruntime inter-op threads; 0 = runtime default.")
+    parser.add_argument("--no-spin", action="store_true", help="Disable onnxruntime thread-pool spin waiting between runs.")
     parser.add_argument(
         "--idle-seconds", type=int, default=30,
         help="Jetson only: seconds of idle tegrastats sampling before and after the load tiers.",
@@ -469,13 +494,19 @@ def main() -> int:
             input_data = {input_name: x}
             provider_error: str | None = None
             try:
-                sess = _load_session(onnx_path, use_trt=args.trt, cpu_only=args.provider == "cpu")
+                sess = _load_session(
+                    onnx_path, use_trt=args.trt, cpu_only=args.provider == "cpu",
+                    session_options=_session_options(args.intra_op_threads, args.inter_op_threads, not args.no_spin),
+                )
                 sess.run(None, input_data)
             except Exception as exc:  # a provider that fails at run time is evidence too
                 provider_error = f"{type(exc).__name__}: {str(exc)[:300]}"
                 print(f"  Provider failed, falling back to CPU: {provider_error}")
                 try:
-                    sess = _load_session(onnx_path, cpu_only=True)
+                    sess = _load_session(
+                        onnx_path, cpu_only=True,
+                        session_options=_session_options(args.intra_op_threads, args.inter_op_threads, not args.no_spin),
+                    )
                     sess.run(None, input_data)
                 except Exception as exc2:
                     all_results.append({
@@ -561,6 +592,12 @@ def main() -> int:
         "benchmark_finished_at": finished,
         "duration_per_tier_s": duration_s,
         "tiers_requested_rps": tiers,
+        "session_options": {
+            "intra_op_num_threads": args.intra_op_threads or "runtime default",
+            "inter_op_num_threads": args.inter_op_threads or "runtime default",
+            "allow_spinning": not args.no_spin,
+            "provider_requested": args.provider,
+        },
         "models": all_results,
         "memory": {
             "process_peak_rss_gb": peak_rss_gb,

@@ -70,7 +70,12 @@ The benchmark script is the measurement path for p50/p95/p99 inference latency, 
 python3 deploy/thor/run_benchmark.py \
     --models-dir /opt/edge-ids/models/exports \
     --output /var/lib/edge-ids/reports/thor_benchmark.json \
-    --trt
+    --intra-op-threads 1 --inter-op-threads 1 --no-spin
+
+# Compare thread-pool settings (baseline defaults vs single thread, no spin):
+python3 deploy/thor/run_benchmark.py --duration 120 --tiers 100,1000 --output reports/thor_threads/default.json
+python3 deploy/thor/run_benchmark.py --duration 120 --tiers 100,1000 --intra-op-threads 1 --inter-op-threads 1 --no-spin --output reports/thor_threads/single_thread.json
+python3 deploy/thor/compare_thread_runs.py --baseline reports/thor_threads/default.json --variant reports/thor_threads/single_thread.json --output reports/thor_benchmark_threads.json
 
 # Shorter smoke run:
 python3 deploy/thor/run_benchmark.py --duration 30 --tiers 100,1000
@@ -157,6 +162,8 @@ Measured values below come from run `3cac5ed2b7bd` in `reports/thor_benchmark.js
 | Memory footprint | <= 4 GB | 0.3639 GB peak process RSS |
 
 Whatever the benchmark measures is what goes in the report. These are inference-only figures on the CPU provider; do not claim line-rate capture or end-to-end latency before those artifacts exist.
+
+**Thread-pool setting.** `reports/thor_benchmark_threads.json` shows the onnxruntime default thread pool costing about 30 W of board power and 16944 pacing misses per 120 s at 1000 events/s for the detector, with no latency benefit. Configure the runtime's inference sessions with one intra-op thread, one inter-op thread and spin waiting disabled on Thor. `--trt` is retained for a future JetPack 7 onnxruntime build; the current PyPI wheel has no usable GPU kernels on this device.
 
 ## 12. Troubleshooting
 

@@ -20,7 +20,7 @@ committed before the claim is written.
 
 - Detector at 1000 events/s: p50 0.0213 ms, p95 0.0237 ms, p99 0.028 ms, max 14.7371 ms, 43118 of 300001 pacing deadlines missed by more than one interval.
 - Forecaster at 1000 events/s: p50 0.0138 ms, p95 0.0141 ms, no pacing misses.
-- Board power: idle 24170 mW; forecaster tiers about 24424 mW; detector tiers at 100 and 1000 events/s about 54298 mW with junction temperature peaking at 59.562 C. Hypothesis: onnxruntime's default intra-op thread pool spins between runs for the tree-ensemble graph. **Unverified.** The next measurement is the same run with `intra_op_num_threads=1` and spinning disabled, committed as a sibling artifact; until then the write-up reports the power numbers as observed and the cause as open.
+- Board power: idle 24170 mW; forecaster tiers about 24424 mW; detector tiers at 100 and 1000 events/s about 54298 mW with junction temperature peaking at 59.562 C. **Measured cause** (`reports/thor_benchmark_threads.json`, runs `1e430379de9b` vs `42314e8252e9`, 120 s per tier): onnxruntime defaults 54102 mW and 16944 misses at 1000 events/s; single intra/inter-op thread with spinning disabled 24312 mW and 0 misses, p95 0.0238 to 0.0219 ms, CPU rail 35366 to 7469 mW. The default spin-waiting pool is the cause.
 - Forecaster at 10 events/s showed p50 0.2218 ms versus 0.0138 ms at 1000 events/s, consistent with CPU frequency scaling at low duty cycle. Also unverified; report as observed.
 - Process peak RSS 0.3639 GB. 1914 tegrastats samples retained.
 
@@ -35,6 +35,11 @@ committed before the claim is written.
 3. A GPU execution provider is not currently available for this model
    format on JetPack 7 through PyPI or the NVIDIA Jetson index; for models
    this small it would not help. Recorded, not asserted.
+4. On Thor, onnxruntime's default thread pool costs about
+   30 W of board power for the tree-ensemble detector at
+   100 to 1000 events/s and causes pacing misses, with no latency benefit;
+   one intra-op and one inter-op thread with spinning disabled removes
+   both. Measured in a matched 120 s comparison, same device, same day.
 
 ## Work order before a write-up
 
@@ -75,14 +80,13 @@ the claim boundary before the number is quoted anywhere.
 - Artifact: `reports/capture/<run>.json`. Until it exists the write-up says
   "capture is planned and unmeasured".
 
-### 3b. Thread-pool power comparison (small, do before the newsletter)
+### 3b. Thread-pool power comparison (done 2026-09-08)
 
-- Re-run the inference benchmark with onnxruntime session options
-  `intra_op_num_threads=1`, `inter_op_num_threads=1`, spinning disabled, at
-  100 and 1000 events/s for 120 s each, and compare VIN and pacing misses with
-  the default run.
-- Artifact: `reports/thor_benchmark_threads.json` with the same provenance
-  block. This turns the power observation above into a measured statement.
+- Committed as `reports/thor_benchmark_threads.json` from
+  `reports/thor_threads/{default,single_thread}.json`. Result above.
+- Follow-up for the runtime, not the benchmark: expose intra/inter-op
+  thread count and spinning as config in the inference session factory so
+  the deployed service uses the measured setting. Work order.
 
 ### 4. Sustained run
 
