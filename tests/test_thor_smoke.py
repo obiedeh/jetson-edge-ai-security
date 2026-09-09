@@ -17,7 +17,18 @@ from pathlib import Path
 
 import pytest
 
-from deploy.thor.run_benchmark import _model_configs
+
+def _load_harness():
+    """Load deploy/thor/run_benchmark.py by path; it is a script, not a package module."""
+    import importlib.util
+
+    script = Path(__file__).resolve().parents[1] / "deploy" / "thor" / "run_benchmark.py"
+    spec = importlib.util.spec_from_file_location("thor_run_benchmark_smoke", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Skip guard
@@ -41,6 +52,7 @@ jetson_only = pytest.mark.skipif(
 def test_models_spec_loads(tmp_path: Path) -> None:
     spec = tmp_path / "models.json"
     spec.write_text(json.dumps([{"name": "ridge", "file": "ridge.onnx", "input_name": "X", "shape": [1, 16]}]))
+    _model_configs = _load_harness()._model_configs
     assert _model_configs(tmp_path, str(spec)) == [("ridge", "ridge.onnx", "X", (1, 16))]
 
 # ──────────────────────────────────────────────────────────────────────────────
