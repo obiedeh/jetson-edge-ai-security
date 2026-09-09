@@ -6,9 +6,7 @@ Jetson Edge Intrusion Detection is a defensive edge telemetry system for Jetson-
 
 Fixed CSV is the deterministic test fixture, not the product ceiling. The planned Jetson sniffer upgrade adds Jetson-generated flow CSVs from packet capture and defensive telemetry sources such as Zeek logs, Suricata `eve.json`, and CICFlow-style records.
 
-> [Evidence landing page](reports/index.html) | [Static dashboard](reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md) | [Sniffer upgrade plan](docs/jetson-sniffer-upgrade-plan.md)
->
-> The repository is private and GitHub Pages is not enabled, so the pages render only from a local clone (`python -m http.server` in `reports/`). The `obiedeh.github.io` URLs become valid once the repository is public and Pages is enabled from `main`.
+> [Open the evidence landing page](https://obiedeh.github.io/jetson-edge-ai-security/reports/index.html) | [Open the static dashboard](https://obiedeh.github.io/jetson-edge-ai-security/reports/dashboard.html) | [Architecture](docs/architecture.md) | [Thor runbook](deploy/thor/operator-runbook.md) | [Sniffer upgrade plan](docs/jetson-sniffer-upgrade-plan.md)
 
 ## Current Implementation
 
@@ -69,7 +67,7 @@ python -m pip install -e ".[ml]"
 - [Publication plan: what a write-up can and cannot claim yet](docs/publication-plan.md)
 - [Portfolio deliverables](PORTFOLIO_DELIVERABLES.md)
 
-GitHub shows committed HTML files as source code. Open them from a local clone, or enable GitHub Pages from `main` when the repository is public.
+GitHub shows committed HTML files as source code. Use the GitHub Pages links at the top of this README to open rendered pages.
 
 ## Current vs Planned
 
