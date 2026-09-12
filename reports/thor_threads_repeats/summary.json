@@ -1,0 +1,840 @@
+{
+  "schema": "thread-repeats-v1",
+  "tier_rps": 1000.0,
+  "run_order": [
+    "run1_default",
+    "run2_single",
+    "run3_default",
+    "run4_single",
+    "run5_default",
+    "run6_single"
+  ],
+  "n_runs": {
+    "default": 3,
+    "single": 3
+  },
+  "duration_per_tier_s": 120.0,
+  "hardware": {
+    "host": "jetsonthor",
+    "machine": "aarch64",
+    "kernel": "6.8.12-tegra",
+    "soc": "tegra264",
+    "devicetree_compatible": [
+      "nvidia,p4071-0000+p3834-0008",
+      "nvidia,p3834-0008",
+      "nvidia,tegra264"
+    ],
+    "is_jetson": true,
+    "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+    "nvpmodel": "NV Power Mode: 120W 1",
+    "cpu_count": 14,
+    "mem_total_gb": 122.82,
+    "loadavg_1m_at_start": 1.86474609375,
+    "loadavg_5m_at_start": 1.80908203125,
+    "python": "3.12.3",
+    "onnxruntime": "1.29.0",
+    "numpy": "2.5.3",
+    "available_providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "git_sha": null,
+    "benchmark_started_at": "2026-09-12T16:24:50.938252+00:00"
+  },
+  "session_options": {
+    "default": {
+      "intra_op_num_threads": "runtime default",
+      "inter_op_num_threads": "runtime default",
+      "allow_spinning": true,
+      "provider_requested": "cpu"
+    },
+    "single": {
+      "intra_op_num_threads": 1,
+      "inter_op_num_threads": 1,
+      "allow_spinning": false,
+      "provider_requested": "cpu"
+    }
+  },
+  "idle_before_each_run_vin_p50_mw": {
+    "run1_default": 23786,
+    "run2_single": 24010,
+    "run3_default": 23894,
+    "run4_single": 23904,
+    "run5_default": 23908,
+    "run6_single": 23978
+  },
+  "models": {
+    "detector": {
+      "per_run": [
+        {
+          "run": "run1_default",
+          "config": "default",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 53438,
+          "vin_peak_mw": 54736,
+          "cpu_rail_p50_mw": 34973,
+          "p95_ms": 0.0241,
+          "p50_ms": 0.0215,
+          "deadline_misses": 14043,
+          "tj_peak_c": 54.687
+        },
+        {
+          "run": "run2_single",
+          "config": "single",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 24260,
+          "vin_peak_mw": 25374,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.022,
+          "p50_ms": 0.0215,
+          "deadline_misses": 0,
+          "tj_peak_c": 40.25
+        },
+        {
+          "run": "run3_default",
+          "config": "default",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 53712,
+          "vin_peak_mw": 54976,
+          "cpu_rail_p50_mw": 34973,
+          "p95_ms": 0.0238,
+          "p50_ms": 0.0211,
+          "deadline_misses": 15827,
+          "tj_peak_c": 54.5
+        },
+        {
+          "run": "run4_single",
+          "config": "single",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 23950,
+          "vin_peak_mw": 24906,
+          "cpu_rail_p50_mw": 7076,
+          "p95_ms": 0.022,
+          "p50_ms": 0.0213,
+          "deadline_misses": 0,
+          "tj_peak_c": 40.093
+        },
+        {
+          "run": "run5_default",
+          "config": "default",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 53442,
+          "vin_peak_mw": 54536,
+          "cpu_rail_p50_mw": 34973,
+          "p95_ms": 0.024,
+          "p50_ms": 0.0217,
+          "deadline_misses": 15080,
+          "tj_peak_c": 53.812
+        },
+        {
+          "run": "run6_single",
+          "config": "single",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 23942,
+          "vin_peak_mw": 25048,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.0221,
+          "p50_ms": 0.0214,
+          "deadline_misses": 1,
+          "tj_peak_c": 39.906
+        }
+      ],
+      "default": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            53438,
+            53712,
+            53442
+          ],
+          "median": 53442,
+          "min": 53438,
+          "max": 53712,
+          "range": 274
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            54736,
+            54976,
+            54536
+          ],
+          "median": 54736,
+          "min": 54536,
+          "max": 54976,
+          "range": 440
+        },
+        "cpu_rail_p50_mw": {
+          "n": 3,
+          "values": [
+            34973,
+            34973,
+            34973
+          ],
+          "median": 34973,
+          "min": 34973,
+          "max": 34973,
+          "range": 0
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0241,
+            0.0238,
+            0.024
+          ],
+          "median": 0.024,
+          "min": 0.0238,
+          "max": 0.0241,
+          "range": 0.0002999999999999982
+        },
+        "p50_ms": {
+          "n": 3,
+          "values": [
+            0.0215,
+            0.0211,
+            0.0217
+          ],
+          "median": 0.0215,
+          "min": 0.0211,
+          "max": 0.0217,
+          "range": 0.0005999999999999998
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            14043,
+            15827,
+            15080
+          ],
+          "median": 15080,
+          "min": 14043,
+          "max": 15827,
+          "range": 1784
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            54.687,
+            54.5,
+            53.812
+          ],
+          "median": 54.5,
+          "min": 53.812,
+          "max": 54.687,
+          "range": 0.875
+        }
+      },
+      "single": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            24260,
+            23950,
+            23942
+          ],
+          "median": 23950,
+          "min": 23942,
+          "max": 24260,
+          "range": 318
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            25374,
+            24906,
+            25048
+          ],
+          "median": 25048,
+          "min": 24906,
+          "max": 25374,
+          "range": 468
+        },
+        "cpu_rail_p50_mw": {
+          "n": 3,
+          "values": [
+            7469,
+            7076,
+            7469
+          ],
+          "median": 7469,
+          "min": 7076,
+          "max": 7469,
+          "range": 393
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.022,
+            0.022,
+            0.0221
+          ],
+          "median": 0.022,
+          "min": 0.022,
+          "max": 0.0221,
+          "range": 0.00010000000000000286
+        },
+        "p50_ms": {
+          "n": 3,
+          "values": [
+            0.0215,
+            0.0213,
+            0.0214
+          ],
+          "median": 0.0214,
+          "min": 0.0213,
+          "max": 0.0215,
+          "range": 0.0001999999999999988
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            0,
+            0,
+            1
+          ],
+          "median": 0,
+          "min": 0,
+          "max": 1,
+          "range": 1
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            40.25,
+            40.093,
+            39.906
+          ],
+          "median": 40.093,
+          "min": 39.906,
+          "max": 40.25,
+          "range": 0.3440000000000012
+        }
+      },
+      "paired_delta_default_minus_single": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            29178,
+            29762,
+            29500
+          ],
+          "median": 29500,
+          "min": 29178,
+          "max": 29762,
+          "range": 584
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            29362,
+            30070,
+            29488
+          ],
+          "median": 29488,
+          "min": 29362,
+          "max": 30070,
+          "range": 708
+        },
+        "cpu_rail_p50_mw": {
+          "n": 3,
+          "values": [
+            27504,
+            27897,
+            27504
+          ],
+          "median": 27504,
+          "min": 27504,
+          "max": 27897,
+          "range": 393
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.002100000000000001,
+            0.001800000000000003,
+            0.001899999999999999
+          ],
+          "median": 0.001899999999999999,
+          "min": 0.001800000000000003,
+          "max": 0.002100000000000001,
+          "range": 0.0002999999999999982
+        },
+        "p50_ms": {
+          "n": 3,
+          "values": [
+            0.0,
+            -0.0001999999999999988,
+            0.00030000000000000165
+          ],
+          "median": 0.0,
+          "min": -0.0001999999999999988,
+          "max": 0.00030000000000000165,
+          "range": 0.0005000000000000004
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            14043,
+            15827,
+            15079
+          ],
+          "median": 15079,
+          "min": 14043,
+          "max": 15827,
+          "range": 1784
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            14.436999999999998,
+            14.406999999999996,
+            13.905999999999999
+          ],
+          "median": 14.406999999999996,
+          "min": 13.905999999999999,
+          "max": 14.436999999999998,
+          "range": 0.5309999999999988
+        }
+      },
+      "n_pairs": 3,
+      "vin_p50_ranges_overlap": false,
+      "verdict": "ranges separated: median gap 29500 mW, spread 29178 to 29762 mW over 3 pairs"
+    },
+    "forecaster": {
+      "per_run": [
+        {
+          "run": "run1_default",
+          "config": "default",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 24304,
+          "vin_peak_mw": 25760,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.0373,
+          "p50_ms": 0.0366,
+          "deadline_misses": 6,
+          "tj_peak_c": 46.937
+        },
+        {
+          "run": "run2_single",
+          "config": "single",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 24184,
+          "vin_peak_mw": 25292,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.0364,
+          "p50_ms": 0.0358,
+          "deadline_misses": 0,
+          "tj_peak_c": 39.812
+        },
+        {
+          "run": "run3_default",
+          "config": "default",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 24180,
+          "vin_peak_mw": 25118,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.0149,
+          "p50_ms": 0.0145,
+          "deadline_misses": 3,
+          "tj_peak_c": 46.781
+        },
+        {
+          "run": "run4_single",
+          "config": "single",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 23906,
+          "vin_peak_mw": 26462,
+          "cpu_rail_p50_mw": 7076,
+          "p95_ms": 0.0369,
+          "p50_ms": 0.0362,
+          "deadline_misses": 15,
+          "tj_peak_c": 39.593
+        },
+        {
+          "run": "run5_default",
+          "config": "default",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 24056,
+          "vin_peak_mw": 25278,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.0379,
+          "p50_ms": 0.0373,
+          "deadline_misses": 0,
+          "tj_peak_c": 46.5
+        },
+        {
+          "run": "run6_single",
+          "config": "single",
+          "provider": "CPUExecutionProvider",
+          "vin_p50_mw": 23952,
+          "vin_peak_mw": 24774,
+          "cpu_rail_p50_mw": 7469,
+          "p95_ms": 0.0365,
+          "p50_ms": 0.0357,
+          "deadline_misses": 1,
+          "tj_peak_c": 39.343
+        }
+      ],
+      "default": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            24304,
+            24180,
+            24056
+          ],
+          "median": 24180,
+          "min": 24056,
+          "max": 24304,
+          "range": 248
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            25760,
+            25118,
+            25278
+          ],
+          "median": 25278,
+          "min": 25118,
+          "max": 25760,
+          "range": 642
+        },
+        "cpu_rail_p50_mw": {
+          "n": 3,
+          "values": [
+            7469,
+            7469,
+            7469
+          ],
+          "median": 7469,
+          "min": 7469,
+          "max": 7469,
+          "range": 0
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0373,
+            0.0149,
+            0.0379
+          ],
+          "median": 0.0373,
+          "min": 0.0149,
+          "max": 0.0379,
+          "range": 0.023000000000000003
+        },
+        "p50_ms": {
+          "n": 3,
+          "values": [
+            0.0366,
+            0.0145,
+            0.0373
+          ],
+          "median": 0.0366,
+          "min": 0.0145,
+          "max": 0.0373,
+          "range": 0.0228
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            6,
+            3,
+            0
+          ],
+          "median": 3,
+          "min": 0,
+          "max": 6,
+          "range": 6
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            46.937,
+            46.781,
+            46.5
+          ],
+          "median": 46.781,
+          "min": 46.5,
+          "max": 46.937,
+          "range": 0.4369999999999976
+        }
+      },
+      "single": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            24184,
+            23906,
+            23952
+          ],
+          "median": 23952,
+          "min": 23906,
+          "max": 24184,
+          "range": 278
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            25292,
+            26462,
+            24774
+          ],
+          "median": 25292,
+          "min": 24774,
+          "max": 26462,
+          "range": 1688
+        },
+        "cpu_rail_p50_mw": {
+          "n": 3,
+          "values": [
+            7469,
+            7076,
+            7469
+          ],
+          "median": 7469,
+          "min": 7076,
+          "max": 7469,
+          "range": 393
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0364,
+            0.0369,
+            0.0365
+          ],
+          "median": 0.0365,
+          "min": 0.0364,
+          "max": 0.0369,
+          "range": 0.0005000000000000004
+        },
+        "p50_ms": {
+          "n": 3,
+          "values": [
+            0.0358,
+            0.0362,
+            0.0357
+          ],
+          "median": 0.0358,
+          "min": 0.0357,
+          "max": 0.0362,
+          "range": 0.0005000000000000004
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            0,
+            15,
+            1
+          ],
+          "median": 1,
+          "min": 0,
+          "max": 15,
+          "range": 15
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            39.812,
+            39.593,
+            39.343
+          ],
+          "median": 39.593,
+          "min": 39.343,
+          "max": 39.812,
+          "range": 0.4689999999999941
+        }
+      },
+      "paired_delta_default_minus_single": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            120,
+            274,
+            104
+          ],
+          "median": 120,
+          "min": 104,
+          "max": 274,
+          "range": 170
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            468,
+            -1344,
+            504
+          ],
+          "median": 468,
+          "min": -1344,
+          "max": 504,
+          "range": 1848
+        },
+        "cpu_rail_p50_mw": {
+          "n": 3,
+          "values": [
+            0,
+            393,
+            0
+          ],
+          "median": 0,
+          "min": 0,
+          "max": 393,
+          "range": 393
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.000899999999999998,
+            -0.022000000000000002,
+            0.0014000000000000054
+          ],
+          "median": 0.000899999999999998,
+          "min": -0.022000000000000002,
+          "max": 0.0014000000000000054,
+          "range": 0.023400000000000008
+        },
+        "p50_ms": {
+          "n": 3,
+          "values": [
+            0.0008000000000000021,
+            -0.021700000000000004,
+            0.0015999999999999973
+          ],
+          "median": 0.0008000000000000021,
+          "min": -0.021700000000000004,
+          "max": 0.0015999999999999973,
+          "range": 0.0233
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            6,
+            -12,
+            -1
+          ],
+          "median": -1,
+          "min": -12,
+          "max": 6,
+          "range": 18
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            7.125,
+            7.187999999999995,
+            7.1569999999999965
+          ],
+          "median": 7.1569999999999965,
+          "min": 7.125,
+          "max": 7.187999999999995,
+          "range": 0.06299999999999528
+        }
+      },
+      "n_pairs": 3,
+      "vin_p50_ranges_overlap": true,
+      "verdict": "ranges overlap: no power gap is claimed"
+    }
+  },
+  "cooldown": {
+    "windows": 6,
+    "settled_before_each_run": {
+      "before_run1_default": true,
+      "before_run2_single": true,
+      "before_run3_default": true,
+      "before_run4_single": true,
+      "before_run5_default": true,
+      "before_run6_single": true
+    },
+    "unsettled_tags": [],
+    "last_window_per_tag": {
+      "before_run1_default": {
+        "vin_p50_mw": 23928,
+        "tj_max_c": 39.312,
+        "cpu_max_c": 38.656,
+        "settled": true
+      },
+      "before_run2_single": {
+        "vin_p50_mw": 23992,
+        "tj_max_c": 40.687,
+        "cpu_max_c": 39.25,
+        "settled": true
+      },
+      "before_run3_default": {
+        "vin_p50_mw": 23978,
+        "tj_max_c": 39.343,
+        "cpu_max_c": 37.906,
+        "settled": true
+      },
+      "before_run4_single": {
+        "vin_p50_mw": 23960,
+        "tj_max_c": 40.593,
+        "cpu_max_c": 39.156,
+        "settled": true
+      },
+      "before_run5_default": {
+        "vin_p50_mw": 23804,
+        "tj_max_c": 39.281,
+        "cpu_max_c": 37.781,
+        "settled": true
+      },
+      "before_run6_single": {
+        "vin_p50_mw": 23930,
+        "tj_max_c": 40.343,
+        "cpu_max_c": 38.875,
+        "settled": true
+      }
+    }
+  },
+  "other_processes_before_each_run": {
+    "run1_default": [
+      "3740917  100  0.0 ps",
+      "3737156 61.1  0.0 kworker/u28:1+devfreq_wq",
+      "3518573 35.8  0.7 gnome-shell",
+      "3712567 21.0  0.0 kworker/u28:0-ext4-rsv-conversion",
+      "   1862  0.3  0.0 disp_eng_share_thread"
+    ],
+    "run2_single": [
+      "3737156 61.0  0.0 kworker/u28:1+devfreq_wq",
+      "3518573 35.8  0.7 gnome-shell",
+      "3712567 21.0  0.0 kworker/u28:0-ext4-rsv-conversion",
+      "   1862  0.3  0.0 disp_eng_share_thread",
+      "3692374  0.2  0.0 (udev-worker)"
+    ],
+    "run3_default": [
+      "3737156 61.1  0.0 kworker/u28:1+devfreq_wq",
+      "3518573 35.8  0.7 gnome-shell",
+      "3712567 21.0  0.0 kworker/u28:0-ext4-rsv-conversion",
+      "   1862  0.3  0.0 disp_eng_share_thread",
+      "3692374  0.2  0.0 (udev-worker)"
+    ],
+    "run4_single": [
+      "3737156 61.0  0.0 kworker/u28:1-devfreq_wq",
+      "3518573 35.8  0.7 gnome-shell",
+      "3712567 20.9  0.0 kworker/u28:0-ext4-rsv-conversion",
+      "   1862  0.3  0.0 disp_eng_share_thread",
+      "3692374  0.2  0.0 (udev-worker)"
+    ],
+    "run5_default": [
+      "3742484  100  0.0 ps",
+      "3737156 61.0  0.0 kworker/u28:1+devfreq_wq",
+      "3518573 35.9  0.7 gnome-shell",
+      "3712567 20.9  0.0 kworker/u28:0-ext4-rsv-conversion",
+      "   1862  0.3  0.0 disp_eng_share_thread"
+    ],
+    "run6_single": [
+      "3737156 61.0  0.0 kworker/u28:1+devfreq_wq",
+      "3518573 35.9  0.7 gnome-shell",
+      "3712567 20.8  0.0 kworker/u28:0-ext4-rsv-conversion",
+      "   1862  0.3  0.0 disp_eng_share_thread",
+      "3692374  0.2  0.0 (udev-worker)"
+    ]
+  },
+  "session": [
+    "session_start 2026-09-12T16:24:20Z base_vin=23848 base_tj=39.3",
+    "session_end 2026-09-12T17:03:24Z"
+  ]
+}

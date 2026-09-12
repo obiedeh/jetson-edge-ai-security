@@ -1,0 +1,9 @@
+2026-09-12T16:31:21Z
+ 11:31:21 up 34 days, 18:54,  4 users,  load average: 2.16, 3.87, 3.03
+0
+    PID %CPU %MEM COMMAND
+3737156 61.0  0.0 kworker/u28:1+devfreq_wq
+3518573 35.8  0.7 gnome-shell
+3712567 21.0  0.0 kworker/u28:0-ext4-rsv-conversion
+   1862  0.3  0.0 disp_eng_share_thread
+3692374  0.2  0.0 (udev-worker)

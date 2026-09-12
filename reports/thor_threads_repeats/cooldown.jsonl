@@ -1,0 +1,6 @@
+{"tag": "before_run1_default", "t": 1789230290.72469, "window_s": 30, "vin_p50_mw": 23928, "vin_max_mw": 25076, "tj_max_c": 39.312, "cpu_max_c": 38.656, "settled": true}
+{"tag": "before_run2_single", "t": 1789230681.2974558, "window_s": 30, "vin_p50_mw": 23992, "vin_max_mw": 24944, "tj_max_c": 40.687, "cpu_max_c": 39.25, "settled": true}
+{"tag": "before_run3_default", "t": 1789231071.9062736, "window_s": 30, "vin_p50_mw": 23978, "vin_max_mw": 25426, "tj_max_c": 39.343, "cpu_max_c": 37.906, "settled": true}
+{"tag": "before_run4_single", "t": 1789231462.481328, "window_s": 30, "vin_p50_mw": 23960, "vin_max_mw": 24660, "tj_max_c": 40.593, "cpu_max_c": 39.156, "settled": true}
+{"tag": "before_run5_default", "t": 1789231853.0668666, "window_s": 30, "vin_p50_mw": 23804, "vin_max_mw": 25720, "tj_max_c": 39.281, "cpu_max_c": 37.781, "settled": true}
+{"tag": "before_run6_single", "t": 1789232243.6269927, "window_s": 30, "vin_p50_mw": 23930, "vin_max_mw": 24884, "tj_max_c": 40.343, "cpu_max_c": 38.875, "settled": true}
