@@ -1,0 +1,19 @@
+{
+  "session_start_utc": "2026-09-16T05:37:26Z",
+  "gdm": "inactive",
+  "containers_running": 0,
+  "gpu_processes": 0,
+  "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+  "onnxruntime": "1.29.0",
+  "idle_baseline_60s": {
+    "vin_p50_mw": 16056,
+    "tj_p50_c": 38.312,
+    "source": "session_idle_baseline_tegrastats.txt"
+  },
+  "cooldown_gate": {
+    "vin_within_mw": 1000,
+    "tj_within_c": 2.0,
+    "window_s": 30,
+    "cap_s": 900
+  }
+}
