@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_EPOCH_PATTERN = re.compile(r"^\d{9,13}(\.\d+)?$")
+
+
+def _from_epoch(value: float) -> datetime:
+    """Convert epoch seconds (or milliseconds when clearly too large) to an aware datetime."""
+    if value > 1e11:
+        value = value / 1000.0
+    return datetime.fromtimestamp(value, tz=UTC)
 
 
 def _parse_bool_label(value: Any) -> bool | None:
@@ -50,7 +60,11 @@ class TelemetryEvent(BaseModel):
             return datetime.now(UTC)
         if isinstance(value, datetime):
             return value if value.tzinfo else value.replace(tzinfo=UTC)
+        if isinstance(value, int | float) and not isinstance(value, bool):
+            return _from_epoch(float(value))
         text = str(value).strip()
+        if _EPOCH_PATTERN.match(text):
+            return _from_epoch(float(text))
         for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%m/%d/%Y %H:%M:%S"):
             try:
                 return datetime.strptime(text, fmt).replace(tzinfo=UTC)
