@@ -33,5 +33,31 @@ mqtt:
     packet_size: [packet_size, frame.len, bytes, size]
     attack_label: [attack_label, label]
     attack_type: [attack_type, category]
+sinks:
+  # All sinks are off by default; the runtime stays fully offline.
+  jsonl:
+    enabled: false
+    path: reports/live/alerts.jsonl
+    append: true
+  sqlite:
+    enabled: false
+    db_path: data/alerts.db
+  iot_core:
+    enabled: false
+    # Leave empty to read EDGE_SECURITY_IOT_ENDPOINT / _THING / _CERT / _KEY / _CA
+    # from the environment. Never commit endpoints, certificates, or keys.
+    endpoint: ""
+    thing_name: ""
+    cert_path: ""
+    key_path: ""
+    ca_path: ""
+    port: 8883
+    topic_root: edge-security
+    qos: 1
+    queue_size: 1000
+    max_retries: 5
+    backoff_base_seconds: 0.5
+    backoff_max_seconds: 30.0
+    health_interval_windows: 100
 models:
   forecaster_active: mock-forecaster

@@ -27,6 +27,7 @@ from jetson_edge_ai_security.runtime import (
     write_static_report_pages,
 )
 from jetson_edge_ai_security.schemas import Alert
+from jetson_edge_ai_security.sinks import build_sinks
 from jetson_edge_ai_security.sources import (
     CsvReplaySource,
     MqttTelemetrySource,
@@ -262,6 +263,8 @@ def _run_source_pipeline(
             step=loaded.runtime.step,
             detector=detector,
             alert_builder=alert_builder,
+            sinks=build_sinks(loaded.sinks),
+            health_interval_windows=loaded.sinks.iot_core.health_interval_windows,
         )
         if not stream:
             alerts = runner.run()
@@ -359,6 +362,8 @@ def _run_csv_pipeline(
             step=loaded.runtime.step,
             detector=detector,
             alert_builder=alert_builder,
+            sinks=build_sinks(loaded.sinks),
+            health_interval_windows=loaded.sinks.iot_core.health_interval_windows,
         )
         alerts = runner.run()
 
