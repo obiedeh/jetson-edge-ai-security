@@ -23,6 +23,7 @@ dependencies = [
   "uvicorn[standard]>=0.29",
   "sse-starlette>=2.1",
   "aiosqlite>=0.20",
+  "paho-mqtt>=2.0",
 ]
 
 [project.optional-dependencies]

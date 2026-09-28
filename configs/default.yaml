@@ -14,5 +14,24 @@ alerts:
   source: edge-security-runtime
   default_recommended_action: Review source telemetry, correlate with IDS logs, and
     isolate affected lab systems if confirmed.
+mqtt:
+  broker_url: mqtt://localhost:1883
+  topics:
+    - edge-security/telemetry/#
+  client_id: edge-security
+  qos: 0
+  keepalive: 60
+  queue_size: 10000
+  # canonical TelemetryEvent field -> accepted JSON payload keys (overlays the built-in defaults)
+  field_map:
+    timestamp: [timestamp, frame.time_epoch, ts, time]
+    source_ip: [source_ip, ip.src_host, src_ip, device_ip]
+    dest_ip: [dest_ip, ip.dst_host, dst_ip]
+    source_port: [source_port, tcp.srcport, udp.srcport, src_port]
+    dest_port: [dest_port, tcp.dstport, udp.dstport, dst_port]
+    protocol: [protocol, _ws.col.protocol, proto]
+    packet_size: [packet_size, frame.len, bytes, size]
+    attack_label: [attack_label, label]
+    attack_type: [attack_type, category]
 models:
   forecaster_active: mock-forecaster

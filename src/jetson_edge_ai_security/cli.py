@@ -27,7 +27,12 @@ from jetson_edge_ai_security.runtime import (
     write_static_report_pages,
 )
 from jetson_edge_ai_security.schemas import Alert
-from jetson_edge_ai_security.sources import CsvReplaySource, SuricataEveSource, TrafficSource
+from jetson_edge_ai_security.sources import (
+    CsvReplaySource,
+    MqttTelemetrySource,
+    SuricataEveSource,
+    TrafficSource,
+)
 from jetson_edge_ai_security.utils import configure_logging
 
 app = typer.Typer(help="Defensive edge security telemetry runtime")
@@ -182,6 +187,48 @@ def replay_eve(
             alerts=alerts,
             metrics=runner.metrics,
             source_name=str(path),
+            rows_skipped=source.rows_skipped,
+        )
+        for artifact in paths:
+            console.print(f"Wrote artifact: {artifact}", markup=False)
+
+
+@app.command("run-mqtt")
+def run_mqtt(
+    config: Annotated[Path, typer.Option(help="Path to YAML config file (mqtt section).")] = Path("configs/default.yaml"),
+    limit: Annotated[int | None, typer.Option(help="Stop after ingesting this many events.")] = None,
+    idle_timeout: Annotated[
+        float | None,
+        typer.Option(help="Stop after this many seconds without a message (default: run until Ctrl-C)."),
+    ] = None,
+    strict: Annotated[bool | None, typer.Option(help="Fail on malformed payloads.")] = None,
+    json_output: Annotated[bool, typer.Option(help="Print alerts as JSON lines.")] = False,
+    output_dir: Annotated[Path | None, typer.Option(help="Optional directory for evidence artifacts.")] = None,
+) -> None:
+    """Subscribe to MQTT telemetry topics and run the detection pipeline until stopped."""
+
+    configure_logging()
+    loaded = load_config(config)
+    source = MqttTelemetrySource.from_config(
+        loaded.mqtt,
+        limit=limit,
+        idle_timeout=idle_timeout,
+        strict=loaded.runtime.strict_csv if strict is None else strict,
+    )
+    alerts, runner = _run_source_pipeline(source, loaded, stream=True, json_output=json_output)
+
+    console.print(
+        f"events={runner.metrics.events_seen} windows={runner.metrics.windows_seen} "
+        f"alerts={runner.metrics.alerts_emitted} messages={source.messages_seen} "
+        f"dropped={source.messages_dropped} skipped_rows={source.rows_skipped}",
+        markup=False,
+    )
+    if output_dir is not None:
+        paths = write_replay_artifacts(
+            output_dir=output_dir,
+            alerts=alerts,
+            metrics=runner.metrics,
+            source_name=f"mqtt:{loaded.mqtt.broker_url}",
             rows_skipped=source.rows_skipped,
         )
         for artifact in paths:

@@ -30,10 +30,26 @@ class AlertConfig(BaseModel):
     )
 
 
+class MqttConfig(BaseModel):
+    """Settings for the MQTT telemetry source (``edge-security run-mqtt``)."""
+
+    broker_url: str = "mqtt://localhost:1883"
+    topics: list[str] = Field(default_factory=lambda: ["edge-security/telemetry/#"])
+    client_id: str = "edge-security"
+    qos: int = Field(default=0, ge=0, le=2)
+    keepalive: int = Field(default=60, ge=1)
+    queue_size: int = Field(default=10000, ge=1)
+    field_map: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description="canonical TelemetryEvent field -> accepted payload keys; overlays the defaults.",
+    )
+
+
 class AppConfig(BaseModel):
     runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)
     detector: DetectorConfig = Field(default_factory=DetectorConfig)
     alerts: AlertConfig = Field(default_factory=AlertConfig)
+    mqtt: MqttConfig = Field(default_factory=MqttConfig)
 
 
 def load_config(path: str | Path) -> AppConfig:
