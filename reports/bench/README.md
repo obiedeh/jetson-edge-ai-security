@@ -15,3 +15,15 @@ tiers as the Thor run. The GPU was not used by this harness.
 
 The artifact hardware blocks are authoritative for the recorded provenance.
 No RTX GPU execution or power measurement is claimed.
+
+## Ingestion micro-benchmark
+
+`ingest_aimlstation.json` is one run of `deploy/bench/bench_sources.py` on the
+same host (defaults: EVE fixture x5000 = 40,000 events, CSV fixture
+x100 = 36,000 rows, 3 rounds, `window_size` 50, `step` 10, baseline
+detector). It records source-only parsing throughput, full-pipeline
+throughput, per-window `detect()` latency percentiles, and the same pipeline
+with a JSONL sink and with JSONL plus an in-process no-op IoT Core client.
+`git_commit` in the artifact is the commit the script ran against (the parent
+of the commit that added the artifact). No network, capture, or line-rate
+claim; the Thor run (`ingest_thor.json`) is pending.

@@ -1,0 +1,448 @@
+{
+  "boundary": "Ingestion and detection throughput on the named host with replicated committed fixtures; sink runs use a local file and an in-process no-op IoT client. No capture, network, or line-rate claim.",
+  "command": "bench_sources.py",
+  "config": {
+    "detector": "BaselineDetector",
+    "rounds": 3,
+    "step": 10,
+    "window_size": 50
+  },
+  "generated_at": "2026-09-28T20:17:51.052587+00:00",
+  "git_commit": "dbecc4f",
+  "hardware": {
+    "cpu_count": 24,
+    "hostname": "aimlstation",
+    "label": "aimlstation",
+    "load_avg_1m": 1.86,
+    "machine": "x86_64",
+    "python": "3.12.3",
+    "system": "Linux 6.17.0-22-generic"
+  },
+  "source_badge": "workstation-ingest-benchmark",
+  "sources": {
+    "csv_replay": {
+      "expected_events": 36000,
+      "fixture": "tests/fixtures/telemetry_replay_sample.csv",
+      "pipeline": {
+        "detect_p95_ms_median": 0.0025,
+        "events_per_sec_median": 57366.4,
+        "rounds": [
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0108,
+              "mean_ms": 0.0022,
+              "p50_ms": 0.0022,
+              "p95_ms": 0.0025,
+              "p99_ms": 0.0026
+            },
+            "events": 36000,
+            "events_per_sec": 57366.4,
+            "seconds": 0.6275,
+            "sink_errors": 0,
+            "windows": 3596
+          },
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0063,
+              "mean_ms": 0.0022,
+              "p50_ms": 0.0022,
+              "p95_ms": 0.0025,
+              "p99_ms": 0.0026
+            },
+            "events": 36000,
+            "events_per_sec": 57084.5,
+            "seconds": 0.6306,
+            "sink_errors": 0,
+            "windows": 3596
+          },
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0078,
+              "mean_ms": 0.0022,
+              "p50_ms": 0.0022,
+              "p95_ms": 0.0025,
+              "p99_ms": 0.0026
+            },
+            "events": 36000,
+            "events_per_sec": 57643.9,
+            "seconds": 0.6245,
+            "sink_errors": 0,
+            "windows": 3596
+          }
+        ]
+      },
+      "pipeline_iot_fake": {
+        "events_per_sec_median": 50615.0,
+        "rounds": [
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0052,
+              "mean_ms": 0.0024,
+              "p50_ms": 0.0024,
+              "p95_ms": 0.0027,
+              "p99_ms": 0.0032
+            },
+            "events": 36000,
+            "events_per_sec": 50615.0,
+            "iot_core_sink": {
+              "connected": false,
+              "dropped": 0,
+              "failed": 0,
+              "last_error": null,
+              "pending": 0,
+              "published": 2001,
+              "retries": 0
+            },
+            "seconds": 0.7113,
+            "sink_errors": 0,
+            "windows": 3596
+          },
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0162,
+              "mean_ms": 0.0024,
+              "p50_ms": 0.0024,
+              "p95_ms": 0.0027,
+              "p99_ms": 0.003
+            },
+            "events": 36000,
+            "events_per_sec": 49970.5,
+            "iot_core_sink": {
+              "connected": false,
+              "dropped": 0,
+              "failed": 0,
+              "last_error": null,
+              "pending": 0,
+              "published": 2001,
+              "retries": 0
+            },
+            "seconds": 0.7204,
+            "sink_errors": 0,
+            "windows": 3596
+          },
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0056,
+              "mean_ms": 0.0024,
+              "p50_ms": 0.0024,
+              "p95_ms": 0.0027,
+              "p99_ms": 0.0031
+            },
+            "events": 36000,
+            "events_per_sec": 50676.1,
+            "iot_core_sink": {
+              "connected": false,
+              "dropped": 0,
+              "failed": 0,
+              "last_error": null,
+              "pending": 0,
+              "published": 2001,
+              "retries": 0
+            },
+            "seconds": 0.7104,
+            "sink_errors": 0,
+            "windows": 3596
+          }
+        ]
+      },
+      "pipeline_jsonl": {
+        "events_per_sec_median": 54143.3,
+        "rounds": [
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.006,
+              "mean_ms": 0.0023,
+              "p50_ms": 0.0024,
+              "p95_ms": 0.0026,
+              "p99_ms": 0.0027
+            },
+            "events": 36000,
+            "events_per_sec": 54261.6,
+            "seconds": 0.6635,
+            "sink_errors": 0,
+            "windows": 3596
+          },
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0052,
+              "mean_ms": 0.0023,
+              "p50_ms": 0.0024,
+              "p95_ms": 0.0026,
+              "p99_ms": 0.0028
+            },
+            "events": 36000,
+            "events_per_sec": 54143.3,
+            "seconds": 0.6649,
+            "sink_errors": 0,
+            "windows": 3596
+          },
+          {
+            "alerts": 2000,
+            "detect_latency": {
+              "count": 3596,
+              "max_ms": 0.0065,
+              "mean_ms": 0.0023,
+              "p50_ms": 0.0024,
+              "p95_ms": 0.0026,
+              "p99_ms": 0.0027
+            },
+            "events": 36000,
+            "events_per_sec": 53905.8,
+            "seconds": 0.6678,
+            "sink_errors": 0,
+            "windows": 3596
+          }
+        ]
+      },
+      "repeat": 100,
+      "source_only": {
+        "events_per_sec_median": 75300.2,
+        "rounds": [
+          {
+            "events": 36000,
+            "events_per_sec": 75300.2,
+            "seconds": 0.4781
+          },
+          {
+            "events": 36000,
+            "events_per_sec": 75527.2,
+            "seconds": 0.4766
+          },
+          {
+            "events": 36000,
+            "events_per_sec": 75230.2,
+            "seconds": 0.4785
+          }
+        ]
+      }
+    },
+    "suricata_eve": {
+      "expected_events": 40000,
+      "fixture": "tests/fixtures/eve_sample.json",
+      "pipeline": {
+        "detect_p95_ms_median": 0.003,
+        "events_per_sec_median": 55256.6,
+        "rounds": [
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0183,
+              "mean_ms": 0.0027,
+              "p50_ms": 0.0026,
+              "p95_ms": 0.0036,
+              "p99_ms": 0.004
+            },
+            "events": 40000,
+            "events_per_sec": 55256.6,
+            "seconds": 0.7239,
+            "sink_errors": 0,
+            "windows": 3996
+          },
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0059,
+              "mean_ms": 0.0027,
+              "p50_ms": 0.0026,
+              "p95_ms": 0.003,
+              "p99_ms": 0.004
+            },
+            "events": 40000,
+            "events_per_sec": 55097.4,
+            "seconds": 0.726,
+            "sink_errors": 0,
+            "windows": 3996
+          },
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0071,
+              "mean_ms": 0.0026,
+              "p50_ms": 0.0026,
+              "p95_ms": 0.0028,
+              "p99_ms": 0.0039
+            },
+            "events": 40000,
+            "events_per_sec": 55557.4,
+            "seconds": 0.72,
+            "sink_errors": 0,
+            "windows": 3996
+          }
+        ]
+      },
+      "pipeline_iot_fake": {
+        "events_per_sec_median": 47137.0,
+        "rounds": [
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0059,
+              "mean_ms": 0.0028,
+              "p50_ms": 0.0028,
+              "p95_ms": 0.0031,
+              "p99_ms": 0.0034
+            },
+            "events": 40000,
+            "events_per_sec": 47137.0,
+            "iot_core_sink": {
+              "connected": false,
+              "dropped": 0,
+              "failed": 0,
+              "last_error": null,
+              "pending": 0,
+              "published": 3997,
+              "retries": 0
+            },
+            "seconds": 0.8486,
+            "sink_errors": 0,
+            "windows": 3996
+          },
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0063,
+              "mean_ms": 0.0028,
+              "p50_ms": 0.0028,
+              "p95_ms": 0.003,
+              "p99_ms": 0.0033
+            },
+            "events": 40000,
+            "events_per_sec": 47029.2,
+            "iot_core_sink": {
+              "connected": false,
+              "dropped": 0,
+              "failed": 0,
+              "last_error": null,
+              "pending": 0,
+              "published": 3997,
+              "retries": 0
+            },
+            "seconds": 0.8505,
+            "sink_errors": 0,
+            "windows": 3996
+          },
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0057,
+              "mean_ms": 0.0028,
+              "p50_ms": 0.0028,
+              "p95_ms": 0.003,
+              "p99_ms": 0.0032
+            },
+            "events": 40000,
+            "events_per_sec": 47200.4,
+            "iot_core_sink": {
+              "connected": false,
+              "dropped": 0,
+              "failed": 0,
+              "last_error": null,
+              "pending": 0,
+              "published": 3997,
+              "retries": 0
+            },
+            "seconds": 0.8474,
+            "sink_errors": 0,
+            "windows": 3996
+          }
+        ]
+      },
+      "pipeline_jsonl": {
+        "events_per_sec_median": 49948.3,
+        "rounds": [
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0077,
+              "mean_ms": 0.0028,
+              "p50_ms": 0.0028,
+              "p95_ms": 0.003,
+              "p99_ms": 0.0039
+            },
+            "events": 40000,
+            "events_per_sec": 49851.2,
+            "seconds": 0.8024,
+            "sink_errors": 0,
+            "windows": 3996
+          },
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0063,
+              "mean_ms": 0.0028,
+              "p50_ms": 0.0028,
+              "p95_ms": 0.003,
+              "p99_ms": 0.0036
+            },
+            "events": 40000,
+            "events_per_sec": 49979.8,
+            "seconds": 0.8003,
+            "sink_errors": 0,
+            "windows": 3996
+          },
+          {
+            "alerts": 3996,
+            "detect_latency": {
+              "count": 3996,
+              "max_ms": 0.0056,
+              "mean_ms": 0.0028,
+              "p50_ms": 0.0028,
+              "p95_ms": 0.003,
+              "p99_ms": 0.0032
+            },
+            "events": 40000,
+            "events_per_sec": 49948.3,
+            "seconds": 0.8008,
+            "sink_errors": 0,
+            "windows": 3996
+          }
+        ]
+      },
+      "repeat": 5000,
+      "source_only": {
+        "events_per_sec_median": 78211.7,
+        "rounds": [
+          {
+            "events": 40000,
+            "events_per_sec": 77500.5,
+            "seconds": 0.5161
+          },
+          {
+            "events": 40000,
+            "events_per_sec": 78787.3,
+            "seconds": 0.5077
+          },
+          {
+            "events": 40000,
+            "events_per_sec": 78211.7,
+            "seconds": 0.5114
+          }
+        ]
+      }
+    }
+  }
+}

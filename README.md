@@ -26,6 +26,9 @@ Implemented today:
 - Pluggable `TrafficSource` API with context-manager lifecycle.
 - `TelemetryEvent` and `Alert` schemas using Pydantic.
 - CSV replay for Edge-IIoT-style datasets and similar IDS exports.
+- Suricata EVE JSON source (`flow`, `alert`, `stats`; replay or `--follow` tail mode).
+- MQTT telemetry source (paho-mqtt v2, configurable topics and payload field map).
+- Alert sinks: JSONL file, the dashboard's SQLite store, and an optional AWS IoT Core publisher (off by default).
 - Sliding-window feature extraction over iterable event streams.
 - Rule-based baseline detector with optional `sklearn` IsolationForest support.
 - Pipeline runner that tracks events, windows, detections, skipped rows, and emitted alerts.
@@ -73,10 +76,10 @@ GitHub shows committed HTML files as source code. Use the GitHub Pages links at 
 
 | Layer | Current working system | Planned Jetson ingestion upgrade |
 |---|---|---|
-| Input source | Fixed CSV fixture | Jetson-generated flow CSV |
+| Input source | Fixed CSV fixture, Suricata `eve.json`, MQTT JSON telemetry | Jetson-generated flow CSV |
 | Capture mode | Deterministic replay | SPAN, TAP, or local interface capture |
 | Packet stage | Not required for current evidence | Rotating PCAP files |
-| Flow extraction | CSV columns normalized into `TelemetryEvent` | Zeek `conn.log`, Suricata `eve.json`, CICFlow-style records |
+| Flow extraction | CSV columns, Suricata `eve.json` flow/alert/stats records, and MQTT JSON payloads normalized into `TelemetryEvent` | Zeek `conn.log`, CICFlow-style records |
 | Analytics path | Lookback analytics, forecasting, alerts, reports | Same existing analytics path |
 | Dashboard impact | Implemented | No detector/dashboard rewrite intended |
 | Hardware benchmark | Measured inference run committed (CPU provider) | Capture and flow-extraction measurement |
@@ -120,7 +123,11 @@ The intent is source-agnostic flow ingestion. New sources should normalize into 
 | Forecasting evidence | Implemented |
 | Operator-reviewed alerts | Implemented |
 | Static landing page and dashboard | Implemented |
-| Zeek / Suricata / CICFlow adapters | Planned |
+| Suricata EVE JSON source (`replay-eve`, follow mode) | Implemented, fixture-tested |
+| MQTT telemetry source (`run-mqtt`, Mosquitto demo) | Implemented, fake-client tests; one verified local broker run |
+| Alert sinks: JSONL, SQLite (dashboard), AWS IoT Core | Implemented, off by default; IoT Core tested with a fake client only, no cloud run yet |
+| Ingestion micro-benchmark (EVE and CSV sources) | Measured on the RTX 5090 host; Thor run pending |
+| Zeek / CICFlow adapters | Planned |
 | Jetson-generated flow CSV | Planned |
 | Thor-class hardware benchmark | Measured, inference only, CPU provider |
 
@@ -149,7 +156,9 @@ flowchart LR
 
 **Implemented:** Python, Typer, Pydantic, CSV replay, sliding-window features, baseline anomaly detection, pytest.
 
-**Planned ingestion path:** Jetson-generated flow CSVs, Zeek logs, Suricata `eve.json`, CICFlow-style records, Thor-class benchmark evidence.
+**Implemented ingestion:** CSV replay, Suricata `eve.json` (replay and follow), MQTT JSON telemetry. **Alert sinks:** JSONL, SQLite dashboard store, optional AWS IoT Core.
+
+**Planned ingestion path:** Jetson-generated flow CSVs, Zeek logs, CICFlow-style records, Thor-class benchmark evidence.
 
 <p>
   <img src="https://img.shields.io/badge/Python-3.x-blue" alt="Python" />
@@ -181,6 +190,25 @@ Enforce malformed-row handling:
 edge-security replay-csv --path data/sample.csv --strict
 ```
 
+Replay a Suricata `eve.json` file, or follow one that Suricata is still writing (Ctrl-C stops cleanly; `--idle-timeout` exits after a quiet period):
+
+```bash
+edge-security replay-eve --path /var/log/suricata/eve.json --limit 10000 --output-dir reports/eve
+edge-security replay-eve --path /var/log/suricata/eve.json --follow --json-output
+```
+
+Subscribe to MQTT telemetry (broker, topics and payload field map come from the `mqtt:` section of the config; see [deploy/mqtt-demo/README.md](deploy/mqtt-demo/README.md) for a local Mosquitto demo):
+
+```bash
+edge-security run-mqtt --config configs/default.yaml --json-output
+```
+
+Alert sinks are configured under `sinks:` in the config and are all disabled by default. Enable the JSONL or SQLite sink to persist alerts from any of the config-driven commands; enable `iot_core` to publish alerts and health snapshots to AWS IoT Core on `edge-security/{thing}/alerts` and `/health` (QoS 1, bounded queue, retry with backoff, background thread). Endpoint, thing name and certificate paths are read from the config or the `EDGE_SECURITY_IOT_ENDPOINT` / `_THING` / `_CERT` / `_KEY` / `_CA` environment variables and are never committed; the SDK is the optional `cloud` extra:
+
+```bash
+python -m pip install -e ".[cloud]"
+```
+
 List known public defensive datasets:
 
 ```bash
@@ -205,6 +233,34 @@ Run the full verification path:
 ```bash
 make verify
 ```
+
+## Ingestion Benchmark
+
+`deploy/bench/bench_sources.py` replicates the committed EVE and CSV fixtures with shifted timestamps and measures source-only parsing, the full pipeline (`window_size` 50, `step` 10, baseline detector), and the same pipeline with a JSONL sink and with JSONL plus an in-process no-op IoT Core client. It measures ingestion and detection on the host it runs on; it makes no capture or line-rate claim.
+
+Workstation run, committed as [`reports/bench/ingest_aimlstation.json`](reports/bench/ingest_aimlstation.json) (`aimlstation`, x86_64, 24 logical CPUs, Python 3.12.3, median of 3 rounds):
+
+| Source | Events | Source-only ev/s | Pipeline ev/s | Detect p95 ms | Pipeline + JSONL ev/s | Pipeline + JSONL + IoT (no-op) ev/s |
+| --- | --- | --- | --- | --- | --- | --- |
+| Suricata EVE | 40,000 | 78,212 | 55,257 | 0.0030 | 49,948 | 47,137 |
+| CSV replay | 36,000 | 75,300 | 57,366 | 0.0025 | 54,143 | 50,615 |
+
+Run it on the workstation:
+
+```bash
+.venv/bin/python deploy/bench/bench_sources.py
+```
+
+Run it on the Jetson AGX Thor (from the device; results are only claimed once the artifact is committed):
+
+```bash
+ssh jetsonthor
+cd ~/jetson-edge-ai-security && git pull
+uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python -e ".[dev]"
+.venv/bin/python deploy/bench/bench_sources.py --label thor --output reports/bench/ingest_thor.json
+```
+
+Then commit `reports/bench/ingest_thor.json` and add its row to this table. The Thor row is not yet measured.
 
 ## Thor-Class Deployment Readiness
 
@@ -242,7 +298,8 @@ Reproduce on the device with the harness in [deploy/thor/run_benchmark.py](deplo
 
 The next steps are intentionally narrow:
 
-- Add source adapters that generate the same CSV/event contract from Zeek, Suricata, and CICFlow-style records.
+- Add source adapters that generate the same CSV/event contract from Zeek and CICFlow-style records (Suricata EVE and MQTT are implemented).
+- Run the ingestion benchmark on Thor and a manual IoT Core publish from the device; both are pending.
 - Measure end-to-end packet-to-alert latency on Thor; the inference-only benchmark and the thread-pool power comparison are committed.
 - Add packet-drop and flow-extraction measurements before making capture-performance claims.
 - Keep all response actions operator-reviewed.
