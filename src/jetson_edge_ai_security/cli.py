@@ -27,7 +27,7 @@ from jetson_edge_ai_security.runtime import (
     write_static_report_pages,
 )
 from jetson_edge_ai_security.schemas import Alert
-from jetson_edge_ai_security.sources import CsvReplaySource
+from jetson_edge_ai_security.sources import CsvReplaySource, SuricataEveSource, TrafficSource
 from jetson_edge_ai_security.utils import configure_logging
 
 app = typer.Typer(help="Defensive edge security telemetry runtime")
@@ -130,6 +130,107 @@ def replay_csv(
         )
         for artifact in paths:
             console.print(f"Wrote artifact: {artifact}", markup=False)
+
+
+@app.command("replay-eve")
+def replay_eve(
+    path: Annotated[Path, typer.Option(help="Suricata eve.json file to replay or follow.")],
+    follow: Annotated[bool, typer.Option(help="Tail the file for appended records after replaying it.")] = False,
+    limit: Annotated[int | None, typer.Option(help="Maximum events to ingest.")] = None,
+    idle_timeout: Annotated[
+        float | None,
+        typer.Option(help="In follow mode, stop after this many seconds without new records."),
+    ] = None,
+    config: Annotated[Path, typer.Option(help="Path to YAML config file.")] = Path("configs/default.yaml"),
+    strict: Annotated[bool | None, typer.Option(help="Fail on malformed lines.")] = None,
+    json_output: Annotated[bool, typer.Option(help="Print alerts as JSON lines.")] = False,
+    output_dir: Annotated[Path | None, typer.Option(help="Optional directory for replay evidence artifacts.")] = None,
+) -> None:
+    """Replay (or follow) a Suricata EVE JSON file through the detection pipeline.
+
+    Only ``flow``, ``alert`` and ``stats`` records are ingested; other event
+    types are counted and skipped. In follow mode alerts are printed as they
+    are emitted and Ctrl-C stops cleanly.
+    """
+
+    configure_logging()
+    loaded = load_config(config)
+    source = SuricataEveSource(
+        path,
+        follow=follow,
+        limit=limit,
+        strict=loaded.runtime.strict_csv if strict is None else strict,
+        idle_timeout=idle_timeout,
+    )
+    alerts, runner = _run_source_pipeline(source, loaded, stream=follow, json_output=json_output)
+
+    if json_output and not follow:
+        for alert in alerts:
+            console.print(json.dumps(alert.model_dump(mode="json"), sort_keys=True))
+    elif not json_output:
+        _print_alert_table(alerts)
+    console.print(
+        f"events={runner.metrics.events_seen} windows={runner.metrics.windows_seen} "
+        f"alerts={runner.metrics.alerts_emitted} skipped_rows={source.rows_skipped} "
+        f"skipped_types={json.dumps(source.events_skipped, sort_keys=True)}",
+        markup=False,
+    )
+
+    if output_dir is not None:
+        paths = write_replay_artifacts(
+            output_dir=output_dir,
+            alerts=alerts,
+            metrics=runner.metrics,
+            source_name=str(path),
+            rows_skipped=source.rows_skipped,
+        )
+        for artifact in paths:
+            console.print(f"Wrote artifact: {artifact}", markup=False)
+
+
+def _run_source_pipeline(
+    source: TrafficSource,
+    loaded: AppConfig,
+    *,
+    stream: bool,
+    json_output: bool,
+) -> tuple[list[Alert], PipelineRunner]:
+    """Run any TrafficSource through the configured pipeline.
+
+    With ``stream=True`` each alert is printed as soon as it is emitted (JSON
+    lines when requested) so long-running follow/subscribe modes stay
+    observable, and a KeyboardInterrupt ends the run cleanly.
+    """
+
+    detector = _detector_from_config(loaded)
+    alert_builder = AlertBuilder(
+        source=loaded.alerts.source,
+        recommended_action=loaded.alerts.default_recommended_action,
+    )
+    alerts: list[Alert] = []
+    with source:
+        runner = PipelineRunner(
+            source,
+            window_size=loaded.runtime.window_size,
+            step=loaded.runtime.step,
+            detector=detector,
+            alert_builder=alert_builder,
+        )
+        if not stream:
+            alerts = runner.run()
+        else:
+            try:
+                for alert in runner.stream_alerts():
+                    alerts.append(alert)
+                    if json_output:
+                        console.print(json.dumps(alert.model_dump(mode="json"), sort_keys=True))
+                    else:
+                        console.print(f"[{alert.severity}] {alert.title}: {alert.description}", markup=False)
+            except KeyboardInterrupt:
+                console.print("Interrupted; finishing run.", markup=False)
+            finally:
+                runner.metrics.finish()
+    return alerts, runner
 
 
 @app.command("replay-dataset")
