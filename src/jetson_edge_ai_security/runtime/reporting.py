@@ -10,6 +10,9 @@ from jetson_edge_ai_security.runtime.ee_theme import apply_theme
 from jetson_edge_ai_security.runtime.metrics import RuntimeMetrics
 from jetson_edge_ai_security.schemas import Alert
 
+TYPESET = {"eyebrow": ".eyebrow", "accents": [("Jetson Edge", "g"), ("Intrusion Detection", "b"),
+                                             ("Business", "g"), ("Technical", "b")]}
+
 REPO_URL = "https://github.com/obiedeh/jetson-edge-ai-security"
 
 
@@ -99,7 +102,7 @@ def write_static_report_pages(
     pages = [index_path, dashboard_path, tech_brief_path, business_case_path]
     for page in pages:
         page.write_text(
-            apply_theme(page.read_text(encoding="utf-8"), repo_url=REPO_URL, dark={}, force_dark=False),
+            apply_theme(page.read_text(encoding="utf-8"), repo_url=REPO_URL, dark={}, force_dark=False, typeset=TYPESET),
             encoding="utf-8",
         )
     return pages
