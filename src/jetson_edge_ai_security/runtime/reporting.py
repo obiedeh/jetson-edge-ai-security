@@ -6,8 +6,11 @@ import json
 from html import escape
 from pathlib import Path
 
+from jetson_edge_ai_security.runtime.ee_theme import apply_theme
 from jetson_edge_ai_security.runtime.metrics import RuntimeMetrics
 from jetson_edge_ai_security.schemas import Alert
+
+REPO_URL = "https://github.com/obiedeh/jetson-edge-ai-security"
 
 
 def write_replay_artifacts(
@@ -93,7 +96,13 @@ def write_static_report_pages(
     )
     tech_brief_path.write_text(_render_tech_brief_page(thor_benchmark), encoding="utf-8")
     business_case_path.write_text(_render_business_case_page(thor_benchmark), encoding="utf-8")
-    return [index_path, dashboard_path, tech_brief_path, business_case_path]
+    pages = [index_path, dashboard_path, tech_brief_path, business_case_path]
+    for page in pages:
+        page.write_text(
+            apply_theme(page.read_text(encoding="utf-8"), repo_url=REPO_URL, dark={}, force_dark=False),
+            encoding="utf-8",
+        )
+    return pages
 
 
 def _severity_counts(alerts: list[Alert]) -> dict[str, int]:
@@ -155,23 +164,23 @@ def _page_shell(title: str, subtitle: str, body: str) -> str:
   <style>
     :root {{
       color-scheme: dark;
-      --bg: #0b1020;
-      --panel: #121a2c;
-      --panel-2: #17223a;
-      --line: #293653;
-      --text: #eef4ff;
-      --muted: #9fb0ca;
-      --accent: #38bdf8;
-      --good: #22c55e;
-      --warn: #f59e0b;
-      --risk: #ef4444;
+      --bg: #202224;
+      --panel: #181b1d;
+      --panel-2: #1c1f21;
+      --line: #393d3f;
+      --text: #eef1e8;
+      --muted: #a3aa9c;
+      --accent: #68b7ff;
+      --good: #b7f34a;
+      --warn: #ff9c59;
+      --risk: #ff7a6b;
     }}
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0;
-      background: radial-gradient(circle at top left, #13223d 0, var(--bg) 34rem);
+      background: radial-gradient(circle at top left, #202224 0, var(--bg) 34rem);
       color: var(--text);
-      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font: 16px/1.55 "Helvetica Neue",Helvetica,Arial,sans-serif"Segoe UI", sans-serif;
     }}
     main {{ width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }}
     header.hero {{ padding: 28px 0 18px; }}
@@ -180,7 +189,7 @@ def _page_shell(title: str, subtitle: str, body: str) -> str:
     h2 {{ margin: 0 0 14px; font-size: 1.45rem; }}
     h3 {{ margin: 0 0 8px; }}
     p {{ color: var(--muted); margin: 0 0 12px; }}
-    a {{ color: #7dd3fc; text-decoration: none; }}
+    a {{ color: #9fd0ff; text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
     section {{ margin-top: 28px; padding: 24px; background: rgba(18, 26, 44, 0.9); border: 1px solid var(--line); border-radius: 8px; }}
     .grid {{ display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }}
@@ -194,7 +203,7 @@ def _page_shell(title: str, subtitle: str, body: str) -> str:
     .pill {{ display: inline-block; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; margin: 0 6px 6px 0; }}
     table {{ width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 8px; }}
     th, td {{ border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }}
-    th {{ color: var(--text); background: #0f1729; }}
+    th {{ color: var(--text); background: #181b1d; }}
     td {{ color: var(--muted); }}
     ul {{ margin: 0; padding-left: 20px; color: var(--muted); }}
     .callout {{ border-left: 4px solid var(--warn); padding-left: 14px; }}
