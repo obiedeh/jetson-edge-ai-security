@@ -16,6 +16,7 @@ class RuntimeMetrics(BaseModel):
     windows_seen: int = 0
     detections_seen: int = 0
     alerts_emitted: int = 0
+    clock_pinned: bool = False  # True when start/finish are fixed for byte-identical demo output
 
     def finish(self) -> None:
         self.finished_at = datetime.now(UTC)

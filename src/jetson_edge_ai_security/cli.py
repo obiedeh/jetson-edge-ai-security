@@ -345,6 +345,7 @@ def generate_demo_report(
         fixed_finished = datetime(2026, 1, 1, 0, 0, 4, tzinfo=UTC)
         runner.metrics.started_at = fixed_start
         runner.metrics.finished_at = fixed_finished
+        runner.metrics.clock_pinned = True
         alerts = [alert.model_copy(update={"timestamp": fixed_finished}) for alert in alerts]
         paths = write_replay_artifacts(
             output_dir=output_dir,

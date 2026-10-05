@@ -4,6 +4,7 @@
     "medium": 2
   },
   "alerts_emitted": 4,
+  "clock_pinned": true,
   "detections_seen": 4,
   "events_seen": 12,
   "finished_at": "2026-01-01T00:00:04Z",

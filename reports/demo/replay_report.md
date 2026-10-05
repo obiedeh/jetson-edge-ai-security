@@ -10,7 +10,7 @@ This report summarizes a defensive telemetry replay through the edge security ru
 - Detections: 4
 - Alerts emitted: 4
 - Rows skipped: 0
-- Duration seconds: 4.000000
+- Duration seconds: 4.000000 (fixed demo clock so the report is byte-identical; not a measured duration)
 
 ## Alert Severity Counts
 

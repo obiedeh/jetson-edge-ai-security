@@ -886,6 +886,11 @@ def _render_replay_report(
     )
     if not severity_lines:
         severity_lines = "- none: 0"
+    duration_note = (
+        " (fixed demo clock so the report is byte-identical; not a measured duration)"
+        if metrics.clock_pinned
+        else ""
+    )
 
     return f"""# Edge Security Replay Report
 
@@ -899,7 +904,7 @@ This report summarizes a defensive telemetry replay through the edge security ru
 - Detections: {metrics.detections_seen}
 - Alerts emitted: {metrics.alerts_emitted}
 - Rows skipped: {rows_skipped}
-- Duration seconds: {metrics.duration_seconds:.6f}
+- Duration seconds: {metrics.duration_seconds:.6f}{duration_note}
 
 ## Alert Severity Counts
 
