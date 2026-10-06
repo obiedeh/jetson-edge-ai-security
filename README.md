@@ -247,3 +247,9 @@ The next steps are intentionally narrow:
 - Add packet-drop and flow-extraction measurements before making capture-performance claims.
 - Keep all response actions operator-reviewed.
 
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+`tests/fixtures/edge_iiotset_sample_5k.csv` is a 5,000-row sample of the public [Edge-IIoTset](https://ieee-dataport.org/open-access/edge-iiotset-new-comprehensive-realistic-cyber-security-dataset-iot-iiot) dataset, kept for tests and model training examples. It is not covered by this repository's license and stays under the dataset publishers' terms.
