@@ -23,6 +23,7 @@ dependencies = [
   "uvicorn[standard]>=0.29",
   "sse-starlette>=2.1",
   "aiosqlite>=0.20",
+  "paho-mqtt>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +31,9 @@ ml = [
   "scikit-learn>=1.4",
   "skl2onnx>=1.17",
   "torch>=2.0; extra == 'ml'",
+]
+cloud = [
+  "awsiotsdk>=1.21",
 ]
 dev = [
   "pytest>=8.0",

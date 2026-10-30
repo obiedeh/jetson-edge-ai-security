@@ -37,7 +37,8 @@ SPAN/TAP/local interface
 |---|---|---|
 | `CsvTrafficSource` | Implemented / current fixture | Reads deterministic CSV telemetry and normalizes rows into `TelemetryEvent` records. |
 | `ZeekConnLogSource` | Planned | Normalize Zeek `conn.log` records into the same event contract. |
-| `SuricataEveJsonSource` | Planned | Normalize Suricata `eve.json` flow/alert records into the same event contract. |
+| `SuricataEveSource` | Implemented | Normalize Suricata `eve.json` `flow`, `alert` and `stats` records (replay or follow mode) into the same event contract. |
+| `MqttTelemetrySource` | Implemented | Subscribe to MQTT topics and map JSON payloads through a configurable field map. |
 | `CicFlowCsvSource` | Planned | Normalize CICFlow-style CSV exports into the same event contract. |
 | `PcapFlowSource` / `PcapCaptureStage` | Planned | Capture or replay packets, rotate PCAP files, and hand flow extraction to a defensive parser. |
 
