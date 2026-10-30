@@ -1,4 +1,4 @@
-# Edge IDS — Jetson AGX Thor Operator Runbook
+# Edge IDS, Jetson AGX Thor Operator Runbook
 
 **Target:** Jetson AGX Thor-class target hardware. Record the exact device SKU, JetPack version, memory configuration, NIC/interface name, and benchmark environment in the generated benchmark artifact.  
 **Service:** `edge-security.service` (systemd)  
