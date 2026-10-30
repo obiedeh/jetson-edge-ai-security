@@ -1,0 +1,803 @@
+{
+  "schema": "thread-pool-rerun-v1",
+  "title": "Thread-pool power comparison rerun on Jetson AGX Thor with the GNOME desktop stopped, 2026-09-16",
+  "session": [
+    "session_start 2026-09-16T03:10:54Z base_vin=16130 base_tj=36.4",
+    "session_end 2026-09-16T03:55:31Z"
+  ],
+  "power_metric_note": "The harness records per-run p50 and peak of 1 Hz tegrastats VIN samples; an arithmetic mean was not recorded. 'Average power' below is the p50 (median of samples).",
+  "runs": [
+    {
+      "run": "run1_default",
+      "order_position": 1,
+      "configuration": "default thread pool",
+      "session_options": {
+        "intra_op_num_threads": "runtime default",
+        "inter_op_num_threads": "runtime default",
+        "allow_spinning": true,
+        "provider_requested": "cpu"
+      },
+      "run_id": "8088c8044690",
+      "benchmark_finished_at_utc": "2026-09-16T03:17:25.533691+00:00",
+      "duration_per_tier_s": 120.0,
+      "tiers_requested_rps": [
+        1000.0
+      ],
+      "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+      "nvpmodel": "NV Power Mode: 120W 1",
+      "soc": "tegra264",
+      "onnxruntime_version": "1.29.0",
+      "python": "3.12.3",
+      "loadavg_1m_at_start": 0.21728515625,
+      "idle_before_run_harness_60s": {
+        "vin_p50_mw": 15770,
+        "vin_peak_mw": 16986,
+        "tj_p50_c": 35.812,
+        "tj_peak_c": 35.906,
+        "source": "run1_default.json: idle_baseline.before_load"
+      },
+      "cooldown_gate_last_window": {
+        "vin_p50_mw": 15740,
+        "tj_max_c": 35.937,
+        "settled": true,
+        "source": "cooldown.jsonl"
+      },
+      "other_processes_snapshot": {
+        "source": "system_snapshot_run1_default.txt",
+        "lines": [
+          "2026-09-16T03:11:25Z",
+          " 22:11:25 up 38 days,  5:34,  4 users,  load average: 0.22, 0.94, 1.46",
+          "0",
+          "inactive",
+          "    PID %CPU %MEM COMMAND",
+          "3759295 45.9  0.0 kworker/u28:0-ext4-rsv-conversion",
+          "3764747 22.7  0.0 kworker/u28:2-dce-async-ipc-wq",
+          "   1862  0.3  0.0 disp_eng_share_thread",
+          "3692374  0.2  0.0 (udev-worker)",
+          "   2392  0.1  0.0 nv_queue"
+        ]
+      },
+      "models": {
+        "detector": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 99,
+          "p50_ms": 0.0319,
+          "p95_ms": 0.0359,
+          "p99_ms": 0.0469,
+          "max_ms": 4.0741,
+          "vin_p50_mw": 46608,
+          "vin_peak_mw": 47046,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 33008,
+          "tj_peak_c": 52.468,
+          "tegrastats_samples": 120,
+          "source": "run1_default.json: models[model=detector].tiers[target_rps=1000.0]"
+        },
+        "forecaster": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 6,
+          "p50_ms": 0.0368,
+          "p95_ms": 0.0378,
+          "p99_ms": 0.0419,
+          "max_ms": 2.273,
+          "vin_p50_mw": 15944,
+          "vin_peak_mw": 16946,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 43.968,
+          "tegrastats_samples": 119,
+          "source": "run1_default.json: models[model=forecaster].tiers[target_rps=1000.0]"
+        }
+      }
+    },
+    {
+      "run": "run2_single",
+      "order_position": 2,
+      "configuration": "single-threaded (intra-op 1, inter-op 1, spinning disabled)",
+      "session_options": {
+        "intra_op_num_threads": 1,
+        "inter_op_num_threads": 1,
+        "allow_spinning": false,
+        "provider_requested": "cpu"
+      },
+      "run_id": "9b6a8d8b9af1",
+      "benchmark_finished_at_utc": "2026-09-16T03:23:56.220348+00:00",
+      "duration_per_tier_s": 120.0,
+      "tiers_requested_rps": [
+        1000.0
+      ],
+      "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+      "nvpmodel": "NV Power Mode: 120W 1",
+      "soc": "tegra264",
+      "onnxruntime_version": "1.29.0",
+      "python": "3.12.3",
+      "loadavg_1m_at_start": 0.46923828125,
+      "idle_before_run_harness_60s": {
+        "vin_p50_mw": 15592,
+        "vin_peak_mw": 16794,
+        "tj_p50_c": 37.5,
+        "tj_peak_c": 37.75,
+        "source": "run2_single.json: idle_baseline.before_load"
+      },
+      "cooldown_gate_last_window": {
+        "vin_p50_mw": 15414,
+        "tj_max_c": 37.937,
+        "settled": true,
+        "source": "cooldown.jsonl"
+      },
+      "other_processes_snapshot": {
+        "source": "system_snapshot_run2_single.txt",
+        "lines": [
+          "2026-09-16T03:17:55Z",
+          " 22:17:55 up 38 days,  5:40,  5 users,  load average: 0.47, 2.48, 2.26",
+          "0",
+          "inactive",
+          "    PID %CPU %MEM COMMAND",
+          "3784013  100  0.0 ps",
+          "3759295 45.8  0.0 kworker/u28:0-ext4-rsv-conversion",
+          "3764747 22.6  0.0 kworker/u28:2-dce-async-ipc-wq",
+          "   1862  0.3  0.0 disp_eng_share_thread",
+          "3692374  0.2  0.0 (udev-worker)"
+        ]
+      },
+      "models": {
+        "detector": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 8,
+          "p50_ms": 0.0216,
+          "p95_ms": 0.0229,
+          "p99_ms": 0.0297,
+          "max_ms": 2.4753,
+          "vin_p50_mw": 15548,
+          "vin_peak_mw": 17144,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 37.437,
+          "tegrastats_samples": 120,
+          "source": "run2_single.json: models[model=detector].tiers[target_rps=1000.0]"
+        },
+        "forecaster": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 9,
+          "p50_ms": 0.0366,
+          "p95_ms": 0.0378,
+          "p99_ms": 0.0427,
+          "max_ms": 1.9636,
+          "vin_p50_mw": 15668,
+          "vin_peak_mw": 16736,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 37.187,
+          "tegrastats_samples": 119,
+          "source": "run2_single.json: models[model=forecaster].tiers[target_rps=1000.0]"
+        }
+      }
+    },
+    {
+      "run": "run3_default",
+      "order_position": 3,
+      "configuration": "default thread pool",
+      "session_options": {
+        "intra_op_num_threads": "runtime default",
+        "inter_op_num_threads": "runtime default",
+        "allow_spinning": true,
+        "provider_requested": "cpu"
+      },
+      "run_id": "f423fbb276bc",
+      "benchmark_finished_at_utc": "2026-09-16T03:30:26.934030+00:00",
+      "duration_per_tier_s": 120.0,
+      "tiers_requested_rps": [
+        1000.0
+      ],
+      "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+      "nvpmodel": "NV Power Mode: 120W 1",
+      "soc": "tegra264",
+      "onnxruntime_version": "1.29.0",
+      "python": "3.12.3",
+      "loadavg_1m_at_start": 0.23974609375,
+      "idle_before_run_harness_60s": {
+        "vin_p50_mw": 15778,
+        "vin_peak_mw": 16852,
+        "tj_p50_c": 36.906,
+        "tj_peak_c": 37.031,
+        "source": "run3_default.json: idle_baseline.before_load"
+      },
+      "cooldown_gate_last_window": {
+        "vin_p50_mw": 16250,
+        "tj_max_c": 37.031,
+        "settled": true,
+        "source": "cooldown.jsonl"
+      },
+      "other_processes_snapshot": {
+        "source": "system_snapshot_run3_default.txt",
+        "lines": [
+          "2026-09-16T03:24:26Z",
+          " 22:24:26 up 38 days,  5:47,  4 users,  load average: 0.24, 0.84, 1.55",
+          "0",
+          "inactive",
+          "    PID %CPU %MEM COMMAND",
+          "3784257  100  0.0 ps",
+          "3759295 45.6  0.0 kworker/u28:0-ext4-rsv-conversion",
+          "3764747 22.5  0.0 kworker/u28:2-dce-async-ipc-wq",
+          "   1862  0.3  0.0 disp_eng_share_thread",
+          "3692374  0.2  0.0 (udev-worker)"
+        ]
+      },
+      "models": {
+        "detector": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 389,
+          "p50_ms": 0.0318,
+          "p95_ms": 0.0359,
+          "p99_ms": 0.043,
+          "max_ms": 1.8733,
+          "vin_p50_mw": 46676,
+          "vin_peak_mw": 48300,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 33008,
+          "tj_peak_c": 53.562,
+          "tegrastats_samples": 120,
+          "source": "run3_default.json: models[model=detector].tiers[target_rps=1000.0]"
+        },
+        "forecaster": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 6,
+          "p50_ms": 0.0368,
+          "p95_ms": 0.038,
+          "p99_ms": 0.0427,
+          "max_ms": 2.0907,
+          "vin_p50_mw": 16104,
+          "vin_peak_mw": 22164,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 45.125,
+          "tegrastats_samples": 119,
+          "source": "run3_default.json: models[model=forecaster].tiers[target_rps=1000.0]"
+        }
+      }
+    },
+    {
+      "run": "run4_single",
+      "order_position": 4,
+      "configuration": "single-threaded (intra-op 1, inter-op 1, spinning disabled)",
+      "session_options": {
+        "intra_op_num_threads": 1,
+        "inter_op_num_threads": 1,
+        "allow_spinning": false,
+        "provider_requested": "cpu"
+      },
+      "run_id": "f17907da30ca",
+      "benchmark_finished_at_utc": "2026-09-16T03:38:28.101792+00:00",
+      "duration_per_tier_s": 120.0,
+      "tiers_requested_rps": [
+        1000.0
+      ],
+      "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+      "nvpmodel": "NV Power Mode: 120W 1",
+      "soc": "tegra264",
+      "onnxruntime_version": "1.29.0",
+      "python": "3.12.3",
+      "loadavg_1m_at_start": 0.3994140625,
+      "idle_before_run_harness_60s": {
+        "vin_p50_mw": 15456,
+        "vin_peak_mw": 16322,
+        "tj_p50_c": 38.062,
+        "tj_peak_c": 38.25,
+        "source": "run4_single.json: idle_baseline.before_load"
+      },
+      "cooldown_gate_last_window": {
+        "vin_p50_mw": 15972,
+        "tj_max_c": 38.343,
+        "settled": true,
+        "source": "cooldown.jsonl"
+      },
+      "other_processes_snapshot": {
+        "source": "system_snapshot_run4_single.txt",
+        "lines": [
+          "2026-09-16T03:32:27Z",
+          " 22:32:27 up 38 days,  5:55,  5 users,  load average: 0.40, 1.92, 2.14",
+          "0",
+          "inactive",
+          "    PID %CPU %MEM COMMAND",
+          "3759295 45.5  0.0 kworker/u28:0-ext4-rsv-conversion",
+          "3764747 22.5  0.0 kworker/u28:2-dce-async-ipc-wq",
+          "   1862  0.3  0.0 disp_eng_share_thread",
+          "3692374  0.2  0.0 (udev-worker)",
+          "3784461  0.2  0.0 fwupd"
+        ]
+      },
+      "models": {
+        "detector": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 20,
+          "p50_ms": 0.0214,
+          "p95_ms": 0.0224,
+          "p99_ms": 0.0287,
+          "max_ms": 10.6553,
+          "vin_p50_mw": 15588,
+          "vin_peak_mw": 18694,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 38.062,
+          "tegrastats_samples": 120,
+          "source": "run4_single.json: models[model=detector].tiers[target_rps=1000.0]"
+        },
+        "forecaster": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 5,
+          "p50_ms": 0.0359,
+          "p95_ms": 0.037,
+          "p99_ms": 0.0412,
+          "max_ms": 2.1482,
+          "vin_p50_mw": 15554,
+          "vin_peak_mw": 16958,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 37.812,
+          "tegrastats_samples": 120,
+          "source": "run4_single.json: models[model=forecaster].tiers[target_rps=1000.0]"
+        }
+      }
+    },
+    {
+      "run": "run5_default",
+      "order_position": 5,
+      "configuration": "default thread pool",
+      "session_options": {
+        "intra_op_num_threads": "runtime default",
+        "inter_op_num_threads": "runtime default",
+        "allow_spinning": true,
+        "provider_requested": "cpu"
+      },
+      "run_id": "5eaeb77c1a76",
+      "benchmark_finished_at_utc": "2026-09-16T03:44:58.858702+00:00",
+      "duration_per_tier_s": 120.0,
+      "tiers_requested_rps": [
+        1000.0
+      ],
+      "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+      "nvpmodel": "NV Power Mode: 120W 1",
+      "soc": "tegra264",
+      "onnxruntime_version": "1.29.0",
+      "python": "3.12.3",
+      "loadavg_1m_at_start": 0.1416015625,
+      "idle_before_run_harness_60s": {
+        "vin_p50_mw": 15860,
+        "vin_peak_mw": 16708,
+        "tj_p50_c": 37.468,
+        "tj_peak_c": 37.593,
+        "source": "run5_default.json: idle_baseline.before_load"
+      },
+      "cooldown_gate_last_window": {
+        "vin_p50_mw": 15924,
+        "tj_max_c": 37.625,
+        "settled": true,
+        "source": "cooldown.jsonl"
+      },
+      "other_processes_snapshot": {
+        "source": "system_snapshot_run5_default.txt",
+        "lines": [
+          "2026-09-16T03:38:58Z",
+          " 22:38:58 up 38 days,  6:01,  5 users,  load average: 0.14, 0.62, 1.44",
+          "0",
+          "inactive",
+          "    PID %CPU %MEM COMMAND",
+          "3759295 45.4  0.0 kworker/u28:0-ext4-rsv-conversion",
+          "3764747 22.4  0.0 kworker/u28:2-dce-async-ipc-wq",
+          "   1862  0.3  0.0 disp_eng_share_thread",
+          "3692374  0.2  0.0 (udev-worker)",
+          "   2392  0.1  0.0 nv_queue"
+        ]
+      },
+      "models": {
+        "detector": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 226,
+          "p50_ms": 0.0329,
+          "p95_ms": 0.0369,
+          "p99_ms": 0.0451,
+          "max_ms": 4.0324,
+          "vin_p50_mw": 46852,
+          "vin_peak_mw": 47210,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 33008,
+          "tj_peak_c": 54.125,
+          "tegrastats_samples": 120,
+          "source": "run5_default.json: models[model=detector].tiers[target_rps=1000.0]"
+        },
+        "forecaster": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 10,
+          "p50_ms": 0.0368,
+          "p95_ms": 0.0379,
+          "p99_ms": 0.0428,
+          "max_ms": 2.5481,
+          "vin_p50_mw": 15704,
+          "vin_peak_mw": 17238,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 45.625,
+          "tegrastats_samples": 120,
+          "source": "run5_default.json: models[model=forecaster].tiers[target_rps=1000.0]"
+        }
+      }
+    },
+    {
+      "run": "run6_single",
+      "order_position": 6,
+      "configuration": "single-threaded (intra-op 1, inter-op 1, spinning disabled)",
+      "session_options": {
+        "intra_op_num_threads": 1,
+        "inter_op_num_threads": 1,
+        "allow_spinning": false,
+        "provider_requested": "cpu"
+      },
+      "run_id": "04154710dfbb",
+      "benchmark_finished_at_utc": "2026-09-16T03:55:31.080532+00:00",
+      "duration_per_tier_s": 120.0,
+      "tiers_requested_rps": [
+        1000.0
+      ],
+      "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+      "nvpmodel": "NV Power Mode: 120W 1",
+      "soc": "tegra264",
+      "onnxruntime_version": "1.29.0",
+      "python": "3.12.3",
+      "loadavg_1m_at_start": 0.2001953125,
+      "idle_before_run_harness_60s": {
+        "vin_p50_mw": 15976,
+        "vin_peak_mw": 16800,
+        "tj_p50_c": 38.156,
+        "tj_peak_c": 38.343,
+        "source": "run6_single.json: idle_baseline.before_load"
+      },
+      "cooldown_gate_last_window": {
+        "vin_p50_mw": 15556,
+        "tj_max_c": 38.375,
+        "settled": true,
+        "source": "cooldown.jsonl"
+      },
+      "other_processes_snapshot": {
+        "source": "system_snapshot_run6_single.txt",
+        "lines": [
+          "2026-09-16T03:49:30Z",
+          " 22:49:30 up 38 days,  6:12,  5 users,  load average: 0.20, 1.22, 1.80",
+          "0",
+          "inactive",
+          "    PID %CPU %MEM COMMAND",
+          "3759295 45.2  0.0 kworker/u28:0-ext4-rsv-conversion",
+          "3764747 22.3  0.0 kworker/u28:2-dce-async-ipc-wq",
+          "   1862  0.3  0.0 disp_eng_share_thread",
+          "3692374  0.2  0.0 (udev-worker)",
+          "   2392  0.1  0.0 nv_queue"
+        ]
+      },
+      "models": {
+        "detector": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 21,
+          "p50_ms": 0.0216,
+          "p95_ms": 0.0225,
+          "p99_ms": 0.0269,
+          "max_ms": 10.1232,
+          "vin_p50_mw": 15692,
+          "vin_peak_mw": 17154,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 38.25,
+          "tegrastats_samples": 120,
+          "source": "run6_single.json: models[model=detector].tiers[target_rps=1000.0]"
+        },
+        "forecaster": {
+          "execution_provider": "CPUExecutionProvider",
+          "target_rps": 1000.0,
+          "actual_rps": 1000.0,
+          "n_samples": 120001,
+          "deadline_misses": 3,
+          "p50_ms": 0.0364,
+          "p95_ms": 0.0437,
+          "p99_ms": 0.0468,
+          "max_ms": 2.0994,
+          "vin_p50_mw": 15512,
+          "vin_peak_mw": 17502,
+          "vin_mean_mw": "not recorded",
+          "cpu_rail_p50_mw": 3929,
+          "tj_peak_c": 38.093,
+          "tegrastats_samples": 119,
+          "source": "run6_single.json: models[model=forecaster].tiers[target_rps=1000.0]"
+        }
+      }
+    }
+  ],
+  "per_configuration": {
+    "detector": {
+      "default": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            46608,
+            46676,
+            46852
+          ],
+          "median": 46676,
+          "min": 46608,
+          "max": 46852
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            47046,
+            48300,
+            47210
+          ],
+          "median": 47210,
+          "min": 47046,
+          "max": 48300
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0359,
+            0.0359,
+            0.0369
+          ],
+          "median": 0.0359,
+          "min": 0.0359,
+          "max": 0.0369
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            99,
+            389,
+            226
+          ],
+          "median": 226,
+          "min": 99,
+          "max": 389
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            52.468,
+            53.562,
+            54.125
+          ],
+          "median": 53.562,
+          "min": 52.468,
+          "max": 54.125
+        }
+      },
+      "single": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            15548,
+            15588,
+            15692
+          ],
+          "median": 15588,
+          "min": 15548,
+          "max": 15692
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            17144,
+            18694,
+            17154
+          ],
+          "median": 17154,
+          "min": 17144,
+          "max": 18694
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0229,
+            0.0224,
+            0.0225
+          ],
+          "median": 0.0225,
+          "min": 0.0224,
+          "max": 0.0229
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            8,
+            20,
+            21
+          ],
+          "median": 20,
+          "min": 8,
+          "max": 21
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            37.437,
+            38.062,
+            38.25
+          ],
+          "median": 38.062,
+          "min": 37.437,
+          "max": 38.25
+        }
+      },
+      "paired_delta_default_minus_single_vin_p50_mw": {
+        "n": 3,
+        "values": [
+          31060,
+          31088,
+          31160
+        ],
+        "median": 31088,
+        "min": 31060,
+        "max": 31160
+      },
+      "power_ranges_overlap": "no"
+    },
+    "forecaster": {
+      "default": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            15944,
+            16104,
+            15704
+          ],
+          "median": 15944,
+          "min": 15704,
+          "max": 16104
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            16946,
+            22164,
+            17238
+          ],
+          "median": 17238,
+          "min": 16946,
+          "max": 22164
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0378,
+            0.038,
+            0.0379
+          ],
+          "median": 0.0379,
+          "min": 0.0378,
+          "max": 0.038
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            6,
+            6,
+            10
+          ],
+          "median": 6,
+          "min": 6,
+          "max": 10
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            43.968,
+            45.125,
+            45.625
+          ],
+          "median": 45.125,
+          "min": 43.968,
+          "max": 45.625
+        }
+      },
+      "single": {
+        "vin_p50_mw": {
+          "n": 3,
+          "values": [
+            15668,
+            15554,
+            15512
+          ],
+          "median": 15554,
+          "min": 15512,
+          "max": 15668
+        },
+        "vin_peak_mw": {
+          "n": 3,
+          "values": [
+            16736,
+            16958,
+            17502
+          ],
+          "median": 16958,
+          "min": 16736,
+          "max": 17502
+        },
+        "p95_ms": {
+          "n": 3,
+          "values": [
+            0.0378,
+            0.037,
+            0.0437
+          ],
+          "median": 0.0378,
+          "min": 0.037,
+          "max": 0.0437
+        },
+        "deadline_misses": {
+          "n": 3,
+          "values": [
+            9,
+            5,
+            3
+          ],
+          "median": 5,
+          "min": 3,
+          "max": 9
+        },
+        "tj_peak_c": {
+          "n": 3,
+          "values": [
+            37.187,
+            37.812,
+            38.093
+          ],
+          "median": 37.812,
+          "min": 37.187,
+          "max": 38.093
+        }
+      },
+      "paired_delta_default_minus_single_vin_p50_mw": {
+        "n": 3,
+        "values": [
+          276,
+          550,
+          192
+        ],
+        "median": 276,
+        "min": 192,
+        "max": 550
+      },
+      "power_ranges_overlap": "no"
+    }
+  }
+}
