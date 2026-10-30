@@ -83,9 +83,9 @@ python3 deploy/thor/run_benchmark.py --duration 30 --tiers 100,1000
 
 Results land in `reports/thor_benchmark.json` (plus `_tegrastats.jsonl` and `_run.log` beside it) and can be surfaced by the dashboard after the artifact is copied back into the repo.
 
-## 6. Build TensorRT Engines
+## 6. Build TensorRT Engines (measured: not possible for the shipped models)
 
-Engines are built by `install.sh` when TensorRT is available. To rebuild manually after updating ONNX files:
+On 2026-10-29 the builder was run on the Thor with TensorRT 10.13: both ONNX files fail to parse because `TreeEnsembleClassifier`, `Scaler` and `LinearRegressor` are `ai.onnx.ml` operators with no TensorRT plugin (`reports/thor_tensorrt_build.log`), and ONNX Runtime places both graphs on the CPU even when the TensorRT and CUDA providers are requested (`reports/thor_tensorrt_placement.log`). The builder stays for a future neural model; for the tree and linear models it exits with 0 of 2 engines. To run it after updating ONNX files:
 
 ```bash
 python3 deploy/thor/build_tensorrt_engines.py \
@@ -93,7 +93,7 @@ python3 deploy/thor/build_tensorrt_engines.py \
     --fp16
 ```
 
-Engine files are written as `<name>.trt` alongside the ONNX files. A `trt_build_manifest.json` records build time and hash of each engine.
+Engine files, when a model can be parsed, are written as `<name>.trt` alongside the ONNX files, and `trt_build_manifest.json` records the build time and hash of each engine (for the shipped models it records the parse failures).
 
 ## 7. Train / Retrain Reference Models
 
@@ -110,7 +110,7 @@ edge-security train forecaster \
 edge-security export onnx mock-detector
 
 scp models/exports/*.pkl models/exports/*.onnx thor:/opt/edge-ids/models/exports/
-ssh thor "python3 /opt/edge-ids/deploy/thor/build_tensorrt_engines.py --fp16"
+ssh <thor-host> "python3 /opt/edge-ids/deploy/thor/build_tensorrt_engines.py --fp16"   # exits with no engine for the tree and linear models
 ssh thor "sudo systemctl restart edge-security"
 ```
 
@@ -120,7 +120,7 @@ ssh thor "sudo systemctl restart edge-security"
 sudo systemctl stop edge-security
 sudo cp /opt/edge-ids/models/backup/*.pkl /opt/edge-ids/models/exports/
 sudo cp /opt/edge-ids/models/backup/*.onnx /opt/edge-ids/models/exports/
-python3 /opt/edge-ids/deploy/thor/build_tensorrt_engines.py --fp16
+python3 /opt/edge-ids/deploy/thor/build_tensorrt_engines.py --fp16   # no engine for the shipped models; the service runs them on the CPU provider
 sudo systemctl start edge-security
 ```
 

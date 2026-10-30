@@ -1,0 +1,15 @@
+{
+  "built_at": "2026-10-30T03:07:58.889632+00:00",
+  "fp16": true,
+  "workspace_mb": 1024,
+  "engines": [
+    {
+      "model": "ar_forecaster",
+      "error": "Failed to parse models/exports/ar_forecaster.onnx"
+    },
+    {
+      "model": "gbm_detector",
+      "error": "Failed to parse models/exports/gbm_detector.onnx"
+    }
+  ]
+}

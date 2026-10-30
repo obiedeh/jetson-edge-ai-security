@@ -206,7 +206,8 @@ export default function SettingsPage() {
       {/* Thor benchmark */}
       <Section title="Thor Benchmark">
         <p className="text-sm text-gray-400 mb-3">
-          Trigger a TensorRT benchmark run on the Jetson AGX Thor. This only works
+          Trigger the inference benchmark on the Jetson AGX Thor (the shipped models run on the
+          CPU execution provider; TensorRT cannot parse their tree and linear operators). This only works
           when the API server is running on aarch64 hardware with <span className="font-mono text-gray-300">JETSON_SOC</span> set.
         </p>
         <button

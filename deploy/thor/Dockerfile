@@ -1,7 +1,8 @@
 # Edge IDS — Jetson AGX Thor deployment image
 #
 # Build context: repo root
-# Target: NVIDIA Jetson AGX Thor (aarch64, JetPack 6.x, TensorRT 10.x)
+# Target: NVIDIA Jetson AGX Thor (aarch64). The measured runs used JetPack 7.1 (R38) on the
+# host, not this JetPack 6 base image; the image itself has not been built or run on the Thor.
 #
 # Build:
 #   docker build -f deploy/thor/Dockerfile -t edge-ids:latest .
@@ -13,7 +14,8 @@
 #   - Python runtime + FastAPI backend
 #   - Trained ONNX models (gbm_detector.onnx, ar_forecaster.onnx)
 #   - Web dashboard static build (web/dist/)
-#   - TensorRT engine builder (run once on first boot)
+#   - TensorRT engine builder script (measured 2026-10-29: it builds no engine for these
+#     models, whose ai.onnx.ml operators have no TensorRT parser plugin; see the README)
 
 FROM nvcr.io/nvidia/l4t-tensorrt:r10.3-aarch64 AS base
 
