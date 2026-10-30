@@ -238,7 +238,7 @@ make verify
 
 `deploy/bench/bench_sources.py` replicates the committed EVE and CSV fixtures with shifted timestamps and measures source-only parsing, the full pipeline (`window_size` 50, `step` 10, baseline detector), and the same pipeline with a JSONL sink and with JSONL plus an in-process no-op IoT Core client. It measures ingestion and detection on the host it runs on; it makes no capture or line-rate claim.
 
-Workstation run, committed as [`reports/bench/ingest_aimlstation.json`](reports/bench/ingest_aimlstation.json) (`aimlstation`, x86_64, 24 logical CPUs, Python 3.12.3, median of 3 rounds):
+Workstation run, committed as [`reports/bench/ingest_rtx-5090-workstation.json`](reports/bench/ingest_rtx-5090-workstation.json) (`rtx-5090-workstation`, x86_64, 24 logical CPUs, Python 3.12.3, median of 3 rounds):
 
 | Source | Events | Source-only ev/s | Pipeline ev/s | Detect p95 ms | Pipeline + JSONL ev/s | Pipeline + JSONL + IoT (no-op) ev/s |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -254,7 +254,7 @@ Run it on the workstation:
 Run it on the Jetson AGX Thor (from the device; results are only claimed once the artifact is committed):
 
 ```bash
-ssh jetsonthor
+ssh <thor-host>
 cd ~/jetson-edge-ai-security && git pull
 uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python -e ".[dev]"
 .venv/bin/python deploy/bench/bench_sources.py --label thor --output reports/bench/ingest_thor.json

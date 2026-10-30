@@ -15,7 +15,7 @@
   },
   "duration_per_tier_s": 120.0,
   "hardware": {
-    "host": "jetsonthor",
+    "host": "jetson-agx-thor",
     "machine": "aarch64",
     "kernel": "6.8.12-tegra",
     "soc": "tegra264",

@@ -238,7 +238,7 @@ def test_static_pages_render_measured_thor_benchmark(tmp_path: Path) -> None:
                 "run_id": "abc123",
                 "source_badge": "validated-thor-benchmark",
                 "duration_per_tier_s": 300,
-                "hardware": {"host": "jetsonthor", "soc": "tegra264", "l4t_release": "R38", "nvpmodel": "120W", "onnxruntime": "1.29.0", "python": "3.12.3"},
+                "hardware": {"host": "jetson-agx-thor", "soc": "tegra264", "l4t_release": "R38", "nvpmodel": "120W", "onnxruntime": "1.29.0", "python": "3.12.3"},
                 "models": [
                     {"model": "detector", "provider": "CPUExecutionProvider", "provider_error": "Fail: CUDA no kernel image", "tiers": [tier]},
                     {"model": "forecaster", "provider": "CPUExecutionProvider", "tiers": [dict(tier, p95_ms=0.038)]},
@@ -265,7 +265,7 @@ def test_static_pages_render_measured_thor_benchmark(tmp_path: Path) -> None:
     assert "Thor Measurement" in dashboard
     assert "0.024 ms" in dashboard and "0.34 GB" in dashboard
     assert "CUDA no kernel image" in dashboard
-    assert "jetsonthor (tegra264)" in dashboard
+    assert "jetson-agx-thor (tegra264)" in dashboard
     assert "24222 mW" in dashboard
     for page in (dashboard, index, business, tech):
         assert "pending measured" not in page.lower()

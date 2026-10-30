@@ -2,7 +2,7 @@
   "run_id": "32639d978af0",
   "note": "Measured on the device described in `hardware`. Synthetic Gaussian inputs of the model input shapes; batch 1; single process; paced open-loop load. This is inference latency and throughput, not capture or flow-extraction performance.",
   "hardware": {
-    "host": "jetsonthor",
+    "host": "jetson-agx-thor",
     "machine": "aarch64",
     "kernel": "6.8.12-tegra",
     "soc": "tegra264",

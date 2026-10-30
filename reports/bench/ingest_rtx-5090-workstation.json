@@ -11,8 +11,8 @@
   "git_commit": "dbecc4f",
   "hardware": {
     "cpu_count": 24,
-    "hostname": "aimlstation",
-    "label": "aimlstation",
+    "hostname": "rtx-5090-workstation",
+    "label": "rtx-5090-workstation",
     "load_avg_1m": 1.86,
     "machine": "x86_64",
     "python": "3.12.3",

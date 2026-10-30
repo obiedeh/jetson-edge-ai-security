@@ -6,7 +6,7 @@ tiers as the Thor run. The GPU was not used by this harness.
 
 | Field | Recorded value |
 | --- | --- |
-| Host | `aimlstation` |
+| Host | `rtx-5090-workstation` |
 | CPU architecture | x86_64, 24 logical CPUs |
 | Python / ONNX Runtime / NumPy | 3.12.3 / 1.26.0 / 1.26.4 |
 | Governor | Not exposed by the harness or recorded in this run |
@@ -18,7 +18,7 @@ No RTX GPU execution or power measurement is claimed.
 
 ## Ingestion micro-benchmark
 
-`ingest_aimlstation.json` is one run of `deploy/bench/bench_sources.py` on the
+`ingest_rtx-5090-workstation.json` is one run of `deploy/bench/bench_sources.py` on the
 same host (defaults: EVE fixture x5000 = 40,000 events, CSV fixture
 x100 = 36,000 rows, 3 rounds, `window_size` 50, `step` 10, baseline
 detector). It records source-only parsing throughput, full-pipeline

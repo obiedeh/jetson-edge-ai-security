@@ -2,7 +2,7 @@
   "run_id": "be5179900b03",
   "note": "Measured on the device described in `hardware`. Synthetic Gaussian inputs of the model input shapes; batch 1; single process; paced open-loop load. This is inference latency and throughput, not capture or flow-extraction performance.",
   "hardware": {
-    "host": "aimlstation",
+    "host": "rtx-5090-workstation",
     "machine": "x86_64",
     "kernel": "6.17.0-22-generic",
     "soc": null,

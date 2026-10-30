@@ -7,7 +7,7 @@
 2026-09-08 13:59:59.408908880 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'axis2'. It is not used by any node and should be removed from the model.
 2026-09-08 13:59:59.408952408 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'minus1'. It is not used by any node and should be removed from the model.
 Hardware: {
-  "host": "jetsonthor",
+  "host": "jetson-agx-thor",
   "machine": "aarch64",
   "kernel": "6.8.12-tegra",
   "soc": "tegra264",

@@ -80,7 +80,7 @@ body{margin:0}
   
 <section>
   <h2>Operational Decision Summary</h2>
-  <div class="grid"><article class="card neutral"><span>Current input</span><strong>fixed_csv</strong><p>Deterministic fixture for repeatable evidence</p></article><article class="card good"><span>Detector gate</span><strong>PASS</strong><p>delta AUC threshold reported in training_run.json</p></article><article class="card good"><span>Forecaster gate</span><strong>PASS</strong><p>MAE reduction threshold reported in training_run.json</p></article><article class="card good"><span>Thor benchmark</span><strong>validated-thor-benchmark</strong><p>Measured inference run on jetsonthor (tegra264); CPUExecutionProvider</p></article></div>
+  <div class="grid"><article class="card neutral"><span>Current input</span><strong>fixed_csv</strong><p>Deterministic fixture for repeatable evidence</p></article><article class="card good"><span>Detector gate</span><strong>PASS</strong><p>delta AUC threshold reported in training_run.json</p></article><article class="card good"><span>Forecaster gate</span><strong>PASS</strong><p>MAE reduction threshold reported in training_run.json</p></article><article class="card good"><span>Thor benchmark</span><strong>validated-thor-benchmark</strong><p>Measured inference run on jetson-agx-thor (tegra264); CPUExecutionProvider</p></article></div>
 </section>
 
 <section>
@@ -156,7 +156,7 @@ body{margin:0}
 
 <section>
   <h2>Thor Measurement</h2>
-  <p>Device: jetsonthor (tegra264). L4T: # R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025. Power mode: NV Power Mode: 120W 1. onnxruntime 1.29.0, Python 3.12.3. Run 3cac5ed2b7bd, 300 s per tier.</p>
+  <p>Device: jetson-agx-thor (tegra264). L4T: # R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025. Power mode: NV Power Mode: 120W 1. onnxruntime 1.29.0, Python 3.12.3. Run 3cac5ed2b7bd, 300 s per tier.</p>
   <table>
     <tr><th>Model</th><th>Provider</th><th>Target ev/s</th><th>Achieved ev/s</th><th>p50 / p95 / p99 ms</th><th>VIN p50 / peak mW</th><th>tj peak C</th></tr>
     <tr><td>detector</td><td>CPUExecutionProvider</td><td>1000.0</td><td>1000.0</td><td>0.0213 / 0.0237 / 0.028</td><td>54298 / 56054</td><td>59.562</td></tr><tr><td>forecaster</td><td>CPUExecutionProvider</td><td>1000.0</td><td>1000.0</td><td>0.0138 / 0.0141 / 0.0143</td><td>24424 / 26194</td><td>40.687</td></tr>
