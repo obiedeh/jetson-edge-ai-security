@@ -1,0 +1,329 @@
+{
+  "run_id": "f4b01056b69b",
+  "note": "Measured on the device described in `hardware`. Synthetic Gaussian inputs of the model input shapes; batch 1; single process; paced open-loop load. This is inference latency and throughput, not capture or flow-extraction performance.",
+  "hardware": {
+    "host": "jetsonthor",
+    "machine": "aarch64",
+    "kernel": "6.8.12-tegra",
+    "soc": "tegra264",
+    "devicetree_compatible": [
+      "nvidia,p4071-0000+p3834-0008",
+      "nvidia,p3834-0008",
+      "nvidia,tegra264"
+    ],
+    "is_jetson": true,
+    "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+    "nvpmodel": "NV Power Mode: 120W 1",
+    "cpu_count": 14,
+    "mem_total_gb": 122.82,
+    "loadavg_1m_at_start": 0.625,
+    "loadavg_5m_at_start": 2.322265625,
+    "python": "3.12.3",
+    "onnxruntime": "1.29.0",
+    "numpy": "2.5.3",
+    "available_providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "git_sha": null,
+    "benchmark_started_at": "2026-09-16T05:44:28.409982+00:00"
+  },
+  "benchmark_finished_at": "2026-09-16T05:50:28.588390+00:00",
+  "duration_per_tier_s": 120.0,
+  "tiers_requested_rps": [
+    1000.0
+  ],
+  "session_options": {
+    "intra_op_num_threads": 1,
+    "inter_op_num_threads": 1,
+    "allow_spinning": false,
+    "provider_requested": "cpu"
+  },
+  "models": [
+    {
+      "model": "detector",
+      "onnx": "gbm_detector.onnx",
+      "onnx_sha256_16": "dfd424e674becf63",
+      "provider": "CPUExecutionProvider",
+      "provider_error": null,
+      "provider_requested": "cpu",
+      "trt_requested": false,
+      "single_inference_p50_ms": 0.0099,
+      "tiers": [
+        {
+          "n_samples": 120001,
+          "elapsed_s": 120.0,
+          "actual_rps": 1000.0,
+          "deadline_misses": 10,
+          "p50_ms": 0.0215,
+          "p95_ms": 0.0225,
+          "p99_ms": 0.0289,
+          "min_ms": 0.008,
+          "max_ms": 0.3596,
+          "mean_ms": 0.0218,
+          "target_rps": 1000.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0655,
+          "tegrastats": {
+            "n_samples": 120,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 0,
+                "peak": 0,
+                "min": 0
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 3929,
+                "peak": 3929,
+                "min": 3929
+              },
+              "VIN_SYS_5V0": {
+                "p50": 5544,
+                "peak": 5544,
+                "min": 5544
+              },
+              "VIN": {
+                "p50": 15918,
+                "peak": 16996,
+                "min": 15032
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 37.031,
+                "peak": 37.531
+              },
+              "tj": {
+                "p50": 38.25,
+                "peak": 38.718
+              },
+              "soc012": {
+                "p50": 37.062,
+                "peak": 37.5
+              },
+              "soc345": {
+                "p50": 38.25,
+                "peak": 38.75
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 64809,
+              "peak": 64810
+            }
+          }
+        }
+      ]
+    },
+    {
+      "model": "forecaster",
+      "onnx": "ar_forecaster.onnx",
+      "onnx_sha256_16": "169ca3f7290decfb",
+      "provider": "CPUExecutionProvider",
+      "provider_error": null,
+      "provider_requested": "cpu",
+      "trt_requested": false,
+      "single_inference_p50_ms": 0.0243,
+      "tiers": [
+        {
+          "n_samples": 120001,
+          "elapsed_s": 120.0,
+          "actual_rps": 1000.0,
+          "deadline_misses": 15,
+          "p50_ms": 0.0363,
+          "p95_ms": 0.0373,
+          "p99_ms": 0.0404,
+          "min_ms": 0.0134,
+          "max_ms": 3.6221,
+          "mean_ms": 0.0365,
+          "target_rps": 1000.0,
+          "provider": "CPUExecutionProvider",
+          "process_rss_gb": 0.0664,
+          "tegrastats": {
+            "n_samples": 119,
+            "rails_mw": {
+              "VDD_GPU": {
+                "p50": 0,
+                "peak": 0,
+                "min": 0
+              },
+              "VDD_CPU_SOC_MSS": {
+                "p50": 3929,
+                "peak": 3929,
+                "min": 3929
+              },
+              "VIN_SYS_5V0": {
+                "p50": 5544,
+                "peak": 5544,
+                "min": 5544
+              },
+              "VIN": {
+                "p50": 15960,
+                "peak": 17034,
+                "min": 15136
+              }
+            },
+            "temps_c": {
+              "cpu": {
+                "p50": 36.437,
+                "peak": 36.75
+              },
+              "tj": {
+                "p50": 37.625,
+                "peak": 37.968
+              },
+              "soc012": {
+                "p50": 36.375,
+                "peak": 36.781
+              },
+              "soc345": {
+                "p50": 37.625,
+                "peak": 37.968
+              }
+            },
+            "board_ram_used_mb": {
+              "p50": 64809,
+              "peak": 64810
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "memory": {
+    "process_peak_rss_gb": 0.0681,
+    "process_rss_before_gb": 0.0528,
+    "process_rss_after_gb": 0.0664,
+    "note": "Process RSS only. Board RAM is in the tegrastats summaries when present."
+  },
+  "idle_baseline": {
+    "seconds": 60,
+    "before_load": {
+      "n_samples": 59,
+      "rails_mw": {
+        "VDD_GPU": {
+          "p50": 0,
+          "peak": 0,
+          "min": 0
+        },
+        "VDD_CPU_SOC_MSS": {
+          "p50": 3929,
+          "peak": 3929,
+          "min": 3929
+        },
+        "VIN_SYS_5V0": {
+          "p50": 5544,
+          "peak": 5644,
+          "min": 5544
+        },
+        "VIN": {
+          "p50": 15942,
+          "peak": 16968,
+          "min": 15032
+        }
+      },
+      "temps_c": {
+        "cpu": {
+          "p50": 37.718,
+          "peak": 38.062
+        },
+        "tj": {
+          "p50": 38.968,
+          "peak": 39.343
+        },
+        "soc012": {
+          "p50": 37.812,
+          "peak": 38.125
+        },
+        "soc345": {
+          "p50": 38.968,
+          "peak": 39.343
+        }
+      },
+      "board_ram_used_mb": {
+        "p50": 64795,
+        "peak": 64796
+      }
+    },
+    "after_load": {
+      "n_samples": 60,
+      "rails_mw": {
+        "VDD_GPU": {
+          "p50": 0,
+          "peak": 0,
+          "min": 0
+        },
+        "VDD_CPU_SOC_MSS": {
+          "p50": 3929,
+          "peak": 3929,
+          "min": 3536
+        },
+        "VIN_SYS_5V0": {
+          "p50": 5544,
+          "peak": 5544,
+          "min": 5544
+        },
+        "VIN": {
+          "p50": 15760,
+          "peak": 17106,
+          "min": 15026
+        }
+      },
+      "temps_c": {
+        "cpu": {
+          "p50": 36.031,
+          "peak": 36.187
+        },
+        "tj": {
+          "p50": 37.218,
+          "peak": 37.437
+        },
+        "soc012": {
+          "p50": 36.031,
+          "peak": 36.218
+        },
+        "soc345": {
+          "p50": 37.218,
+          "peak": 37.437
+        }
+      },
+      "board_ram_used_mb": {
+        "p50": 64803,
+        "peak": 64805
+      }
+    },
+    "note": "Board rails and temperatures while this process slept; other host activity is included."
+  },
+  "tegrastats_samples_file": "run02_B_tegrastats.jsonl",
+  "tegrastats_sample_count": 358,
+  "gates": {
+    "detector_p95_latency_ms": {
+      "threshold": 10.0,
+      "unit": "ms",
+      "measured": 0.0225,
+      "status": "pass",
+      "criterion": "p95 single-event latency at the 1000 events/s tier"
+    },
+    "forecaster_p95_latency_ms": {
+      "threshold": 50.0,
+      "unit": "ms",
+      "measured": 0.0373,
+      "status": "pass",
+      "criterion": "p95 single-sequence latency at the 1000 events/s tier"
+    },
+    "throughput_at_1000_rps": {
+      "threshold": 1000.0,
+      "unit": "events/s",
+      "measured": 1000.0,
+      "status": "pass",
+      "criterion": "lowest achieved events/s across models at the 1000 events/s tier; pass at >= 99% of target"
+    },
+    "memory_footprint_gb": {
+      "threshold": 4.0,
+      "unit": "GB",
+      "measured": 0.0681,
+      "status": "pass",
+      "criterion": "peak resident set size of the benchmark process (ru_maxrss)"
+    }
+  },
+  "source_badge": "validated-thor-benchmark"
+}

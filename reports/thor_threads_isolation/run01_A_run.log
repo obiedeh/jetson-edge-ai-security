@@ -1,0 +1,54 @@
+Hardware: {
+  "host": "jetsonthor",
+  "machine": "aarch64",
+  "kernel": "6.8.12-tegra",
+  "soc": "tegra264",
+  "devicetree_compatible": [
+    "nvidia,p4071-0000+p3834-0008",
+    "nvidia,p3834-0008",
+    "nvidia,tegra264"
+  ],
+  "is_jetson": true,
+  "l4t_release": "# R38 (release), REVISION: 4.0, GCID: 43443517, BOARD: generic, EABI: aarch64, DATE: Wed Dec 31 00:15:19 UTC 2025",
+  "nvpmodel": "NV Power Mode: 120W 1",
+  "cpu_count": 14,
+  "mem_total_gb": 122.82,
+  "loadavg_1m_at_start": 0.09375,
+  "loadavg_5m_at_start": 0.16259765625,
+  "python": "3.12.3",
+  "onnxruntime": "1.29.0",
+  "numpy": "2.5.3",
+  "available_providers": [
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "git_sha": null,
+  "benchmark_started_at": "2026-09-16T05:37:57.243131+00:00"
+}
+
+Idle baseline: sampling 60s before load
+
+============================================================
+Benchmarking: detector (gbm_detector.onnx) input (1, 57)
+  Execution provider: CPUExecutionProvider
+  Single-inference p50: 0.0330 ms
+
+  Tier 1000 events/s for 120s
+    ... 60001 samples, 60s elapsed
+    n=120001 actual=1000.0 ev/s p50=0.0329 p95=0.0372 p99=0.0511 ms misses=91
+
+============================================================
+Benchmarking: forecaster (ar_forecaster.onnx) input (1, 20, 57)
+2026-09-16 00:40:57.340761006 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'axis2'. It is not used by any node and should be removed from the model.
+2026-09-16 00:40:57.340833756 [W:onnxruntime:, graph.cc:5583 CleanUnusedInitializersAndNodeArgs] Removing initializer 'minus1'. It is not used by any node and should be removed from the model.
+  Execution provider: CPUExecutionProvider
+  Single-inference p50: 0.0167 ms
+
+  Tier 1000 events/s for 120s
+    ... 60001 samples, 60s elapsed
+    n=120001 actual=1000.0 ev/s p50=0.0371 p95=0.0381 p99=0.0406 ms misses=12
+
+Idle baseline: sampling 60s after load
+
+Wrote reports/thor_threads_isolation/run01_A.json
+Gates: {"detector_p95_latency_ms": "pass", "forecaster_p95_latency_ms": "pass", "throughput_at_1000_rps": "pass", "memory_footprint_gb": "pass"}

@@ -1,0 +1,10 @@
+2026-09-16T06:10:34Z
+ 01:10:34 up 38 days,  8:33,  6 users,  load average: 0.10, 0.15, 0.38
+containers: 0
+gdm: inactive
+    PID %CPU %MEM COMMAND
+3792232  100  0.0 ps
+3759295 42.9  0.0 kworker/u28:0-ext4-rsv-conversion
+   1862  0.3  0.0 disp_eng_share_thread
+3692374  0.2  0.0 (udev-worker)
+   2392  0.1  0.0 nv_queue
