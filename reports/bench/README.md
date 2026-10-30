@@ -27,3 +27,15 @@ with a JSONL sink and with JSONL plus an in-process no-op IoT Core client.
 `git_commit` in the artifact is the commit the script ran against (the parent
 of the commit that added the artifact). No network, capture, or line-rate
 claim; the Thor run (`ingest_thor.json`) is pending.
+
+## Ingestion micro-benchmark on the Jetson AGX Thor
+
+`ingest_jetson-agx-thor.json` is the same `deploy/bench/bench_sources.py` run
+(same fixtures, repeats, rounds, window and detector) on the Jetson AGX Thor
+Developer Kit: aarch64, 14 CPUs, NV Power Mode 120W, Python 3.12.3, load
+average 0.92 before the run. Medians of 3 rounds: Suricata EVE source-only
+43,903 ev/s, pipeline 34,525 ev/s, detect p95 0.0042 ms; CSV replay
+source-only 36,796 ev/s, pipeline 31,084 ev/s, detect p95 0.0032 ms. The
+run log is `ingest_jetson-agx-thor_run.log`. The board held a copy of commit
+`7d36841` without `.git`; the artifact's `git_commit` field records that.
+CPU only; no GPU, capture, network or line-rate claim.

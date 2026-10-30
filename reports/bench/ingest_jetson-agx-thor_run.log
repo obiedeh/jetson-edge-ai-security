@@ -1,0 +1,5 @@
+[suricata_eve] 40000 events from tests/fixtures/eve_sample.json x5000
+[suricata_eve] source-only 43903 ev/s; pipeline 34525 ev/s; detect p95 0.0042 ms; jsonl sink 31662 ev/s; jsonl+iot(fake) 26925 ev/s
+[csv_replay] 36000 events from tests/fixtures/telemetry_replay_sample.csv x100
+[csv_replay] source-only 36796 ev/s; pipeline 31084 ev/s; detect p95 0.0032 ms; jsonl sink 30082 ev/s; jsonl+iot(fake) 27350 ev/s
+wrote reports/bench/ingest_jetson-agx-thor.json

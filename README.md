@@ -126,7 +126,7 @@ The intent is source-agnostic flow ingestion. New sources should normalize into 
 | Suricata EVE JSON source (`replay-eve`, follow mode) | Implemented, fixture-tested |
 | MQTT telemetry source (`run-mqtt`, Mosquitto demo) | Implemented, fake-client tests; one verified local broker run |
 | Alert sinks: JSONL, SQLite (dashboard), AWS IoT Core | Implemented, off by default; IoT Core tested with a fake client only, no cloud run yet |
-| Ingestion micro-benchmark (EVE and CSV sources) | Measured on the RTX 5090 host; Thor run pending |
+| Ingestion micro-benchmark (EVE and CSV sources) | Measured on the RTX 5090 host and on the Jetson AGX Thor (CPU, 120 W mode) |
 | Zeek / CICFlow adapters | Planned |
 | Jetson-generated flow CSV | Planned |
 | Thor-class hardware benchmark | Measured, inference only, CPU provider |
@@ -251,16 +251,18 @@ Run it on the workstation:
 .venv/bin/python deploy/bench/bench_sources.py
 ```
 
-Run it on the Jetson AGX Thor (from the device; results are only claimed once the artifact is committed):
+Jetson AGX Thor run, committed as [`reports/bench/ingest_jetson-agx-thor.json`](reports/bench/ingest_jetson-agx-thor.json) (`jetson-agx-thor`, aarch64, 14 CPUs, NV Power Mode 120W, L4T R38 kernel 6.8.12-tegra, Python 3.12.3, median of 3 rounds, run log [`ingest_jetson-agx-thor_run.log`](reports/bench/ingest_jetson-agx-thor_run.log)):
+
+| Source | Events | Source-only ev/s | Pipeline ev/s | Detect p95 ms | Pipeline + JSONL ev/s | Pipeline + JSONL + IoT (no-op) ev/s |
+| --- | --- | --- | --- | --- | --- | --- |
+| Suricata EVE | 40,000 | 43,903 | 34,525 | 0.0042 | 31,663 | 26,925 |
+| CSV replay | 36,000 | 36,796 | 31,084 | 0.0032 | 30,082 | 27,350 |
+
+The Thor sustains 56 to 62 percent of the workstation's throughput on the same fixtures (EVE pipeline 34,525 against 55,257 events per second; CSV pipeline 31,084 against 57,366), with the detector's per-window p95 within 0.0017 ms of the workstation's. Both runs are CPU only; the GPU takes no part in ingestion. The tree on the board was a copy of commit `7d36841` (recorded in the artifact as `git_commit`), installed into a venv with `pip install -e ".[dev]"`, run as:
 
 ```bash
-ssh <thor-host>
-cd ~/jetson-edge-ai-security && git pull
-uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python -e ".[dev]"
-.venv/bin/python deploy/bench/bench_sources.py --label thor --output reports/bench/ingest_thor.json
+.venv/bin/python deploy/bench/bench_sources.py --label jetson-agx-thor --output reports/bench/ingest_jetson-agx-thor.json
 ```
-
-Then commit `reports/bench/ingest_thor.json` and add its row to this table. The Thor row is not yet measured.
 
 ## Thor-Class Deployment Readiness
 
@@ -299,7 +301,7 @@ Reproduce on the device with the harness in [deploy/thor/run_benchmark.py](deplo
 The next steps are intentionally narrow:
 
 - Add source adapters that generate the same CSV/event contract from Zeek and CICFlow-style records (Suricata EVE and MQTT are implemented).
-- Run the ingestion benchmark on Thor and a manual IoT Core publish from the device; both are pending.
+- A manual IoT Core publish from the device is pending; the ingestion benchmark on Thor is committed (`reports/bench/ingest_jetson-agx-thor.json`).
 - Measure end-to-end packet-to-alert latency on Thor; the inference-only benchmark and the thread-pool power comparison are committed.
 - Add packet-drop and flow-extraction measurements before making capture-performance claims.
 - Keep all response actions operator-reviewed.
