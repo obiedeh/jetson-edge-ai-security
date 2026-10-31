@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-30
+
+- Add portable tracked-prose hygiene tests with privacy-safe diagnostics.
+
+
 What changed in this repository, newest first, grouped by the date the
 work landed on `main`. A number named here is read from a committed record
 under `reports/`.
