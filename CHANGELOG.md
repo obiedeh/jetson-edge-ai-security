@@ -1,11 +1,18 @@
 # Changelog
 
+## 2026-10-30
+
+- Add portable tracked-prose hygiene tests with privacy-safe diagnostics.
+
+
 What changed in this repository, newest first, grouped by the date the
 work landed on `main`. A number named here is read from a committed record
 under `reports/`.
 
 ## Unreleased
 
+
+- 2026-10-30: Link repository instructions to the shared hygiene policy and summarize board labels, private identifiers, hooks, immutable history and external handoff notes.
 - TensorRT on the Thor, measured three ways (engine build, ONNX Runtime
   provider placement, benchmark with the TensorRT provider requested): no
   engine can be built for the shipped `ai.onnx.ml` tree and linear models,
