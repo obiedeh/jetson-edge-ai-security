@@ -11,6 +11,7 @@ under `reports/`.
 
 ## Unreleased
 
+- 2026-11-03: Synthetic network addresses in the test fixtures and the CLI's sample generator moved from private ranges to the 198.18.0.0/15 benchmarking range, one /24 per original network with the last octet kept, so distinct addresses stay distinct. Tests: 348 passed, 9 skipped.
 - 2026-11-03: The report header band reads "EmbodiedEdge Evidence"; the Labs label the earlier rename missed is removed from the theme and the four report pages.
 - 2026-11-03: Evidence pages and their theme name the lab EmbodiedEdge; the retired EmbodiedEdge Labs name is removed.
 

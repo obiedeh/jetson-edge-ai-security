@@ -425,7 +425,7 @@ def seed_db(
                 payload={
                     "window_id": i,
                     "source_ip": f"10.0.{rng.randint(0, 5)}.{rng.randint(1, 254)}",
-                    "dest_ip": f"192.168.1.{rng.randint(1, 10)}",
+                    "dest_ip": f"198.18.6.{rng.randint(1, 10)}",
                 },
             )
 
@@ -451,7 +451,7 @@ def run_demo() -> None:
             label = 1 if index >= 8 else 0
             attack_type = "lab-replay" if label else "normal"
             handle.write(
-                f"2026-01-01 00:00:{index:02d},10.0.0.{index + 1},10.0.1.10,"
+                f"2026-01-01 00:00:{index:02d},198.18.0.{index + 1},198.18.1.10,"
                 f"{5000 + index},443,TCP,{100 + index},S,{label},{attack_type}\n"
             )
         demo_path = Path(handle.name)
@@ -483,7 +483,7 @@ def generate_demo_report(
             label = 1 if index >= 8 else 0
             attack_type = "lab-replay" if label else "normal"
             handle.write(
-                f"2026-01-01 00:00:{index:02d},10.0.0.{index + 1},10.0.1.10,"
+                f"2026-01-01 00:00:{index:02d},198.18.0.{index + 1},198.18.1.10,"
                 f"{5000 + index},443,TCP,{100 + index},S,{label},{attack_type}\n"
             )
         demo_path = Path(handle.name)

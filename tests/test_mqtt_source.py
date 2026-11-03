@@ -92,8 +92,8 @@ def _factory(client: FakeClient):
 
 SAMPLE = {
     "frame.time_epoch": 1758961800.5,
-    "ip.src_host": "192.168.10.24",
-    "ip.dst_host": "192.168.10.5",
+    "ip.src_host": "198.18.7.24",
+    "ip.dst_host": "198.18.7.5",
     "tcp.srcport": 49212,
     "tcp.dstport": "1883",
     "_ws.col.Protocol": "mqtt",
@@ -122,8 +122,8 @@ def test_default_mapping_and_unmapped_keys() -> None:
     assert len(events) == 1
     event = events[0]
     assert event.timestamp.isoformat() == "2025-09-27T08:30:00.500000+00:00"
-    assert event.source_ip == "192.168.10.24"
-    assert event.dest_ip == "192.168.10.5"
+    assert event.source_ip == "198.18.7.24"
+    assert event.dest_ip == "198.18.7.5"
     assert event.source_port == 49212
     assert event.dest_port == 1883
     assert event.protocol == "MQTT"
@@ -174,7 +174,7 @@ def test_connect_refusal_does_not_subscribe() -> None:
 
 
 def test_custom_field_map_overrides_defaults() -> None:
-    client = FakeClient(scripted=[("t", {"when": "2026-01-01 00:00:00", "from": "10.0.0.1", "size": 7})])
+    client = FakeClient(scripted=[("t", {"when": "2026-01-01 00:00:00", "from": "198.18.0.1", "size": 7})])
     source = MqttTelemetrySource(
         "mqtt://x",
         "t",
@@ -184,7 +184,7 @@ def test_custom_field_map_overrides_defaults() -> None:
         poll_interval=0.01,
     )
     events = list(source.events())
-    assert events[0].source_ip == "10.0.0.1"
+    assert events[0].source_ip == "198.18.0.1"
     assert events[0].timestamp.isoformat() == "2026-01-01T00:00:00+00:00"
     assert events[0].packet_size == 7  # default alias still applies to other fields
     assert events[0].metadata["unmapped"] == {}
@@ -204,7 +204,7 @@ def test_malformed_payloads_are_counted_or_raised() -> None:
         ("t", b"[1, 2, 3]"),
         ("t", {"source_port": 70000}),
         ("t", {"packet_size": "big"}),
-        ("t", {"source_ip": "10.0.0.9"}),
+        ("t", {"source_ip": "198.18.0.9"}),
     ]
     client = FakeClient(scripted=bad)
     source = MqttTelemetrySource("mqtt://x", "t", client_factory=_factory(client), idle_timeout=0.05, poll_interval=0.01)
@@ -220,18 +220,18 @@ def test_malformed_payloads_are_counted_or_raised() -> None:
 
 
 def test_bounded_queue_drops_newest_and_counts() -> None:
-    client = FakeClient(scripted=[("t", {"source_ip": f"10.0.0.{i}"}) for i in range(6)])
+    client = FakeClient(scripted=[("t", {"source_ip": f"198.18.0.{i}"}) for i in range(6)])
     source = MqttTelemetrySource(
         "mqtt://x", "t", client_factory=_factory(client), queue_size=2, idle_timeout=0.05, poll_interval=0.01
     )
     events = list(source.events())
-    assert [e.source_ip for e in events] == ["10.0.0.0", "10.0.0.1"]
+    assert [e.source_ip for e in events] == ["198.18.0.0", "198.18.0.1"]
     assert source.messages_seen == 6
     assert source.messages_dropped == 4
 
 
 def test_limit_and_stop_event() -> None:
-    client = FakeClient(scripted=[("t", {"source_ip": f"10.0.0.{i}"}) for i in range(10)])
+    client = FakeClient(scripted=[("t", {"source_ip": f"198.18.0.{i}"}) for i in range(10)])
     source = MqttTelemetrySource("mqtt://x", "t", client_factory=_factory(client), limit=3, poll_interval=0.01)
     assert len(list(source.events())) == 3
 
@@ -245,7 +245,7 @@ def test_limit_and_stop_event() -> None:
 
 
 def test_messages_delivered_from_network_thread() -> None:
-    scripted = [("edge-security/telemetry/n", {"source_ip": f"10.1.0.{i}", "frame.len": i}) for i in range(25)]
+    scripted = [("edge-security/telemetry/n", {"source_ip": f"198.18.5.{i}", "frame.len": i}) for i in range(25)]
     client = FakeClient(scripted=scripted, deliver_in_thread=True)
     source = MqttTelemetrySource(
         "mqtt://x", "edge-security/telemetry/#", client_factory=_factory(client), idle_timeout=0.3, poll_interval=0.01
@@ -259,7 +259,7 @@ def test_messages_delivered_from_network_thread() -> None:
     [
         ("mqtt://broker:1883", ("broker", 1883, False)),
         ("mqtt://broker", ("broker", 1883, False)),
-        ("tcp://10.0.0.5:1884", ("10.0.0.5", 1884, False)),
+        ("tcp://198.18.0.5:1884", ("198.18.0.5", 1884, False)),
         ("mqtts://broker", ("broker", 8883, True)),
         ("ssl://broker:9000", ("broker", 9000, True)),
         ("broker:1900", ("broker", 1900, False)),
@@ -309,8 +309,8 @@ def test_cli_run_mqtt_smoke(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
         rows.append(
             {
                 "timestamp": f"2026-01-01 00:00:{i % 60:02d}",
-                "source_ip": f"10.0.0.{i + 1}",
-                "dest_ip": "10.0.1.1",
+                "source_ip": f"198.18.0.{i + 1}",
+                "dest_ip": "198.18.1.1",
                 "source_port": 1000 + i,
                 "dest_port": 443,
                 "protocol": "TCP",

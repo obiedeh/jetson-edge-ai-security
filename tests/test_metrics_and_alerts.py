@@ -13,8 +13,8 @@ def _make_window(attack_count: int = 0):
     events = [
         TelemetryEvent(
             timestamp=_BASE_TS + timedelta(seconds=idx),
-            source_ip="10.0.0.1",
-            dest_ip="10.0.0.2",
+            source_ip="198.18.0.1",
+            dest_ip="198.18.0.2",
             packet_size=100,
             attack_label=idx < attack_count,
         )

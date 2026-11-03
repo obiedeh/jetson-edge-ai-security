@@ -17,7 +17,7 @@ def test_prepare_dataset_downloads_extracts_and_finds_csv(
         archive.writestr(
             "nested/events.csv",
             "timestamp,source_ip,dest_ip,protocol,packet_size\n"
-            "2026-01-01 00:00:00,10.0.0.1,10.0.0.2,TCP,128\n",
+            "2026-01-01 00:00:00,198.18.0.1,198.18.0.2,TCP,128\n",
         )
 
     spec = DatasetSpec(
@@ -69,7 +69,7 @@ def test_prepare_dataset_force_re_extracts(
 ) -> None:
     archive_path = tmp_path / "fixture.zip"
     with ZipFile(archive_path, "w") as archive:
-        archive.writestr("events.csv", "timestamp,source_ip\n2026-01-01,10.0.0.1\n")
+        archive.writestr("events.csv", "timestamp,source_ip\n2026-01-01,198.18.0.1\n")
 
     spec = DatasetSpec(
         key="fixture2",
