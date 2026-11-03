@@ -98,7 +98,7 @@ async def _demo_alert_ticker(interval: float = 30.0) -> None:
                 source=source,
                 payload={
                     "source_ip": f"10.0.{_demo_rng.randint(0, 5)}.{_demo_rng.randint(1, 254)}",
-                    "dest_ip": f"192.168.1.{_demo_rng.randint(1, 10)}",
+                    "dest_ip": f"198.18.6.{_demo_rng.randint(1, 10)}",
                     "demo": True,
                 },
             )

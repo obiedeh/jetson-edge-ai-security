@@ -12,8 +12,8 @@ def test_sliding_window_feature_creation() -> None:
     events = [
         TelemetryEvent(
             timestamp=start + timedelta(seconds=index),
-            source_ip=f"10.0.0.{index}",
-            dest_ip="10.0.1.1",
+            source_ip=f"198.18.0.{index}",
+            dest_ip="198.18.1.1",
             protocol="TCP" if index % 2 else "UDP",
             packet_size=100 + index,
             tcp_flags="S" if index % 2 else None,
@@ -37,8 +37,8 @@ def test_window_stream_convenience_wrapper() -> None:
     events = [
         TelemetryEvent(
             timestamp=start + timedelta(seconds=i),
-            source_ip="10.0.0.1",
-            dest_ip="10.0.1.1",
+            source_ip="198.18.0.1",
+            dest_ip="198.18.1.1",
             packet_size=64,
         )
         for i in range(10)

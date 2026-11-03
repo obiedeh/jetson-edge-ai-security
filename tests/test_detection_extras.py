@@ -22,8 +22,8 @@ def _events(n: int, attack_count: int = 0) -> list[TelemetryEvent]:
     return [
         TelemetryEvent(
             timestamp=_BASE_TS + timedelta(seconds=idx),
-            source_ip=f"10.0.0.{idx + 1}",
-            dest_ip="10.0.1.1",
+            source_ip=f"198.18.0.{idx + 1}",
+            dest_ip="198.18.1.1",
             packet_size=100 + idx,
             attack_label=idx < attack_count,
         )

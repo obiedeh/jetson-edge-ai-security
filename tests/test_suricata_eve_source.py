@@ -52,8 +52,8 @@ def test_flow_record_mapping() -> None:
     first = events[0]
 
     assert first.timestamp.isoformat() == "2026-09-28T10:15:03.123456+00:00"
-    assert first.source_ip == "192.168.10.24"
-    assert first.dest_ip == "192.168.10.5"
+    assert first.source_ip == "198.18.7.24"
+    assert first.dest_ip == "198.18.7.5"
     assert first.source_port == 49212
     assert first.dest_port == 1883
     assert first.protocol == "TCP"

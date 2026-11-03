@@ -73,7 +73,7 @@ def tmp_pcap(tmp_path: Path) -> Path:
     except ImportError:
         pytest.skip("dpkt not installed")
 
-    frame = _make_tcp_frame("192.168.1.10", "10.0.0.1", 54321, 443)
+    frame = _make_tcp_frame("198.18.6.10", "198.18.0.1", 54321, 443)
     base_ts = 1700000000.0
     # 20 packets at 0.1s intervals → 2 windows at 1s granularity
     packets = [(base_ts + i * 0.1, frame) for i in range(20)]
@@ -105,8 +105,8 @@ def test_iter_pcap_events_fields_populated(tmp_pcap: Path) -> None:
     events = list(iter_pcap_events(tmp_pcap, replay_rate=0.0))
     assert len(events) >= 1
     ev = events[0]
-    assert ev.source_ip == "192.168.1.10"
-    assert ev.dest_ip == "10.0.0.1"
+    assert ev.source_ip == "198.18.6.10"
+    assert ev.dest_ip == "198.18.0.1"
     assert ev.source_port == 54321
     assert ev.dest_port == 443
     assert ev.protocol == "6"  # TCP protocol number as string

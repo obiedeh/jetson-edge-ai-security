@@ -413,7 +413,7 @@ def _labelled_csv(tmp_path: Path, rows: int = 20) -> Path:
     path = tmp_path / "events.csv"
     lines = ["timestamp,source_ip,dest_ip,source_port,dest_port,protocol,packet_size,attack_label"]
     for i in range(rows):
-        lines.append(f"2026-01-01 00:00:{i:02d},10.0.0.{i + 1},10.0.1.1,{1000 + i},443,TCP,100,1")
+        lines.append(f"2026-01-01 00:00:{i:02d},198.18.0.{i + 1},198.18.1.1,{1000 + i},443,TCP,100,1")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
 

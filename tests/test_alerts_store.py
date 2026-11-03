@@ -235,7 +235,7 @@ async def test_get_lookback_buckets_empty(store) -> None:
 @pytest.mark.asyncio
 async def test_alert_payload_json_serialized(store) -> None:
     await store.init()
-    payload = {"src_ip": "10.0.0.1", "packet_count": 500}
+    payload = {"src_ip": "198.18.0.1", "packet_count": 500}
     await store.insert_alert(
         timestamp=_NOW,
         attack_type="Uploading",
@@ -247,5 +247,5 @@ async def test_alert_payload_json_serialized(store) -> None:
     assert len(rows) >= 1
     import json
     stored_payload = json.loads(rows[0]["payload_json"])
-    assert stored_payload["src_ip"] == "10.0.0.1"
+    assert stored_payload["src_ip"] == "198.18.0.1"
     assert stored_payload["packet_count"] == 500
